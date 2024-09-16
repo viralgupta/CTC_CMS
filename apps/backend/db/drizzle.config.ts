@@ -6,6 +6,6 @@ export default defineConfig({
   schema: "./schema.ts",
   out: "./migrations",
   dbCredentials: {
-    url: "postgresql://myuser:mypassword@localhost:5432/ctc-cms-db"
+    url: process.env.WORKING_DB_URL ?? ""
   }
 });

@@ -49,7 +49,7 @@ const LoginForm = () => {
     reValidateMode: "onChange",
     defaultValues: {
       phone_number: process.env.NODE_ENV == "development" ? "1234567890" : "",
-      otp: process.env.NODE_ENV == "development" ? "123456" : "",
+      otp: process.env.NODE_ENV == "development" ? "123123" : "",
     },
   });
 
@@ -123,7 +123,7 @@ const LoginForm = () => {
 const LoginDialog = ({ children, disabled }: { children: React.ReactNode, disabled: boolean }) => {
   return (
     <Dialog {...(disabled ? { open: false } : {})}>
-      <DialogTrigger disabled={disabled} className="cursor-pointer disabled:cursor-default md:block hidden">
+      <DialogTrigger disabled={disabled} className={`cursor-pointer disabled:cursor-default md:block ${disabled && "hidden"}`}>
         {children}
       </DialogTrigger>
       <DialogContent aria-describedby="Admin Login Form">

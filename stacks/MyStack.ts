@@ -20,7 +20,8 @@ export function API({ stack }: StackContext) {
       $default: {
         function: {
           handler: "packages/functions/src/backend.handler",
-          timeout: 20
+          timeout: 20,
+          runtime: "nodejs20.x"
         },
       },
     },
@@ -38,7 +39,8 @@ export function API({ stack }: StackContext) {
           layers: [
             LayerVersion.fromLayerVersionArn(stack, "GhostScriptLayer", "arn:aws:lambda:ap-south-1:764866452798:layer:ghostscript:15")
           ],
-          ephemeralStorageSize: Size.mebibytes(5120)
+          ephemeralStorageSize: Size.mebibytes(5120),
+          runtime: "nodejs20.x"
         },
         events: ["object_created"]
       },
@@ -46,7 +48,8 @@ export function API({ stack }: StackContext) {
         function: {
           handler: "packages/functions/src/functions.removeResourceOnDelete",
           bind: [DB_URL],
-          timeout: 10
+          timeout: 10,
+          runtime: "nodejs20.x"
         },
         events: ["object_removed"]
       },

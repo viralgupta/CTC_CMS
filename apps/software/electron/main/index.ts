@@ -1,12 +1,17 @@
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron'
+import { app, BrowserWindow, shell, session } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import * as cookieParser from 'cookie'
+import dotenv from "dotenv"
+
+dotenv.config();
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+if (require('electron-squirrel-startup')) app.quit();
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
 
@@ -58,7 +63,7 @@ async function createWindow() {
 
 
 app.whenReady().then(() => {
-  const filter = { urls: ['https://7slccwntv6.execute-api.ap-south-1.amazonaws.com/*'] }
+  const filter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] }
 
   session.defaultSession.cookies.on("changed", (_event, cookie, cause, removed) => {
     if (cookie.name == "__Secure-authjs.session-token") {

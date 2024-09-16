@@ -5,7 +5,7 @@ import * as schema from './schema';
 // import { migrate } from 'drizzle-orm/postgres-js/migrator';
 
 // for migrations
-// const migrationClient = postgres(Config.STAGE === "dev" ? "postgresql://myuser:mypassword@localhost:5432/ctc-cms-db" : Config.DB_URL, { max: 1 });
+// const migrationClient = postgres(Config.DB_URL, { max: 1 });
 // migrate(drizzle(migrationClient), ...)
 
 // for query purposes

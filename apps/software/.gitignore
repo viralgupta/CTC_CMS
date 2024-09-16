@@ -33,3 +33,4 @@ yarn.lock
 /playwright/.cache/
 
 public/private_key.txt
+out/

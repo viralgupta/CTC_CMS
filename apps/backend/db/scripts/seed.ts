@@ -17,8 +17,11 @@ import {
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from '../schema';
+import dotenv from "dotenv"
 
-const seedClient = postgres("postgresql://myuser:mypassword@localhost:5432/ctc-cms-db");
+dotenv.config();
+
+const seedClient = postgres(process.env.WORKING_DB_URL ?? "");
 const db = drizzle(seedClient, { schema });
 
 
@@ -30,6 +33,7 @@ async function main() {
       name: "User 1",
       phone_number: "1234567890",
       isAdmin: true,
+      otp: 123123
     },
     {
       name: "User 2",
