@@ -5,6 +5,8 @@ import path from 'node:path'
 import os from 'node:os'
 import * as cookieParser from 'cookie'
 import dotenv from "dotenv"
+import crypto from "node:crypto"
+import fs from "node:fs"
 
 dotenv.config();
 
@@ -63,7 +65,8 @@ async function createWindow() {
 
 
 app.whenReady().then(() => {
-  const filter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] }
+  const allFilter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] };
+  const apiFilter = { urls: [`${process.env.VITE_API_BASE_URL}/api/*`] };
 
   session.defaultSession.cookies.on("changed", (_event, cookie, cause, removed) => {
     if (cookie.name == "__Secure-authjs.session-token") {
@@ -74,19 +77,36 @@ app.whenReady().then(() => {
   })
 
   // set cookies in request using electron class before sending
-  session.defaultSession.webRequest.onBeforeSendHeaders(filter, async (details, callback) => {
+  session.defaultSession.webRequest.onBeforeSendHeaders(allFilter, async (details, callback) => {
 
     const cookies = await session.defaultSession.cookies.get({ domain: new URL(details.url).hostname }).then((cookies) => {
-        return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ');
-      })
-      if (cookies.length > 0) details.requestHeaders.cookie = cookies;
+      return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ');
+    })
+    
+    if (cookies.length > 0) details.requestHeaders.cookie = cookies;
 
-      callback({ requestHeaders: details.requestHeaders });
-    }
-  );
+    callback({ requestHeaders: details.requestHeaders });
+  });
+
+  // set timestamp and signature in request using electron class before sending
+  session.defaultSession.webRequest.onBeforeSendHeaders(apiFilter, async (details, callback) => {
+
+    const timestamp = Date.now().toString();
+
+    const privateKeyPem = fs.readFileSync(path.join(process.env.VITE_PUBLIC, 'private_key.pem'), "utf-8");
+    
+    const sign = crypto.createSign('SHA256');
+    sign.update(timestamp);
+    const signature = sign.sign(privateKeyPem, 'base64'); 
+  
+    details.requestHeaders.timestamp = timestamp;
+    details.requestHeaders.signature = signature;
+
+    callback({ requestHeaders: details.requestHeaders });
+  });
 
   // set cookies using electron class when receiving response
-  session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+  session.defaultSession.webRequest.onHeadersReceived(allFilter, (details, callback) => {
 
     // cancel redirect
     if(details.responseHeaders && details.responseHeaders['location'] !== null && details.responseHeaders['location'] !== undefined) {
