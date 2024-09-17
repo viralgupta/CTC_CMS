@@ -66,7 +66,6 @@ async function createWindow() {
 
 app.whenReady().then(() => {
   const allFilter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] };
-  const apiFilter = { urls: [`${process.env.VITE_API_BASE_URL}/api/*`] };
 
   session.defaultSession.cookies.on("changed", (_event, cookie, cause, removed) => {
     if (cookie.name == "__Secure-authjs.session-token") {
@@ -76,31 +75,29 @@ app.whenReady().then(() => {
     }
   })
 
-  // set cookies in request using electron class before sending
+  // set headers in request using electron class before sending
   session.defaultSession.webRequest.onBeforeSendHeaders(allFilter, async (details, callback) => {
 
+    // set cookies
     const cookies = await session.defaultSession.cookies.get({ domain: new URL(details.url).hostname }).then((cookies) => {
       return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ');
     })
     
     if (cookies.length > 0) details.requestHeaders.cookie = cookies;
 
-    callback({ requestHeaders: details.requestHeaders });
-  });
+    // set timestamp & signature
+    if(details.url.includes("/api/")){
+        const timestamp = Date.now().toString();
 
-  // set timestamp and signature in request using electron class before sending
-  session.defaultSession.webRequest.onBeforeSendHeaders(apiFilter, async (details, callback) => {
-
-    const timestamp = Date.now().toString();
-
-    const privateKeyPem = fs.readFileSync(path.join(process.env.VITE_PUBLIC, 'private_key.pem'), "utf-8");
-    
-    const sign = crypto.createSign('SHA256');
-    sign.update(timestamp);
-    const signature = sign.sign(privateKeyPem, 'base64'); 
-  
-    details.requestHeaders.timestamp = timestamp;
-    details.requestHeaders.signature = signature;
+        const privateKeyPem = fs.readFileSync(path.join(process.env.VITE_PUBLIC, 'private_key.pem'), "utf-8");
+        
+        const sign = crypto.createSign('SHA256');
+        sign.update(timestamp);
+        const signature = sign.sign(privateKeyPem, 'base64'); 
+      
+        details.requestHeaders.timestamp = timestamp;
+        details.requestHeaders.signature = signature;
+    }
 
     callback({ requestHeaders: details.requestHeaders });
   });
