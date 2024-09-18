@@ -13,6 +13,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
     "Carpanter",
     "Architect",
     "Driver",
+    "Estimate",
     "Resources",
   ];
 
@@ -25,7 +26,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
         {availableTabs.map((value, index) => {
           return (
             <button
-              className={`w-full border-b-2 border-border py-4 mb-1 font-sofiapro text-xl hover:bg-zinc-800 ${tab == value.toLowerCase() && "bg-zinc-900"}`}
+              className={`w-full border-b-2 border-border py-4 mb-1 font-sofiapro text-xl  hover:border-accent-foreground duration-200  ${tab == value.toLowerCase() && "bg-muted-foreground"}`}
               onClick={(_) =>
                 setTabs(
                   value.toLowerCase() as
@@ -38,6 +39,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
                     | "architect"
                     | "driver"
                     | "resources"
+                    | "estimate"
                 )
               }
               key={index}
@@ -48,7 +50,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
         })}
       </div>
       <div className="w-5/6 h-full overflow-x-hidden overflow-y-auto">
-        {status == "authenticated" ? (
+        {import.meta.env.DEV || status == "authenticated" ? (
           <div className="p-10 w-full h-full">{children}</div>
         ) : (
           <div className="flex items-center justify-center h-full font-mono uppercase text-3xl italic">

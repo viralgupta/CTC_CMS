@@ -1,6 +1,6 @@
 import { atom } from "recoil";
 
-const tabAtom = atom<"home" | "order" | "customer" | "address" | "inventory" | "carpanter" | "architect" | "driver" | "resources">({
+const tabAtom = atom<"home" | "order" | "customer" | "address" | "inventory" | "estimate" | "carpanter" | "architect" | "driver" | "resources">({
   key: "tabAtom",
   default: "home"
 })

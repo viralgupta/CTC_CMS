@@ -12,6 +12,7 @@ import Driver from "./pages/driver/page"
 import Resources from "./pages/resources/page"
 import Address from "./pages/address/page"
 import Inventory from "./pages/inventory/page"
+import Estimate from "./pages/estimate/page"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -24,6 +25,8 @@ function App() {
         return <Customer/>;
       case "order":
         return <Order/>;
+      case "estimate":
+        return <Estimate/>;
       case "address":
         return <Address/>;
       case "inventory":

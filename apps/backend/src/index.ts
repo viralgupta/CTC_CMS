@@ -24,7 +24,9 @@ app.get("/authcallbackoverride", (req, res) => {
   res.status(200).json({ url: req.query.callback ? req.query.callback : "/" })
 });
 
-app.use("/api/*", authenticatedUser);
+if(process.env.SST_STAGE !== "dev"){
+  app.use("/api/*", authenticatedUser);
+}
 
 app.use("/api/*", allowedToken);
 

@@ -48,8 +48,8 @@ const LoginForm = () => {
     resolver: zodResolver(loginFormSchema),
     reValidateMode: "onChange",
     defaultValues: {
-      phone_number: process.env.NODE_ENV == "development" ? "1234567890" : "",
-      otp: process.env.NODE_ENV == "development" ? "123123" : "",
+      phone_number: import.meta.env.DEV ? "1234567890" : "",
+      otp: import.meta.env.DEV ? "123123" : "",
     },
   });
 

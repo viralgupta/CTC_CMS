@@ -20,11 +20,8 @@
       "@/*": [
         "src/*"
       ],
-      "@types/*" : [
+      "@type/*" : [
         "../../packages/types/*"
-      ],
-      "@auth/*" : [
-        "../../packages/auth/*"
       ],
     },
   },
