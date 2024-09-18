@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import Spinner from "../Spinner";
+import Spinner from "../ui/Spinner";
 import { signIn } from "next-auth/react";
 
 const loginFormSchema = z.object({
