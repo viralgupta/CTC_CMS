@@ -24,19 +24,22 @@ import Spinner from "@/components/ui/Spinner";
 import SelectCategory from "@/components/inventory/SelectCategory";
 import RateDimension from "@/components/inventory/RateDimension";
 import { createItemType } from "../../../../../../packages/types/api/item";
+import request from "@/utils/request";
 
 const CreateItemForm = () => {
   const form = useForm<z.infer<typeof createItemType>>({
     resolver: zodResolver(createItemType),
     reValidateMode: "onChange",
     defaultValues: {
+      name: "",
       multiplier: 1,
     },
   });
 
   async function onSubmit(values: z.infer<typeof createItemType>) {
     try {
-      
+      const res = await request.post("/inventory/createItem", values);
+      console.log("response", res);
     } catch (error) {
       
     }
@@ -97,6 +100,7 @@ const CreateItemForm = () => {
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : ""
@@ -118,6 +122,7 @@ const CreateItemForm = () => {
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : ""
@@ -141,6 +146,7 @@ const CreateItemForm = () => {
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : ""
@@ -162,6 +168,7 @@ const CreateItemForm = () => {
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : ""
@@ -183,6 +190,7 @@ const CreateItemForm = () => {
                   <Input
                     type="number"
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? parseFloat(e.target.value) : ""
