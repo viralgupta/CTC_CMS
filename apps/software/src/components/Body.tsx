@@ -26,7 +26,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
         {availableTabs.map((value, index) => {
           return (
             <button
-              className={`w-full border-b-2 border-border py-4 mb-1 font-sofiapro text-xl  hover:border-accent-foreground duration-200  ${tab == value.toLowerCase() && "bg-muted-foreground"}`}
+              className={`w-full border-b-2 border-border py-4 mb-1 font-sofiapro text-xl  hover:border-accent-foreground duration-200  ${tab == value.toLowerCase() && "bg-muted border-accent-foreground"}`}
               onClick={(_) =>
                 setTabs(
                   value.toLowerCase() as

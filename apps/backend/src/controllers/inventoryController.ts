@@ -182,6 +182,7 @@ const getAllItems = async (_req: Request, res: Response) => {
       columns: {
         id: true,
         name: true,
+        category: true,
         quantity: true,
         min_quantity: true,
         sale_rate: true,

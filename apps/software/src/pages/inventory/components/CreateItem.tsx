@@ -25,8 +25,12 @@ import SelectCategory from "@/components/inventory/SelectCategory";
 import RateDimension from "@/components/inventory/RateDimension";
 import { createItemType } from "../../../../../../packages/types/api/item";
 import request from "@/utils/request";
+import { useSetRecoilState } from "recoil";
+import itemAtom from "@/store/inventory/Items";
 
 const CreateItemForm = () => {
+  const setItem = useSetRecoilState(itemAtom);
+  
   const form = useForm<z.infer<typeof createItemType>>({
     resolver: zodResolver(createItemType),
     reValidateMode: "onChange",
@@ -37,11 +41,15 @@ const CreateItemForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof createItemType>) {
+
     try {
       const res = await request.post("/inventory/createItem", values);
-      console.log("response", res);
+      if(res.data.success){
+        form.reset();
+        setItem([]);
+      }
     } catch (error) {
-      
+      console.log(error);
     }
   }
 
