@@ -1,4 +1,5 @@
 import { atom } from "recoil";
+import { OrderItem } from "./order";
 
 export interface itemType {
   id: string;
@@ -10,9 +11,35 @@ export interface itemType {
   rate_dimension: "Rft" | "sq/ft" | "piece";
 };
 
-const itemAtom = atom<itemType[]>({
-  key: "itemAtom",
-  default: []
-})
+export interface viewItemType extends itemType {
+  multiplier: number;
+  min_rate: number | null;
+  order_items: Omit<OrderItem, "id" | "total_value">[]
+}
 
-export default itemAtom;
+const allItemsAtom = atom<itemType[]>({
+  key: "allItemsAtom",
+  default: []
+});
+
+export const viewItemAtom = atom<viewItemType | null>({
+  key: "viewItemAtom",
+  default: null
+});
+
+export const viewItemIDAtom = atom<string | null>({
+  key: "viewItemIDAtom",
+  default: null
+});
+
+export const editItemQuantityIDAtom = atom<string | null>({
+  key: "editItemQuantityIDAtom",
+  default: null
+});
+
+export const editItemIDAtom = atom<string | null>({
+  key: "editItemIDAtom",
+  default: null
+});
+
+export default allItemsAtom;

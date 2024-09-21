@@ -10,15 +10,16 @@ import { createItemType } from "../../../../../packages/types/api/item";
 
 interface RateDimensionProps {
   onValueChange: (value: string) => void;
+  defaultValue?: string;
 }
 
-const RateDimension: React.FC<RateDimensionProps> = ({ onValueChange }) => {
+const RateDimension: React.FC<RateDimensionProps> = ({ onValueChange, defaultValue }) => {
   const ItemCategoryType = createItemType.shape.rate_dimension;
   const options = ItemCategoryType.options;
   return (
     <Select onValueChange={(v: string) => onValueChange(v)}>
       <SelectTrigger>
-        <SelectValue placeholder="Select Rate Dimension" />
+        <SelectValue placeholder={defaultValue ? defaultValue : "Select Rate Dimension"} />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

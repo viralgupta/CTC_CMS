@@ -2,6 +2,9 @@ import CreateItem from './components/CreateItem'
 import SearchItem from './components/SearchItem'
 import LowStockItems from './components/LowStockItems'
 import AllItems from './components/AllItems'
+import ViewItem from './components/ViewItem'
+import EditItem from '@/components/inventory/EditItem'
+import EditItemQuantity from '@/components/inventory/EditItemQuantity'
 
 const Inventory = () => {
   return (
@@ -17,6 +20,11 @@ const Inventory = () => {
       <div className='w-full h-full space-y-8'>
         <LowStockItems/>
         <AllItems/>
+        <ViewItem/>
+        <EditItem/>
+        <EditItemQuantity/>
+        <div>&nbsp;</div>
+        <div>&nbsp;</div>
       </div>
     </div>
   )

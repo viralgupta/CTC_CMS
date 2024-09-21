@@ -164,7 +164,7 @@ const deleteItem = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Item is being used in orders, cannot delete!"})
     }
 
-    if(foundItem.quantity > 0){
+    if(foundItem.quantity !== 0){
       return res.status(400).json({success: false, message: "Item quantity is not 0, cannot delete!"})
     }
 

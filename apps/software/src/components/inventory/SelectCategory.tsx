@@ -11,15 +11,16 @@ import { createItemType } from "../../../../../packages/types/api/item";
 interface SelectCategoryProps {
   className?: string;
   onValueChange: (value: string) => void;
+  defaultValue?: string;
 }
 
-const SelectCategory: React.FC<SelectCategoryProps> = ({ className, onValueChange }) => {
+const SelectCategory: React.FC<SelectCategoryProps> = ({ className, onValueChange, defaultValue }) => {
   const ItemCategoryType = createItemType.shape.category;
   const options = ItemCategoryType.options;
   return (
     <Select onValueChange={(v: string) => onValueChange(v)}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder="Select Category" />
+        <SelectValue placeholder={defaultValue ? defaultValue : "Select Category"} />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

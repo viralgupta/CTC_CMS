@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import SelectCategory from "@/components/inventory/SelectCategory";
 import { itemType } from "@/store/inventory/Items";
 import { Skeleton } from "@/components/ui/skeleton";
-import ItemTable from "@/components/inventory/ItemsTable";
+import ItemTable from "@/components/inventory/ItemTable";
 import { useFetchAllItems } from "@/utils/items";
 import RefetchButton from "@/components/RefetchButton";
 
@@ -42,7 +42,7 @@ const SearchItem = () => {
       <DialogContent size="6xl">
         <DialogHeader>
           <DialogTitle>Search for items in inventory...</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
         <div className="flex flex-row-reverse">
           <div className="w-full h-10 flex items-center">

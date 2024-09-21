@@ -1,12 +1,11 @@
-import * as React from 'react';
 import { useRecoilState } from "recoil";
-import itemAtom, { itemType } from "@/store/inventory/Items";
+import allItemsAtom, { itemType } from "@/store/inventory/Items";
 import request from "./request";
 
 let loading = false;
 
 const useFetchAllItems = () => {
-  const [items, setItems] = useRecoilState(itemAtom);
+  const [items, setItems] = useRecoilState(allItemsAtom);
 
   const fetchAllItems = async () => {
     loading = true;
@@ -19,13 +18,11 @@ const useFetchAllItems = () => {
       loading = false;
     }
   };
-
-  React.useEffect(() => {
-    if (items.length === 0 && !loading) {
-      fetchAllItems();
-    }
-  }, [items, loading]);
-
+  
+  if (items.length === 0 && !loading) {
+    fetchAllItems();
+  }
+  
   const refetchItems = () => {
     setItems([]);
     fetchAllItems();

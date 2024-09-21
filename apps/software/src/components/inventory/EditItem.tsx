@@ -1,12 +1,17 @@
-import React from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -15,47 +20,57 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import allItemsAtom, {
+  viewItemAtom,
+  viewItemIDAtom,
+  editItemIDAtom,
+} from "@/store/inventory/Items";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { editItemType } from "../../../../../packages/types/api/item";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Spinner from "@/components/ui/Spinner";
-import SelectCategory from "@/components/inventory/SelectCategory";
-import RateDimension from "@/components/inventory/RateDimension";
-import { createItemType } from "../../../../../../packages/types/api/item";
+import { z } from "zod";
 import request from "@/utils/request";
-import { useSetRecoilState } from "recoil";
-import allItemsAtom from "@/store/inventory/Items";
+import { Button } from "../ui/button";
+import Spinner from "../ui/Spinner";
+import { Input } from "../ui/input";
+import SelectCategory from "./SelectCategory";
+import RateDimension from "./RateDimension";
 
-const CreateItemForm = () => {
-  const setItem = useSetRecoilState(allItemsAtom);
-  
-  const form = useForm<z.infer<typeof createItemType>>({
-    resolver: zodResolver(createItemType),
-    reValidateMode: "onChange",
-    defaultValues: {
-      name: "",
-      multiplier: 1,
-    },
-  });
+const EditItem = () => {
+  const [editItemID, setEditItemID] = useRecoilState(editItemIDAtom);
+  const viewItem = useRecoilValue(viewItemAtom);
+  const setViewItemID = useSetRecoilState(viewItemIDAtom);
+  const setAllItems = useSetRecoilState(allItemsAtom);
 
-  async function onSubmit(values: z.infer<typeof createItemType>) {
+  const EditItemForm = () => {
+    const form = useForm<z.infer<typeof editItemType>>({
+      resolver: zodResolver(editItemType),
+      reValidateMode: "onChange",
+      defaultValues: {
+        item_id: viewItem!.id,
+        category: viewItem!.category,
+        min_quantity: viewItem!.min_quantity,
+        min_rate: viewItem!.min_rate ? viewItem!.min_rate : undefined,
+        multiplier: viewItem!.multiplier,
+        name: viewItem!.name,
+        rate_dimension: viewItem!.rate_dimension,
+        sale_rate: viewItem!.sale_rate,
+      },
+    });
 
-    try {
-      const res = await request.post("/inventory/createItem", values);
-      if(res.data.success){
-        form.reset();
-        setItem([]);
+    async function onSubmit(values: z.infer<typeof editItemType>) {
+      const res = await request.put("/inventory/editItem", values);
+      if (res.status == 200) {
+        setEditItemID(null);
+        setViewItemID(null);
+        setAllItems([]);
       }
-    } catch (error) {
-      console.log(error);
     }
-  }
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
           <FormField
             control={form.control}
@@ -64,7 +79,7 @@ const CreateItemForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Item Category</FormLabel>
                 <FormControl>
-                  <SelectCategory onValueChange={field.onChange} />
+                  <SelectCategory onValueChange={field.onChange} defaultValue={field.value}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -92,7 +107,7 @@ const CreateItemForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Rate Dimension</FormLabel>
                 <FormControl>
-                  <RateDimension onValueChange={field.onChange} />
+                  <RateDimension onValueChange={field.onChange} defaultValue={field.value}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -188,51 +203,39 @@ const CreateItemForm = () => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Current Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? parseFloat(e.target.value) : ""
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
-        <Button disabled={form.formState.isSubmitting} type="submit">
-          {form.formState.isSubmitting && <Spinner />}
-          {!form.formState.isSubmitting && "Submit"}
-        </Button>
-      </form>
-    </Form>
-  );
-};
+          <Button disabled={form.formState.isSubmitting} type="submit">
+            {form.formState.isSubmitting && <Spinner />}
+            {!form.formState.isSubmitting && "Edit Quantity"}
+          </Button>
+        </form>
+      </Form>
+    );
+  };
 
-const CreateItem = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog
+      open={editItemID ? true : false}
+      onOpenChange={(open) => {
+        if (!open) {
+          setEditItemID(null);
+        }
+      }}
+    >
       <DialogContent size="4xl">
         <DialogHeader>
-          <DialogTitle>Create a new item in inventory</DialogTitle>
+          <DialogTitle>Edit Item</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
-        <CreateItemForm />
+        {viewItem && <EditItemForm />}
+        {!viewItem && (
+          <div className="w-full h-40 flex items-center justify-center">
+            Unable to find item to edit!!!
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
 };
 
-export default CreateItem;
+export default EditItem;

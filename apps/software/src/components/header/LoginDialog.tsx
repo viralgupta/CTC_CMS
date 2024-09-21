@@ -129,8 +129,7 @@ const LoginDialog = ({ children, disabled }: { children: React.ReactNode, disabl
       <DialogContent aria-describedby="Admin Login Form">
         <DialogHeader>
           <DialogTitle>Login Details</DialogTitle>
-        <DialogDescription className="p-0 m-0 h-0">
-        </DialogDescription>
+        <DialogDescription className="p-0 m-0 h-0 hidden"></DialogDescription>
         </DialogHeader>
         <LoginForm />
       </DialogContent>

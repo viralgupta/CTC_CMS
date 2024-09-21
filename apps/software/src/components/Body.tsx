@@ -51,7 +51,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
       </div>
       <div className="w-5/6 h-full overflow-x-hidden overflow-y-auto">
         {import.meta.env.DEV || status == "authenticated" ? (
-          <div className="p-10 w-full h-full">{children}</div>
+          <div className="p-10 pb-0 w-full h-full">{children}</div>
         ) : (
           <div className="flex items-center justify-center h-full font-mono uppercase text-3xl italic">
             Not Authenticated
