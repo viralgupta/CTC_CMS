@@ -1,5 +1,5 @@
 import { useRecoilState } from "recoil";
-import allItemsAtom, { itemType } from "@/store/inventory/Items";
+import allItemsAtom, { itemType } from "@/store/Items";
 import request from "./request";
 
 let loading = false;

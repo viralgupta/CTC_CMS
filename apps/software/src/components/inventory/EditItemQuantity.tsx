@@ -24,7 +24,7 @@ import allItemsAtom, {
   viewItemAtom,
   editItemQuantityIDAtom,
   viewItemIDAtom,
-} from "@/store/inventory/Items";
+} from "@/store/Items";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { editQuantityType } from "../../../../../packages/types/api/item";
 import { useForm } from "react-hook-form";

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import request from "@/utils/request";
 import { useSetRecoilState } from "recoil";
-import allItemsAtom, { editItemIDAtom, editItemQuantityIDAtom, viewItemIDAtom } from "@/store/inventory/Items";
+import allItemsAtom, { editItemIDAtom, editItemQuantityIDAtom, viewItemIDAtom } from "@/store/Items";
 
 interface ItemType {
   id: string;

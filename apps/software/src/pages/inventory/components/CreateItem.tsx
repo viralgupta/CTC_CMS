@@ -26,7 +26,7 @@ import RateDimension from "@/components/inventory/RateDimension";
 import { createItemType } from "../../../../../../packages/types/api/item";
 import request from "@/utils/request";
 import { useSetRecoilState } from "recoil";
-import allItemsAtom from "@/store/inventory/Items";
+import allItemsAtom from "@/store/Items";
 
 const CreateItemForm = () => {
   const setItem = useSetRecoilState(allItemsAtom);

@@ -20,7 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { viewItemIDAtom, itemType } from "@/store/inventory/Items";
+import { viewItemIDAtom, itemType } from "@/store/Items";
 import { Button } from "../ui/button";
 import { useSetRecoilState } from "recoil";
 

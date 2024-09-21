@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import SelectCategory from "@/components/inventory/SelectCategory";
-import { itemType } from "@/store/inventory/Items";
+import { itemType } from "@/store/Items";
 import { Skeleton } from "@/components/ui/skeleton";
 import ItemTable from "@/components/inventory/ItemTable";
 import { useFetchAllItems } from "@/utils/items";

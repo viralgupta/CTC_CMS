@@ -6,13 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormField,
@@ -24,7 +17,7 @@ import allItemsAtom, {
   viewItemAtom,
   viewItemIDAtom,
   editItemIDAtom,
-} from "@/store/inventory/Items";
+} from "@/store/Items";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { editItemType } from "../../../../../packages/types/api/item";
 import { useForm } from "react-hook-form";

@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/inventory/Items";
+import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { useRecoilState } from "recoil";
 import request from "@/utils/request";
 import ItemCard from "@/components/inventory/ItemCard";

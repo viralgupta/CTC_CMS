@@ -1,7 +1,7 @@
 import ItemTable from "@/components/inventory/ItemTable";
 import RefetchButton from "@/components/RefetchButton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { itemType } from "@/store/inventory/Items";
+import { itemType } from "@/store/Items";
 import { useFetchAllItems } from "@/utils/items";
 
 const LowStockItems = () => {
