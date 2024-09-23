@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, session } from 'electron'
+import { app, BrowserWindow, shell, session, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -7,12 +7,14 @@ import * as cookieParser from 'cookie'
 import dotenv from "dotenv"
 import crypto from "node:crypto"
 import fs from "node:fs"
+import { Client } from "whatsapp-web.js"
 
 dotenv.config();
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// const { Client, LocalAuth } = require('whatsapp-web.js');
 if (require('electron-squirrel-startup')) app.quit();
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
@@ -40,6 +42,12 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
+const client = new Client({
+  // authStrategy: new LocalAuth({
+  //   dataPath: app.getPath("userData")
+  // })
+})
+
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
@@ -62,7 +70,6 @@ async function createWindow() {
     return { action: 'deny' }
   })
 }
-
 
 app.whenReady().then(() => {
   const allFilter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] };
@@ -137,12 +144,44 @@ app.whenReady().then(() => {
     callback({ responseHeaders: details.responseHeaders });
   })
 
+  client.initialize();
+
+  client.on("qr", (qr: string) => {
+    if(win) {
+      win.webContents.send("whatsapp-disconnected");
+      win.webContents.send("qr-created", qr);
+    }
+  })
+
+  client.on('disconnected', () => {
+    if(win) {
+      win.webContents.send("whatsapp-disconnected");
+    }
+  })
+
+  client.on("ready", () => {
+    if(win) {
+      win.webContents.send("whatsapp-connected");
+    }
+  })
+
+  ipcMain.handle("get-whatsapp-info", async (_event, data) => {
+
+    const WID = await client.getNumberId(data.country_code + data.phone_number);
+
+
+    return {
+      WID: WID ? WID._serialized : null,
+      ProfileUrl: "WID2"
+    }
+  })
+
   createWindow();
 })
 
 app.on('window-all-closed', () => {
   win = null;
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') app.quit();
 })
 
 app.on("before-quit", async () => {

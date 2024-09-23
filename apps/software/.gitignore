@@ -34,3 +34,5 @@ yarn.lock
 
 public/private_key.pem
 out/
+
+.wwebjs_cache/

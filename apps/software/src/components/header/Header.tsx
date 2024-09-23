@@ -1,6 +1,8 @@
+import React from "react"
 import Logout from "./Logout"
 import { ThemeToggle } from "./ThemeToggle"
 import User from "./User"
+import WhatsappLogin from "./WhatsappLogin"
 
 const Header = () => {
   return (
@@ -10,6 +12,7 @@ const Header = () => {
         Chintpurni Plywoods
       </div>
       <div className="flex items-center space-x-4 mr-2">
+        <WhatsappLogin/>
         <ThemeToggle/>
         <User/>
         <Logout/>
