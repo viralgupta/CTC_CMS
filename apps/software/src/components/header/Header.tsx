@@ -3,6 +3,8 @@ import Logout from "./Logout"
 import { ThemeToggle } from "./ThemeToggle"
 import User from "./User"
 import WhatsappLogin from "./WhatsappLogin"
+import { Button } from "../ui/button"
+import Spinner from "../ui/Spinner"
 
 const Header = () => {
   return (
@@ -12,7 +14,9 @@ const Header = () => {
         Chintpurni Plywoods
       </div>
       <div className="flex items-center space-x-4 mr-2">
-        <WhatsappLogin/>
+        <React.Suspense fallback={<Button disabled><Spinner/></Button>}>
+          <WhatsappLogin/>
+        </React.Suspense>
         <ThemeToggle/>
         <User/>
         <Logout/>

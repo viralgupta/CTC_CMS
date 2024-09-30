@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import request from "@/utils/request";
+import request from "@/lib/request";
 import { useSetRecoilState } from "recoil";
 import allItemsAtom, { editItemIDAtom, editItemQuantityIDAtom, viewItemIDAtom } from "@/store/Items";
 

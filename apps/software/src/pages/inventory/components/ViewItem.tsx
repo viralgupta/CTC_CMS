@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { useRecoilState } from "recoil";
-import request from "@/utils/request";
+import request from "@/lib/request";
 import ItemCard from "@/components/inventory/ItemCard";
 import React from "react";
 

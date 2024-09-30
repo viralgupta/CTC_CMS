@@ -24,7 +24,7 @@ import Spinner from "@/components/ui/Spinner";
 import SelectCategory from "@/components/inventory/SelectCategory";
 import RateDimension from "@/components/inventory/RateDimension";
 import { createItemType } from "../../../../../../packages/types/api/item";
-import request from "@/utils/request";
+import request from "@/lib/request";
 import { useSetRecoilState } from "recoil";
 import allItemsAtom from "@/store/Items";
 

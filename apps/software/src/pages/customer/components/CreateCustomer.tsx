@@ -16,14 +16,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import PhoneNumberInput from "@/components/customer/PhoneNumberInput";
+import ProfileUrlInput from "@/components/customer/ProfileUrlInput";
 import { createCustomerType } from "../../../../../../packages/types/api/customer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
-import request from "@/utils/request";
 import { z } from "zod";
+import AddressInput from "@/components/customer/AddressInput/AddressInput";
+import request from "@/lib/request";
 
 const CreateCustomerForm = () => {
   
@@ -33,7 +35,9 @@ const CreateCustomerForm = () => {
     defaultValues: {
       name: "",
       balance: "",
-      phone_numbers: []
+      profileUrl: "",
+      phone_numbers: [],
+      addresses: []
     },
   });
 
@@ -43,7 +47,7 @@ const CreateCustomerForm = () => {
     }
   }
 
-  const OnPhoneDataChange = (data: z.infer<typeof createCustomerType>["phone_numbers"][number]) => {
+  const AddPhoneNumber = (data: z.infer<typeof createCustomerType>["phone_numbers"][number]) => {
     let oldPhoneNumberArray = form.getValues("phone_numbers") ?? [];
     
     const samePhoneNumber = oldPhoneNumberArray.filter((od) => od.phone_number == data.phone_number);
@@ -65,11 +69,47 @@ const CreateCustomerForm = () => {
   const removePhoneNumber = (phone_no: string) => {
     let oldPhoneNumberArray = form.getValues("phone_numbers");
 
+    const oldPhoneNumber = oldPhoneNumberArray.find((phone) => phone.phone_number == phone_no);
     const newPhoneNumberArray = oldPhoneNumberArray.filter((phone) => phone.phone_number !== phone_no);
+
+    if(oldPhoneNumber?.isPrimary && newPhoneNumberArray.length > 0){
+      newPhoneNumberArray[0].isPrimary = true;
+    }
 
     form.setValue("phone_numbers", newPhoneNumberArray);
     form.trigger("phone_numbers");
   }
+
+  const AddAddress = (data: z.infer<typeof createCustomerType>["addresses"][number]) => {
+    let oldAddressesArray = form.getValues("addresses") ?? [];
+
+    if(data.isPrimary){
+      oldAddressesArray = oldAddressesArray.map((phone) => ({
+        ...phone,
+        isPrimary: false,
+      }));
+    }
+
+    oldAddressesArray.push(data);
+    
+    form.setValue("addresses", oldAddressesArray);
+    form.trigger("addresses");
+  }
+
+  const removeAddress = (address: string) => {
+    let oldAddressesArray = form.getValues("addresses");
+
+    const oldPhoneNumber = oldAddressesArray.find((add) => add.address == address);
+    const newPhoneNumberArray = oldAddressesArray.filter((add) => add.address !== address);
+
+    if(oldPhoneNumber?.isPrimary && newPhoneNumberArray.length > 0){
+      newPhoneNumberArray[0].isPrimary = true;
+    }
+
+    form.setValue("addresses", newPhoneNumberArray);
+    form.trigger("addresses");
+  }
+
 
   async function onSubmit(values: z.infer<typeof createCustomerType>) {
     console.log(values)
@@ -79,6 +119,19 @@ const CreateCustomerForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
+          <FormField
+            control={form.control}
+            name="profileUrl"
+            render={({ field }) => (
+              <FormItem className="pr-2">
+                <FormLabel>&nbsp;</FormLabel>
+                <FormControl>
+                  <ProfileUrlInput value={field.value} removePhoto={()=>{form.setValue("profileUrl", undefined);}}/>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="name"
@@ -114,7 +167,22 @@ const CreateCustomerForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Customer Phone Number</FormLabel>
                 <FormControl>
-                  <PhoneNumberInput OnProfileURLChange={OnProfileURLChange} onChange={OnPhoneDataChange} removeNumber={removePhoneNumber} value={field.value}/>
+                  <PhoneNumberInput OnProfileURLChange={OnProfileURLChange} AddNumber={AddPhoneNumber} removeNumber={removePhoneNumber} value={field.value}/>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
+          <FormField
+            control={form.control}
+            name="addresses"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Customer Address</FormLabel>
+                <FormControl>
+                  <AddressInput AddAddress={AddAddress} removeAddress={removeAddress} values={field.value}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

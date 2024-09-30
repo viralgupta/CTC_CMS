@@ -18,6 +18,7 @@ import { useRecoilValue } from "recoil";
 import React from "react";
 // @ts-ignore
 import QRCode from "qrcode";
+import { FakeButton } from "../ui/fake-button";
 
 const WhatsappLogin = () => {
   const WhatsappQR = useRecoilValue(WhatsappQrAtom);
@@ -36,9 +37,11 @@ const WhatsappLogin = () => {
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger className="cursor-default inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 opacity-50 bg-primary text-primary-foreground h-10 px-4 py-2">
-            <span>Whatsapp Login</span>
-            <WhtasappIcon />
+          <TooltipTrigger>
+            <FakeButton disabled>
+              <span>Whatsapp Login</span>
+              <WhtasappIcon />
+            </FakeButton>
           </TooltipTrigger>
           <TooltipContent>
             <p>Please wait while QR code is generating...</p>

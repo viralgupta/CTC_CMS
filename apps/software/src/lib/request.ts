@@ -12,10 +12,10 @@ request.interceptors.response.use(function (response) {
   }
   return response;
 }, function (error) {
+  console.log("error", error.response.data);
   if(error.response.data.message){
     toast.error(error.response.data.message);
   }
-  return Promise.reject(error);
 });
 
 

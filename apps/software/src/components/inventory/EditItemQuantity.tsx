@@ -30,7 +30,7 @@ import { editQuantityType } from "../../../../../packages/types/api/item";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import request from "@/utils/request";
+import request from "@/lib/request";
 import { Button } from "../ui/button";
 import Spinner from "../ui/Spinner";
 import { Input } from "../ui/input";

@@ -1,4 +1,4 @@
-import { atom } from "recoil";
+import { atom, selector } from "recoil";
 import { toast } from "sonner";
 
 export const WhatsappQrAtom = atom<string | null>({
@@ -16,7 +16,16 @@ export const WhatsappQrAtom = atom<string | null>({
 
 export const WhatsappConnectedAtom = atom<boolean>({
   key: "WhatsappConnectedAtom",
-  default: false,
+  default: selector<boolean>({
+    key: "WhatsappConnectedSelector",
+    get: async () => {
+      const status: boolean = await window.ipcRenderer.invoke("is-whatsapp-client-ready");
+      if(status){
+        toast.success("Whatsapp Connected!!!")
+      }
+      return status;
+    }
+  }),
   effects: [({setSelf}) => {
     window.ipcRenderer.on("whatsapp-connected", () => {
       setSelf(true);

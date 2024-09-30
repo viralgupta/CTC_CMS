@@ -1,10 +1,10 @@
 import { useRecoilState } from "recoil";
 import allItemsAtom, { itemType } from "@/store/Items";
-import request from "./request";
+import request from "@/lib/request";
 
 let loading = false;
 
-const useFetchAllItems = () => {
+const useAllItems = () => {
   const [items, setItems] = useRecoilState(allItemsAtom);
 
   const fetchAllItems = async () => {
@@ -31,4 +31,4 @@ const useFetchAllItems = () => {
   return { items, loading, refetchItems };
 };
 
-export { useFetchAllItems };
+export { useAllItems };

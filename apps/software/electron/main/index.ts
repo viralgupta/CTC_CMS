@@ -166,14 +166,21 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle("get-whatsapp-info", async (_event, data) => {
-
     const WID = await client.getNumberId(data.country_code + data.phone_number);
-
-
-    return {
-      WID: WID ? WID._serialized : null,
-      ProfileUrl: "WID2"
+    let profileUrl = null;
+    if(WID?._serialized){
+      profileUrl = await client.getProfilePicUrl(WID._serialized);
     }
+    return {
+      WID: WID?._serialized ?? null,
+      ProfileUrl: profileUrl ?? null,
+    }
+  });
+
+  ipcMain.handle("is-whatsapp-client-ready", async ()=> {
+    if(!client) return false;
+    const whatsappState = await client.getState();
+    return whatsappState == "CONNECTED";
   })
 
   createWindow();

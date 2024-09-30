@@ -77,3 +77,13 @@
   font-family: 'SofiaPro';
   src: url('SofiaProRegular.ttf')
 }
+
+
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

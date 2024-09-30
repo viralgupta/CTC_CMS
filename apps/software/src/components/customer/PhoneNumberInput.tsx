@@ -37,26 +37,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Check, X, Trash2 } from "lucide-react"
+import { Check, X, Trash2 } from "lucide-react";
 import { useRecoilValue } from "recoil";
 import { WhatsappConnectedAtom } from "@/store/whatsapp";
 import { toast } from "sonner";
 import React from "react";
+import { FakeButton } from "../ui/fake-button";
 
 const PhoneNumberArray = z.array(phone_numberType);
 
 type PhoneNumberInputProps = {
-  onChange: (data: z.infer<typeof phone_numberType>) => void;
   value: z.infer<typeof PhoneNumberArray>;
   OnProfileURLChange: (value: string) => void;
+  AddNumber: (data: z.infer<typeof phone_numberType>) => void;
   removeNumber: (value: string) => void;
 };
 
 const PhoneNumberInput = ({
-  onChange,
+  AddNumber,
   value,
   OnProfileURLChange,
-  removeNumber
+  removeNumber,
 }: PhoneNumberInputProps) => {
   const [whatSappVerificationStatus, setWhatSappVerificationStatus] =
     React.useState<{
@@ -106,18 +107,19 @@ const PhoneNumberInput = ({
       if (data.ProfileUrl) {
         OnProfileURLChange(data.ProfileUrl);
       }
+      form.handleSubmit(onSubmit)();
     } else {
       toast.warning("Whatsapp Verification Failed!");
     }
   };
 
   async function onSubmit(values: z.infer<typeof phone_numberType>) {
-    onChange(values);
+    AddNumber(values);
     form.reset();
     setWhatSappVerificationStatus({
       verified: false,
-      message: ""
-    })
+      message: "",
+    });
     return;
   }
 
@@ -127,8 +129,8 @@ const PhoneNumberInput = ({
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="cursor-default inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 opacity-50 bg-primary text-primary-foreground h-10 px-4 py-2">
-              <span>Verify Contact</span>
+            <TooltipTrigger>
+              <FakeButton variant={"outline"} disabled>Verify Contact</FakeButton>
             </TooltipTrigger>
             <TooltipContent>
               <p>Whatsapp Not Logged In!</p>
@@ -141,8 +143,8 @@ const PhoneNumberInput = ({
         return (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className="cursor-default inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 opacity-50 bg-primary text-primary-foreground h-10 px-4 py-2">
-                <span>Verify Contact</span>
+              <TooltipTrigger>
+                <FakeButton variant={"outline"} disabled>Verify Contact</FakeButton>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{whatSappVerificationStatus.message}</p>
@@ -155,7 +157,9 @@ const PhoneNumberInput = ({
           <Button
             onClick={handleVerifyWhatsapp}
             type="button"
+            variant={"outline"}
             disabled={whatsappVerifying}
+            className="border-primary"
           >
             {whatsappVerifying && <Spinner />}
             {!whatsappVerifying && "Verify Contact"}
@@ -168,7 +172,18 @@ const PhoneNumberInput = ({
   return (
     <Dialog>
       <DialogTrigger className="w-full">
-        <Input placeholder={value.length > 0 ? value.filter((v) => v.isPrimary == true)[0].phone_number : "Enter Phone Number..."} />
+        <Input
+          placeholder={
+            value.length > 0
+              ? [
+                  value.find((v) => v.isPrimary)!.phone_number,
+                  ...value
+                    .filter((v) => !v.isPrimary)
+                    .map((v) => v.phone_number),
+                ].join(", ")
+              : "Enter Phone Number..."
+          }
+        />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -178,7 +193,7 @@ const PhoneNumberInput = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="flex w-full flex-col justify-between gap-2 md:flex-row-reverse">
-            <FormField
+              <FormField
                 control={form.control}
                 name="phone_number"
                 render={({ field }) => (
@@ -230,34 +245,63 @@ const PhoneNumberInput = ({
             </Button>
           </form>
         </Form>
-        <br />
         <Table>
-          <TableCaption>{!value ? "No Phone Number Added!" : "A list of added phone numbers."}</TableCaption>
+          <TableCaption>
+            {!value
+              ? "No Phone Number Added!"
+              : "A list of added phone numbers."}
+          </TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="w-min text-center">Country Code</TableHead>
               <TableHead className="w-min text-center">Phone Number</TableHead>
-              <TableHead className="w-min text-center">Whatsapp Verified</TableHead>
+              <TableHead className="w-min text-center">
+                Whatsapp Verified
+              </TableHead>
               <TableHead className="w-min text-center">Primary</TableHead>
               <TableHead className="w-min text-center">Delete</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {!!value && value.map((v, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell className="font-medium text-center">{v.country_code}</TableCell>
-                  <TableCell className="text-center">{v.phone_number}</TableCell>
-                  <TableCell>{v.whatsappChatId ? <Check className="mx-auto"/> : <X className="mx-auto"/>}</TableCell>
-                  <TableCell>{v.isPrimary ? <Check className="mx-auto stroke-primary"/> : <X className="mx-auto"/>}</TableCell>
-                  <TableCell><Button size={"icon"} onClick={() => removeNumber(v.phone_number)}><Trash2/></Button></TableCell>
-                </TableRow>
-              );
-            })}
+            {!!value &&
+              value.map((v, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium text-center">
+                      {v.country_code}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {v.phone_number}
+                    </TableCell>
+                    <TableCell>
+                      {v.whatsappChatId ? (
+                        <Check className="mx-auto" />
+                      ) : (
+                        <X className="mx-auto" />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {v.isPrimary ? (
+                        <Check className="mx-auto stroke-primary" />
+                      ) : (
+                        <X className="mx-auto" />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size={"icon"}
+                        onClick={() => removeNumber(v.phone_number)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
         </Table>
       </DialogContent>
-    </Dialog> 
+    </Dialog>
   );
 };
 

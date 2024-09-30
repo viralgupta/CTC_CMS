@@ -2,10 +2,10 @@ import ItemTable from "@/components/inventory/ItemTable";
 import RefetchButton from "@/components/RefetchButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { itemType } from "@/store/Items";
-import { useFetchAllItems } from "@/utils/items";
+import { useAllItems } from "@/hooks/items";
 
 const LowStockItems = () => {
-  const { items, loading, refetchItems } = useFetchAllItems();
+  const { items, loading, refetchItems } = useAllItems();
 
   const filterLowStockItems = (items: itemType[]) => {
     return items.filter((item) => item.quantity < item.min_quantity);

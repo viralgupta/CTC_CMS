@@ -1,10 +1,10 @@
 import ItemTable from "@/components/inventory/ItemTable";
 import RefetchButton from "@/components/RefetchButton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFetchAllItems } from "@/utils/items";
+import { useAllItems } from "@/hooks/items";
 
 const AllItems = () => {
-  const { items, loading, refetchItems } = useFetchAllItems();
+  const { items, loading, refetchItems } = useAllItems();
 
   return (
     <div className="mt-8">

@@ -12,11 +12,11 @@ import SelectCategory from "@/components/inventory/SelectCategory";
 import { itemType } from "@/store/Items";
 import { Skeleton } from "@/components/ui/skeleton";
 import ItemTable from "@/components/inventory/ItemTable";
-import { useFetchAllItems } from "@/utils/items";
+import { useAllItems } from "@/hooks/items";
 import RefetchButton from "@/components/RefetchButton";
 
 const SearchItem = () => {
-  const { items, loading, refetchItems } = useFetchAllItems();
+  const { items, loading, refetchItems } = useAllItems();
   const [filterValue, setFilterValue] = React.useState("");
   const [category, setCategory] = React.useState("");
 
