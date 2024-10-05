@@ -28,7 +28,6 @@ import { setDebouncedValue } from "@/lib/utils";
 type AddressAreaInputProps = {
   onChange: (value: string) => void;
   value: string;
-  setAddressArea: (value: string) => void;
 };
 
 const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {

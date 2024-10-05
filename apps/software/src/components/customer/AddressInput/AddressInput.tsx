@@ -34,7 +34,9 @@ import {
 import { Check, X, Trash2 } from "lucide-react";
 import AddressAreaInput from "./AddressAreaInput";
 import CordinatesInput from "./CordinatesInput";
-import { useState } from "react";
+import { APIProvider } from "@vis.gl/react-google-maps";
+import { useRecoilValue } from "recoil";
+import addressAreaAtom from "@/store/addressArea";
 
 const AddressArray = z.array(addressType);
 
@@ -49,7 +51,7 @@ const AddressInput = ({
   removeAddress,
   values,
 }: AddressInputProps) => {
-  const [addressArea, setAddressArea] = useState("");
+  const addressAreas = useRecoilValue(addressAreaAtom);
 
   const form = useForm<z.infer<typeof addressType>>({
     resolver: zodResolver(addressType),
@@ -112,7 +114,6 @@ const AddressInput = ({
                       <AddressAreaInput
                         onChange={field.onChange}
                         value={field.value}
-                        setAddressArea={setAddressArea}
                       />
                     </FormControl>
                     <FormMessage />
@@ -166,7 +167,7 @@ const AddressInput = ({
                 control={form.control}
                 name="isPrimary"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-end space-x-3 space-y-0 mb-4 rounded-md mx-auto">
+                  <FormItem className="flex flex-row items-end space-x-3 space-y-0 mt-4 md:mt-0 md:mb-4 rounded-md md:mx-auto">
                     <FormLabel>Is&nbsp;Primary</FormLabel>
                     <FormControl>
                       <Checkbox
@@ -179,39 +180,45 @@ const AddressInput = ({
                 )}
               />
             </div>
-            <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end">
+            <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-end">
               <FormField
                 control={form.control}
                 name="latitude"
-                render={({ field }) => (
+                render={({ }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <CordinatesInput
-                        disabled={
-                          form.getValues("address") == "" ||
-                          form.getValues("address_area_id") == "" ||
-                          form.getValues("city") == ""
-                        }
-                        onCordinateSelect={(lat, long) => {
-                          form.setValue("latitude", lat);
-                          form.setValue("longitude", long);
-                        }}
-                        values={{
-                          latitude: form.getValues("latitude") ?? 0,
-                          longitude: form.getValues("longitude") ?? 0,
-                        }}
-                        getAddress={() => {
-                            return form
-                              .getValues(["house_number", "address"])
-                              .filter((val) => val !== "")
-                              .join(", ") + (addressArea
-                              ? `, ${addressArea}`
-                              : "") + (form.getValues("city")
+                      <APIProvider
+                        apiKey={import.meta.env.VITE_GOOGLE_MAPS_API}
+                      >
+                        <CordinatesInput
+                          disabled={
+                            form.getValues("address") == "" ||
+                            form.getValues("address_area_id") == "" ||
+                            form.getValues("city") == ""
+                          }
+                          onCordinateSelect={(lat, long) => {
+                            form.setValue("latitude", lat);
+                            form.setValue("longitude", long);
+                          }}
+                          values={{
+                            latitude: form.getValues("latitude") ?? 0,
+                            longitude: form.getValues("longitude") ?? 0,
+                          }}
+                          getAddress={() => {
+                            return (
+                              form
+                                .getValues(["house_number", "address"])
+                                .filter((val) => val !== "")
+                                .join(", ") +
+                              (addressAreas.length > 0 ? `, ${addressAreas.find((area) => area.id == form.getValues("address_area_id"))?.area ?? ""}` : "") +
+                              (form.getValues("city")
                                 ? `, ${form.getValues("city")}`
-                                : "");
-                        }}
-                      />
+                                : "")
+                            );
+                          }}
+                        />
+                      </APIProvider>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,7 +260,8 @@ const AddressInput = ({
                       {v.house_number}
                     </TableCell>
                     <TableCell className="text-center">{v.address}</TableCell>
-                    <TableCell>{}</TableCell>
+                    <TableCell className="text-center">{addressAreas.length > 0 ? addressAreas.find((area) => area.id == v.address_area_id)?.area ?? "" : ""}</TableCell>
+                    <TableCell className="text-center">{v.city}</TableCell>
                     <TableCell>
                       {v.isPrimary ? (
                         <Check className="mx-auto stroke-primary" />

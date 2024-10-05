@@ -8,3 +8,4 @@
 - create triggers on total_order_value for customers, carpanters, architect to change their priority
 - add option to store items in different warehouse
 - add delivery date in order items.
+- add option to track orders for items

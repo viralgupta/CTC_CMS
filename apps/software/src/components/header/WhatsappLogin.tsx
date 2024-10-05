@@ -27,7 +27,7 @@ const WhatsappLogin = () => {
   if (WhatsappLogined) {
     return (
       <Button variant={"secondary"} disabled>
-        <span>Whatsapp Logined</span>
+        <span>Whatsapp Logged In</span>
         <WhtasappIcon logined />
       </Button>
     );
