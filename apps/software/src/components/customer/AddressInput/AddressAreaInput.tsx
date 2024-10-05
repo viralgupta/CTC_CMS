@@ -15,7 +15,7 @@ import { Input } from "../../ui/input";
 import { useAddressAreas } from "@/hooks/addressArea";
 import RefetchButton from "../../RefetchButton";
 import { Button } from "../../ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "../../ui/skeleton";
 import { addAddressAreaType } from "../../../../../../packages/types/api/customer";
@@ -47,6 +47,7 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
         addressAreaToAdd.data
       );
       if (res.data.success) {
+        setInputAddressArea("");
         refetchAddressAreas();
       }
     } else {
@@ -60,10 +61,13 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
   });
 
   return (
-    <Dialog onOpenChange={(o) => {
-      setInputAddressArea("");
-      setOpen(o);
-    }} open={open}>
+    <Dialog
+      onOpenChange={(o) => {
+        setInputAddressArea("");
+        setOpen(o);
+      }}
+      open={open}
+    >
       <DialogTrigger className="w-full">
         <Input
           placeholder={
@@ -130,38 +134,66 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
           {loading ? (
             <Skeleton className="w-full h-96" />
           ) : (
-            <div className="w-full max-h-96 overflow-y-auto hide-scroll">
+            <div className="w-full max-h-96 overflow-y-auto hide-scroll space-y-1">
               {addressAreas.length > 0 ? (
                 inputAddressArea.length > 0 ? (
                   fuse.search(inputAddressArea).map((area, index) => {
                     return (
-                      <Button
-                        variant={"ghost"}
-                        className="w-full border border-border border-x-0 border-y"
-                        onClick={() => {
-                          onChange(area.item.id);
-                          setOpen(false);
-                        }}
-                        key={index}
-                      >
-                        {area.item.area}
-                      </Button>
+                      <div className="w-full flex space-x-1" key={index}>
+                        <Button
+                          variant={"ghost"}
+                          className="w-full border border-border border-x-0 border-y"
+                          onClick={() => {
+                            onChange(area.item.id);
+                            setOpen(false);
+                          }}
+                        >
+                          {area.item.area}
+                        </Button>
+                        <Button type="button" size={"icon"} onClick={()=> {
+                          request.delete("/customer/deleteAddressArea", {
+                            data: {
+                              address_area_id: area.item.id
+                            }
+                          }).then((res) => {
+                            if (res.data.success) {
+                              refetchAddressAreas();
+                            }
+                          })
+                        }}>
+                          <Trash2 className="w-full h-full p-1 stroke-foreground" />
+                        </Button>
+                      </div>
                     );
                   })
                 ) : (
                   addressAreas.map((area, index) => {
                     return (
-                      <Button
-                        variant={"ghost"}
-                        className="w-full border border-border border-x-0 border-y"
-                        onClick={() => {
-                          onChange(area.id);
-                          setOpen(false);
-                        }}
-                        key={index}
-                      >
-                        {area.area}
-                      </Button>
+                      <div className="w-full flex space-x-1" key={index}>
+                        <Button
+                          variant={"ghost"}
+                          className="w-full border border-border border-x-0 border-y"
+                          onClick={() => {
+                            onChange(area.id);
+                            setOpen(false);
+                          }}
+                        >
+                          {area.area}
+                        </Button>
+                        <Button type="button" size={"icon"} onClick={()=> {
+                          request.delete("/customer/deleteAddressArea", {
+                            data: {
+                              address_area_id: area.id
+                            }
+                          }).then((res) => {
+                            if (res.data.success) {
+                              refetchAddressAreas();
+                            }
+                          })
+                        }}>
+                          <Trash2 className="w-full h-full p-1 stroke-foreground" />
+                        </Button>
+                      </div>
                     );
                   })
                 )

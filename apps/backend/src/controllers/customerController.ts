@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import db from "@db/db";
 import { address, address_area, customer, phone_number } from "@db/schema";
-import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getCustomerAddressesType, getCustomersByAreaType, getCustomerType, settleBalanceType } from "@type/api/customer";
+import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getCustomerAddressesType, getCustomersByAreaType, getCustomerType, settleBalanceType } from "@type/api/customer";
 import { eq, and } from "drizzle-orm";
 
 const createCustomer = async (req: Request, res: Response) => {
@@ -118,6 +118,40 @@ const addAddressArea = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Address Area added successfully", data: newAreas});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to add Address Area", error: error.message ? error.message : error});
+  }
+}
+
+const deleteAddressArea = async (req: Request, res: Response) => {
+  const deleteAddressAreaTypeAnswer = deleteAddressAreaType.safeParse(req.body);
+
+  if (!deleteAddressAreaTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteAddressAreaTypeAnswer.error?.flatten()})
+  }
+
+  try {
+
+    const oldArea = await db.query.address_area.findFirst({
+      where: (address_area, { eq }) => eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id),
+      with: {
+        addresses: {
+          limit: 1
+        }
+      }
+    })
+
+    if(!oldArea){
+      return res.status(400).json({success: false, message: "Area not found"});
+    }
+
+    if(oldArea.addresses.length > 0){
+      return res.status(400).json({success: false, message: "Area is linked to Address, Cannot Delete!"});
+    }
+
+    const newAreas = await db.delete(address_area).where(eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id)).returning();
+
+    return res.status(200).json({success: true, message: "Address Area deleted successfully", data: newAreas});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to delete Address Area", error: error.message ? error.message : error});
   }
 }
 
@@ -597,6 +631,7 @@ const getAllCustomers = async (_req: Request, res: Response) => {
 export {
   createCustomer,
   addAddress,
+  deleteAddressArea,
   editAddress,
   deleteAddress,
   getCustomerAddresses,

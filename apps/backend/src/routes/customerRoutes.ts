@@ -1,10 +1,11 @@
 import express from "express"
-import { createCustomer, addAddress, addAddressArea, editCustomer, settleBalance, getCustomer, getCustomersByArea, deleteCustomer, getAllCustomers, getAllAddressAreas, editAddress, deleteAddress, getCustomerAddresses } from "../controllers/customerController"
+import { createCustomer, addAddress, addAddressArea, deleteAddressArea, editCustomer, settleBalance, getCustomer, getCustomersByArea, deleteCustomer, getAllCustomers, getAllAddressAreas, editAddress, deleteAddress, getCustomerAddresses } from "../controllers/customerController"
 
 const customerRouter = express.Router()
 
 customerRouter.route('/createCustomer').post(createCustomer)
 customerRouter.route('/addAddressArea').post(addAddressArea)
+customerRouter.route('/deleteAddressArea').delete(deleteAddressArea)
 customerRouter.route('/getAllAddressAreas').get(getAllAddressAreas)
 customerRouter.route('/addAddress').post(addAddress)
 customerRouter.route('/editAddress').put(editAddress)
