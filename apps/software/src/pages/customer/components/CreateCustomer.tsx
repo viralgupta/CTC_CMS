@@ -26,9 +26,12 @@ import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import AddressInput from "@/components/customer/AddressInput/AddressInput";
 import request from "@/lib/request";
+import allCustomerAtom from "@/store/Customer";
+import { useSetRecoilState } from "recoil";
 
 const CreateCustomerForm = () => {
-  
+  const setCustomers = useSetRecoilState(allCustomerAtom);
+
   const form = useForm<z.infer<typeof createCustomerType>>({
     resolver: zodResolver(createCustomerType),
     reValidateMode: "onChange",
@@ -112,7 +115,15 @@ const CreateCustomerForm = () => {
 
 
   async function onSubmit(values: z.infer<typeof createCustomerType>) {
-    console.log(values)
+    try {
+      const res = await request.post("/customer/createCustomer", values);
+      if(res.data.success){
+        form.reset();
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (

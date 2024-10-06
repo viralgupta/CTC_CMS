@@ -6,8 +6,8 @@ export const createCustomerType = z
     name: z.string().min(2, "Name too short"),
     balance: z
       .string()
-      .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
-        message: "The number must be greater than or equal to 0.00",
+      .refine((val) => !isNaN(parseFloat(val)), {
+        message: "The value must be a number",
       })
       .transform((val) => parseFloat(val).toFixed(2)),
     profileUrl: z.string().optional(),

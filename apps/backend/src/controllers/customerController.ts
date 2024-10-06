@@ -63,21 +63,24 @@ const createCustomer = async (req: Request, res: Response) => {
         }
       }
 
-      await tx.insert(address).values(
-        createCustomerTypeAnswer.data.addresses.map((address) => {
-          return {
-            customer_id: tCustomer[0].id,
-            house_number: address.house_number,
-            address_area_id: address.address_area_id,
-            address: address.address,
-            city: address.city,
-            state: address.state,
-            isPrimary: address.isPrimary,
-            latitude: address.latitude,
-            longitude: address.longitude
-          }
-        })
-      )
+      if(createCustomerTypeAnswer.data.addresses.length > 0){
+        await tx.insert(address).values(
+          createCustomerTypeAnswer.data.addresses.map((address) => {
+            return {
+              customer_id: tCustomer[0].id,
+              house_number: address.house_number,
+              address_area_id: address.address_area_id,
+              address: address.address,
+              city: address.city,
+              state: address.state,
+              isPrimary: address.isPrimary,
+              latitude: address.latitude,
+              longitude: address.longitude
+            }
+          })
+        )
+      }
+
       return tCustomer[0];
     })
     

@@ -1,5 +1,5 @@
-import React from 'react'
 import CreateCustomer from './components/CreateCustomer'
+import SearchCustomer from './components/SearchCustomer'
 
 const Customer = () => {
   return (
@@ -10,17 +10,17 @@ const Customer = () => {
           Create New Customer
         </div>
       </CreateCustomer>
-      {/* <SearchItem/> */}
+      <SearchCustomer/>
     </div>
-    {/* <div className='w-full h-full space-y-8'>
-      <LowStockItems/>
+    <div className='w-full h-full space-y-8'>
+      {/* <LowStockItems/>
       <AllItems/>
       <ViewItem/>
       <EditItem/>
-      <EditItemQuantity/>
+      <EditItemQuantity/> */}
       <div>&nbsp;</div>
       <div>&nbsp;</div>
-    </div> */}
+    </div>
   </div>
   )
 }

@@ -31,3 +31,10 @@ export function setDebouncedValue({
 
   timeoutMap.set(key, newTimeoutId);
 }
+
+export function parseBalanceToFloat(balance: string | null) {
+  if (balance === null) {
+    return 0;
+  }
+  return parseFloat(balance);
+}

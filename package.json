@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "sst dev",
     "dev:software": "cd apps/software && npm run dev",
+    "db:studio": "cd apps/backend && npm run db:studio",
     "build": "sst build",
     "deploy": "sst deploy",
     "remove": "sst remove",

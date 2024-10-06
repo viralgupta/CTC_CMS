@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ItemTable from "@/components/inventory/ItemTable";
 import { useAllItems } from "@/hooks/items";
 import RefetchButton from "@/components/RefetchButton";
+import { setDebouncedValue } from "@/lib/utils";
 
 const SearchItem = () => {
   const { items, loading, refetchItems } = useAllItems();
@@ -46,7 +47,12 @@ const SearchItem = () => {
         </DialogHeader>
         <div className="flex flex-row-reverse">
           <div className="w-full h-10 flex items-center">
-            <Input className="border ml-4 border-border rounded-full w-full h-full" placeholder="Search for item..." onChange={(event) => setFilterValue(event.currentTarget.value ?? "")} value={filterValue}/>
+            <Input className="border ml-4 border-border rounded-full w-full h-full" placeholder="Search for item..." onChange={(event) => setDebouncedValue({
+              key: "itemFilterValue",
+              value: event.target.value ?? "",
+              setFunction: setFilterValue,
+              delay: 1000
+            })}/>
             <RefetchButton description="Refetch All Items" refetchFunction={refetchItems} className="h-full aspect-square ml-4 p-1"/>
           </div>
           <SelectCategory className="w-1/2" onValueChange={setCategory}/>
