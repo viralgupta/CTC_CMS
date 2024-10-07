@@ -21,7 +21,7 @@ const AllItems = () => {
       {loading ? (
         <Skeleton className="w-full h-48" />
       ) : (
-        <ItemTable data={items} />
+        <ItemTable CompKey="AllItemsTable" data={items} />
       )}
     </div>
   );

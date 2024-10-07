@@ -16,13 +16,33 @@ import CustomerTable from "@/pages/customer/components/CustomerTable";
 
 const SearchCustomer = () => {
   const { customers, loading, refetchCustomers } = useAllCustomer();
-  const [filterValue, setFilterValue] = React.useState("");
+  const defaultColumnFilterValue = [
+    { id: "name", value: "" },
+    { id: "phone_number", value: "" },
+  ];
+  const [columnFilters, setColumnFilters] = React.useState(defaultColumnFilterValue);
 
   const handleModelOpenChange = (open: boolean) => {
     if (open == false) {
-      setFilterValue("")
+      setColumnFilters(defaultColumnFilterValue);
     }
   }
+
+  // set filter value for phone_number if the string is a valid number and greater than 3 in length
+  const setCustomerSearchFilterValue = (value: string) => {
+    if(!value || value == "") return setColumnFilters(defaultColumnFilterValue);
+    if(value.length > 2 && !isNaN(Number(value))){
+      setColumnFilters([
+        { id: "name", value: "" },
+        { id: "phone_number", value: value }
+      ])
+    } else {
+      setColumnFilters([
+        { id: "name", value: value },
+        { id: "phone_number", value: "" }
+      ])
+    }
+  }  
 
   return (
     <Dialog onOpenChange={handleModelOpenChange}>
@@ -39,14 +59,14 @@ const SearchCustomer = () => {
             <Input className="border ml-4 border-border rounded-full w-full h-full" placeholder="Search for customer..." onChange={(event) => setDebouncedValue({
               key: "CustomerFilterValue",
               value: event.target.value ?? "",
-              setFunction: setFilterValue,
+              setFunction: setCustomerSearchFilterValue,
               delay: 1000
             })}/>
             <RefetchButton description="Refetch All Customers" refetchFunction={refetchCustomers} className="h-full aspect-square ml-4 p-1"/>
           </div>
         </div>
         <div className="w-full max-h-96 overflow-y-auto">
-           {loading ? <Skeleton className="w-full h-96"/> : <CustomerTable columnFilters={[{id: "name", value: filterValue}]} data={customers}/>} 
+           {loading ? <Skeleton className="w-full h-96"/> : <CustomerTable CompKey="SearchCustomerTable" columnFilters={columnFilters} data={customers}/>} 
         </div>
       </DialogContent>
     </Dialog>

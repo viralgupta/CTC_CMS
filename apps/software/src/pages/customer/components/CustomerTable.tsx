@@ -1,9 +1,7 @@
 import {
   ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
   ColumnFiltersState,
+  type FilterFn,
 } from "@tanstack/react-table";
 import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
@@ -12,11 +10,18 @@ import { parseBalanceToFloat } from "@/lib/utils";
 import DataTable from "../../../components/DataTable";
 
 interface DataTableProps {
+  CompKey: string;
   data: CustomerType[];
   columnFilters?: ColumnFiltersState;
 }
 
-function CustomerTable({ data, columnFilters = [] }: DataTableProps) {
+declare module '@tanstack/react-table' {
+  interface FilterFns {
+    fuzzy: FilterFn<unknown>
+  }
+}
+
+function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
   const setViewCustomerIdAtom = useSetRecoilState(viewCustomerIDAtom);
 
   const columns: ColumnDef<CustomerType>[] = [
@@ -29,6 +34,15 @@ function CustomerTable({ data, columnFilters = [] }: DataTableProps) {
       id: "name",
       accessorKey: "name",
       header: "Name",
+      filterFn: "fuzzy"
+    },
+    {
+      id: "phone_number",
+      accessorFn: (row) => {
+        return `${row.phone_numbers[0].phone_number ?? "--"}`
+      },
+      header: "Phone Number",
+      filterFn: "fuzzy"
     },
     {
       id: "balance",
@@ -80,29 +94,25 @@ function CustomerTable({ data, columnFilters = [] }: DataTableProps) {
     },
   ];
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    state: {
-      columnVisibility: {
-        id: false,
-      },
-      columnFilters: columnFilters,
-    },
-    getFilteredRowModel: getFilteredRowModel(),
-    defaultColumn: {
-      meta: {
-        headerStyle: {
-          textAlign: "center",
-        },
-        align: "center",
-      },
-    },
-  });
-
   return (
-    <DataTable table={table} message="No Customers Found!"/>
+    <DataTable
+      data={data}
+      key={key}
+      columns={columns}
+      columnFilters={columnFilters}
+      defaultColumn={{
+        meta: {
+          headerStyle: {
+            textAlign: "center",
+          },
+          align: "center",
+        },
+      }}
+      columnVisibility={{
+        id: false,
+      }}
+      message="No Customers Found!"
+    />
   );
 }
 

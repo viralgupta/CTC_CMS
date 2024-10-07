@@ -621,6 +621,13 @@ const getAllCustomers = async (_req: Request, res: Response) => {
           where: (address, { eq }) => eq(address.isPrimary, true),
           limit: 1
         },
+        phone_numbers: {
+          columns: {
+            phone_number: true
+          },
+          where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+          limit: 1
+        }
       },
       orderBy: (customer, { desc }) => [desc(customer.balance)],
     });

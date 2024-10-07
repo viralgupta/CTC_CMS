@@ -58,7 +58,7 @@ const SearchItem = () => {
           <SelectCategory className="w-1/2" onValueChange={setCategory}/>
         </div>
         <div className="w-full max-h-96 overflow-y-auto">
-           {loading ? <Skeleton className="w-full h-96"/> : <ItemTable columnFilters={[{id: "name", value: filterValue}]} data={filterItemsAccordingToCategory(items)}/>} 
+           {loading ? <Skeleton className="w-full h-96"/> : <ItemTable CompKey="SearchItemTable" columnFilters={[{id: "name", value: filterValue}]} data={filterItemsAccordingToCategory(items)}/>} 
         </div>
       </DialogContent>
     </Dialog>

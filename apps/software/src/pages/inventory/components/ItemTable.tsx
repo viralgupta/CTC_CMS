@@ -1,8 +1,5 @@
 import {
   ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
   ColumnFiltersState,
 } from "@tanstack/react-table";
 import {
@@ -17,11 +14,12 @@ import { useSetRecoilState } from "recoil";
 import DataTable from "@/components/DataTable";
 
 interface DataTableProps {
+  CompKey: string;
   data: itemType[];
   columnFilters?: ColumnFiltersState;
 }
 
-function ItemTable({ data, columnFilters = [] }: DataTableProps) {
+function ItemTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
   const setViewItemIDAtom = useSetRecoilState(viewItemIDAtom);
 
   const columns: ColumnDef<itemType>[] = [
@@ -94,30 +92,26 @@ function ItemTable({ data, columnFilters = [] }: DataTableProps) {
     },
   ];
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    state: {
-      columnVisibility: {
+  return (
+    <DataTable
+      data={data}
+      key={key}
+      columns={columns}
+      columnFilters={columnFilters}
+      columnVisibility={{
         id: false,
         min_quantity: false,
-      },
-      columnFilters: columnFilters,
-    },
-    getFilteredRowModel: getFilteredRowModel(),
-    defaultColumn: {
-      meta: {
-        headerStyle: {
-          textAlign: "center"
+      }}
+      defaultColumn={{
+        meta: {
+          headerStyle: {
+            textAlign: "center"
+          },
+          align: "center"
         },
-        align: "center"
-      },
-    }
-  });
-
-  return (
-    <DataTable table={table} message="No Items Found"/>
+      }}
+      message="No Items Found"
+    />
   );
 }
 

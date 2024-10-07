@@ -26,7 +26,7 @@ const LowStockItems = () => {
       {loading ? (
         <Skeleton className="w-full h-48" />
       ) : (
-        <ItemTable data={filterLowStockItems(items)} />
+        <ItemTable CompKey="LowStockItemTable" data={filterLowStockItems(items)} />
       )}
     </div>
   );

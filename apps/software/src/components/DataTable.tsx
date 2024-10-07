@@ -7,16 +7,52 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  type Table as TableType,
+  useReactTable,
   flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type FilterFn,
+  type VisibilityState,
 } from "@tanstack/react-table";
+import { rankItem } from '@tanstack/match-sorter-utils';
+
 
 type DataTableProps = {
-  table: TableType<any>;
   message: string;
+  data: any[];
+  columns: ColumnDef<any, any>[];
+  columnFilters?: ColumnFiltersState;
+  columnVisibility?: VisibilityState | undefined
+  defaultColumn?: Partial<ColumnDef<any, unknown>> | undefined
 };
 
-const DataTable = ({ table, message }: DataTableProps) => {
+const DataTable = ({ message, data, columns, columnFilters, defaultColumn, columnVisibility }: DataTableProps) => {
+
+  const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+    const itemRank = rankItem(row.getValue(columnId), value)
+  
+    addMeta({ itemRank })
+  
+    return itemRank.passed
+  }
+
+  const table = useReactTable({
+    data: data,
+    columns,
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
+    getCoreRowModel: getCoreRowModel(),
+    state: {
+      columnVisibility,
+      columnFilters,
+    },
+    getFilteredRowModel: getFilteredRowModel(),
+    defaultColumn
+  });
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -58,7 +94,7 @@ const DataTable = ({ table, message }: DataTableProps) => {
             ))
           ) : (
             <TableRow>
-              <TableCell className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="h-24 text-center">
                 {message}
               </TableCell>
             </TableRow>

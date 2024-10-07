@@ -5,33 +5,34 @@ export interface CustomerType {
   name: string;
   balance: string | null;
   addresses: {
-      house_number: string;
-      address_area: {
-          area: string;
-      } // only one in array or null;
+    house_number: string;
+    address_area: {
+      area: string;
+    }; // only one in array or null;
   }[];
-}[]
+  phone_numbers: {
+    phone_number: string;
+  }[]; // only one in array or null;
+}[];
 
 export interface viewCustomerType extends CustomerType {
   profileUrl: string | null;
   priority: "Low" | "Mid" | "High" | null;
-  
 }
 
 const allCustomerAtom = atom<CustomerType[]>({
   key: "allCustomerAtom",
-  default: []
+  default: [],
 });
 
 export const viewCustomerAtom = atom<viewCustomerType | null>({
   key: "viewCustomerAtom",
-  default: null
+  default: null,
 });
 
 export const viewCustomerIDAtom = atom<string | null>({
   key: "viewCustomerIDAtom",
-  default: null
+  default: null,
 });
-
 
 export default allCustomerAtom;
