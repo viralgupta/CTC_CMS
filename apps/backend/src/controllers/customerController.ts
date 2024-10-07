@@ -74,8 +74,8 @@ const createCustomer = async (req: Request, res: Response) => {
               city: address.city,
               state: address.state,
               isPrimary: address.isPrimary,
-              latitude: address.latitude,
-              longitude: address.longitude
+              latitude: address.cordinates.latitude,
+              longitude: address.cordinates.longitude
             }
           })
         )

@@ -1,19 +1,10 @@
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   useReactTable,
   getFilteredRowModel,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -21,8 +12,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { viewItemIDAtom, itemType } from "@/store/Items";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useSetRecoilState } from "recoil";
+import DataTable from "@/components/DataTable";
 
 interface DataTableProps {
   data: itemType[];
@@ -125,48 +117,7 @@ function ItemTable({ data, columnFilters = [] }: DataTableProps) {
   });
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} style={(header.column.columnDef.meta as any)?.headerStyle}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} align={(cell.column.columnDef.meta as any)?.align}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No items found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable table={table} message="No Items Found"/>
   );
 }
 

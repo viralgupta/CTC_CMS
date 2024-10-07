@@ -26,14 +26,14 @@ import allItemsAtom, {
   viewItemIDAtom,
 } from "@/store/Items";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { editQuantityType } from "../../../../../packages/types/api/item";
+import { editQuantityType } from "../../../../../../packages/types/api/item";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import request from "@/lib/request";
-import { Button } from "../ui/button";
-import Spinner from "../ui/Spinner";
-import { Input } from "../ui/input";
+import { Button } from "@/components/ui/button";
+import Spinner from "@/components/ui/Spinner";
+import { Input } from "@/components/ui/input";
 import React from "react";
 
 const EditItemQuantity = () => {

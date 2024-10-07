@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "../ui/skeleton";
-import { Button } from "../ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { BoxIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 import {
   AlertDialog,

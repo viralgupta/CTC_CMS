@@ -28,17 +28,20 @@ import React from "react";
 import { toast } from "sonner";
 
 type CordinatesInputProps = {
-  onCordinateSelect: (lat: number, long: number) => void;
+  onCordinateSelect: ({latitude, longitude}: {latitude: number, longitude: number}) => void;
   values: {
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
   };
   disabled?: boolean;
   getAddress: () => string;
 };
 
 const CordinatesInput = ({
-  values,
+  values = {
+    latitude: 0,
+    longitude: 0,
+  },
   onCordinateSelect,
   disabled,
   getAddress,
@@ -49,8 +52,8 @@ const CordinatesInput = ({
   const [address, setAddress] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [cordinates, setCordinates] = React.useState({
-    lat: values.latitude,
-    lng: values.longitude,
+    latitude: values.latitude,
+    longitude: values.longitude,
   });
 
   function handleOnCenterChange(event: MapCameraChangedEvent) {
@@ -58,8 +61,8 @@ const CordinatesInput = ({
     const lng = event.map.getCenter()?.lng();
     if (lat && lng) {
       setCordinates({
-        lat: lat,
-        lng: lng,
+        latitude: lat,
+        longitude: lng,
       });
     }
   }
@@ -74,15 +77,15 @@ const CordinatesInput = ({
         address: address,
         region: "IN",
       });
-      const lat = results.results[0].geometry.location.lat() ?? null;
-      const lng = results.results[0].geometry.location.lng() ?? null;
+      const lat = results.results[0].geometry.location.lat() ?? 0;
+      const lng = results.results[0].geometry.location.lng() ?? 0;
       if (lat && lng) {
         setCordinates({
-          lat: lat,
-          lng: lng,
+          latitude: lat,
+          longitude: lng,
         });
         if (map) {
-          map.setCenter({ lat: lat, lng: lng });
+          map.setCenter({ lat, lng });
           map.setZoom(15);
         }
       }
@@ -162,9 +165,12 @@ const CordinatesInput = ({
           />
           <Button
             type="button"
-            disabled={cordinates.lat ? false : true}
+            disabled={cordinates.latitude ? false : true}
             onClick={() => {
-              onCordinateSelect(cordinates.lat, cordinates.lng);
+              onCordinateSelect({
+                latitude: cordinates.latitude ?? 0,
+                longitude: cordinates.longitude ?? 0,
+              });
               setOpen(false);
             }}
           >
@@ -176,12 +182,18 @@ const CordinatesInput = ({
           mapId={"8d0a820dd0d59a20"}
           colorScheme={resolvedTheme == "dark" ? "DARK" : "LIGHT"}
           defaultZoom={15}
-          defaultCenter={cordinates}
+          defaultCenter={{
+            lat: cordinates.latitude ?? 0,
+            lng: cordinates.longitude ?? 0
+          }}
           clickableIcons={false}
           onCenterChanged={handleOnCenterChange}
           className="w-full aspect-square"
         >
-          <AdvancedMarker position={cordinates} />
+          <AdvancedMarker position={{
+            lat: cordinates.latitude ?? 0,
+            lng: cordinates.longitude ?? 0
+          }} />
         </Map>
       </DialogContent>
     </Dialog>

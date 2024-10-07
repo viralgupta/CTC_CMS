@@ -84,14 +84,8 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
           <Input
             className="border border-border rounded-full w-full h-10"
             placeholder="Search for address area..."
-            onChange={(e) =>
-              setDebouncedValue({
-                value: e.target.value ?? "",
-                setFunction: setInputAddressArea,
-                delay: 1000,
-                key: "addressAreaDebounce",
-              })
-            }
+            value={inputAddressArea}
+            onChange={(e) => setInputAddressArea(e.target.value ?? "")}
           />
           <Popover>
             <PopoverTrigger asChild>
@@ -108,16 +102,10 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
               align="start"
             >
               <Input
-                onChange={(e) =>
-                  setDebouncedValue({
-                    value: e.target.value ?? "",
-                    setFunction: setInputAddressArea,
-                    delay: 1000,
-                    key: "addressAreaDebounce",
-                  })
-                }
                 placeholder="New Address Area..."
                 type="text"
+                value={inputAddressArea}
+                onChange={(e) => setInputAddressArea(e.target.value ?? "")}
               />
               <Button onClick={AddAddressArea} disabled={addAddressAreaLoading}>
                 {addAddressAreaLoading ? <Spinner /> : "Add"}

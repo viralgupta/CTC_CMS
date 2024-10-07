@@ -1,23 +1,15 @@
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   useReactTable,
   getFilteredRowModel,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "../ui/button";
+import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
 import { CustomerType, viewCustomerIDAtom } from "@/store/Customer";
 import { parseBalanceToFloat } from "@/lib/utils";
+import DataTable from "../../../components/DataTable";
 
 interface DataTableProps {
   data: CustomerType[];
@@ -52,12 +44,16 @@ function CustomerTable({ data, columnFilters = [] }: DataTableProps) {
     },
     {
       id: "house_number",
-      accessorKey: "addresses.0.house_number",
+      accessorFn: (originalRow) => {
+        return originalRow.addresses[0]?.house_number ?? "--"
+      },
       header: "House Number",
     },
     {
       id: "area",
-      accessorKey: "addresses.0.address_area.area",
+      accessorFn: (originalRow) => {
+        return originalRow.addresses[0]?.address_area?.area ?? "--"
+      },
       header: "Area",
     },
     {
@@ -106,54 +102,7 @@ function CustomerTable({ data, columnFilters = [] }: DataTableProps) {
   });
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={(header.column.columnDef.meta as any)?.headerStyle}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    align={(cell.column.columnDef.meta as any)?.align}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No Customers found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable table={table} message="No Customers Found!"/>
   );
 }
 

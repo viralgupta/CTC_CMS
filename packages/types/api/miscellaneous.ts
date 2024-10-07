@@ -37,8 +37,10 @@ export const addressType = z
     city: z.string().max(30, "City too long"),
     state: z.string().max(20, "State too long"),
     isPrimary: z.boolean().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
+    cordinates: z.object({
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+    })
   })
   .strict("Too many fields in request body");
 

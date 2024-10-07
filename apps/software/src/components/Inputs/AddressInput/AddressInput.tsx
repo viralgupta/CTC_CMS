@@ -183,8 +183,8 @@ const AddressInput = ({
             <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-end">
               <FormField
                 control={form.control}
-                name="latitude"
-                render={({ }) => (
+                name="cordinates"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
@@ -197,14 +197,8 @@ const AddressInput = ({
                             form.getValues("address_area_id") == "" ||
                             form.getValues("city") == ""
                           }
-                          onCordinateSelect={(lat, long) => {
-                            form.setValue("latitude", lat);
-                            form.setValue("longitude", long);
-                          }}
-                          values={{
-                            latitude: form.getValues("latitude") ?? 0,
-                            longitude: form.getValues("longitude") ?? 0,
-                          }}
+                          onCordinateSelect={field.onChange}
+                          values={field.value}
                           getAddress={() => {
                             return (
                               form

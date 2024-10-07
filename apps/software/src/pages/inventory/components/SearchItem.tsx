@@ -8,10 +8,10 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import SelectCategory from "@/components/inventory/SelectCategory";
+import SelectCategory from "@/components/Inputs/SelectCategory";
 import { itemType } from "@/store/Items";
 import { Skeleton } from "@/components/ui/skeleton";
-import ItemTable from "@/components/inventory/ItemTable";
+import ItemTable from "./ItemTable";
 import { useAllItems } from "@/hooks/items";
 import RefetchButton from "@/components/RefetchButton";
 import { setDebouncedValue } from "@/lib/utils";

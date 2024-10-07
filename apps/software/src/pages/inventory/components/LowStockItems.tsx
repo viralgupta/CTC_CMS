@@ -1,4 +1,4 @@
-import ItemTable from "@/components/inventory/ItemTable";
+import ItemTable from "./ItemTable";
 import RefetchButton from "@/components/RefetchButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { itemType } from "@/store/Items";

@@ -15,8 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import PhoneNumberInput from "@/components/customer/PhoneNumberInput";
-import ProfileUrlInput from "@/components/customer/ProfileUrlInput";
+import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
+import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { createCustomerType } from "../../../../../../packages/types/api/customer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
-import AddressInput from "@/components/customer/AddressInput/AddressInput";
+import AddressInput from "@/components/Inputs/AddressInput/AddressInput";
 import request from "@/lib/request";
 import allCustomerAtom from "@/store/Customer";
 import { useSetRecoilState } from "recoil";

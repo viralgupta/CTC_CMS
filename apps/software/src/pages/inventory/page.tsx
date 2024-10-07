@@ -3,8 +3,8 @@ import SearchItem from './components/SearchItem'
 import LowStockItems from './components/LowStockItems'
 import AllItems from './components/AllItems'
 import ViewItem from './components/ViewItem'
-import EditItem from '@/components/inventory/EditItem'
-import EditItemQuantity from '@/components/inventory/EditItemQuantity'
+import EditItem from './components/EditItem'
+import EditItemQuantity from './components/EditItemQuantity'
 
 const Inventory = () => {
   return (

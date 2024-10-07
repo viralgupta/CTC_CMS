@@ -8,7 +8,7 @@ import {
 import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { useRecoilState } from "recoil";
 import request from "@/lib/request";
-import ItemCard from "@/components/inventory/ItemCard";
+import ItemCard from "./ItemCard";
 import React from "react";
 
 const ViewItem = () => {

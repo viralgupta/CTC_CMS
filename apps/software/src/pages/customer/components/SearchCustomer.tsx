@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RefetchButton from "@/components/RefetchButton";
 import { setDebouncedValue } from "@/lib/utils";
 import { useAllCustomer } from "@/hooks/customers";
-import CustomerTable from "@/components/customer/CustomerTable";
+import CustomerTable from "@/pages/customer/components/CustomerTable";
 
 const SearchCustomer = () => {
   const { customers, loading, refetchCustomers } = useAllCustomer();

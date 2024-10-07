@@ -14,13 +14,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { phone_numberType } from "../../../../../packages/types/api/miscellaneous";
+import { phone_numberType } from "../../../../../../packages/types/api/miscellaneous";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "../ui/button";
-import Spinner from "../ui/Spinner";
+import { Button } from "@/components/ui/button";
+import Spinner from "@/components/ui/Spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -42,7 +42,7 @@ import { useRecoilValue } from "recoil";
 import { WhatsappConnectedAtom } from "@/store/whatsapp";
 import { toast } from "sonner";
 import React from "react";
-import { FakeButton } from "../ui/fake-button";
+import { FakeButton } from "@/components/ui/fake-button";
 
 const PhoneNumberArray = z.array(phone_numberType);
 
@@ -238,11 +238,11 @@ const PhoneNumberInput = ({
                   </FormItem>
                 )}
               />
-            </div>
             <Button disabled={form.formState.isSubmitting} type="submit">
               {form.formState.isSubmitting && <Spinner />}
               {!form.formState.isSubmitting && "Submit"}
             </Button>
+            </div>
           </form>
         </Form>
         <Table>

@@ -38,8 +38,7 @@ export const editAddressType = addressType
     city: true,
     state: true,
     isPrimary: true,
-    latitude: true,
-    longitude: true,
+    cordinates: true
   })
   .extend({
     address_id: z.string(),
