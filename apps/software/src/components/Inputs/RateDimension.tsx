@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createItemType } from "../../../../../packages/types/api/item";
+import { createItemType } from "@type/api/item";
 
 interface RateDimensionProps {
   onValueChange: (value: string) => void;

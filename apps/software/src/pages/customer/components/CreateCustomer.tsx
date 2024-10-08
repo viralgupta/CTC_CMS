@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
-import { createCustomerType } from "../../../../../../packages/types/api/customer";
+import { createCustomerType } from "@type/api/customer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
@@ -61,6 +61,8 @@ const CreateCustomerForm = () => {
         ...phone,
         isPrimary: false,
       }));
+    } else if(oldPhoneNumberArray.length == 0){
+      data.isPrimary = true;
     }
 
     oldPhoneNumberArray.push(data);
@@ -91,6 +93,8 @@ const CreateCustomerForm = () => {
         ...phone,
         isPrimary: false,
       }));
+    } else if(oldAddressesArray.length == 0){
+      data.isPrimary = true;
     }
 
     oldAddressesArray.push(data);

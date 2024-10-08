@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "../../ui/input";
 import { useForm } from "react-hook-form";
-import { addressType } from "../../../../../../packages/types/api/miscellaneous";
+import { addressType } from "@type/api/miscellaneous";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../../ui/button";

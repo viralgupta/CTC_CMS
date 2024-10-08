@@ -18,12 +18,11 @@ import { Button } from "../../ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "../../ui/skeleton";
-import { addAddressAreaType } from "../../../../../../packages/types/api/customer";
+import { addAddressAreaType } from "@type/api/customer";
 import { toast } from "sonner";
 import request from "@/lib/request";
 import Spinner from "../../ui/Spinner";
 import Fuse from "fuse.js";
-import { setDebouncedValue } from "@/lib/utils";
 
 type AddressAreaInputProps = {
   onChange: (value: string) => void;

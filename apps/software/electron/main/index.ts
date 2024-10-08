@@ -18,6 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 if (require('electron-squirrel-startup')) app.quit();
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')

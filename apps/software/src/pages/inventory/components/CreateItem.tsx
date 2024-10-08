@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import SelectCategory from "@/components/Inputs/SelectCategory";
 import RateDimension from "@/components/Inputs/RateDimension";
-import { createItemType } from "../../../../../../packages/types/api/item";
+import { createItemType } from "@type/api/item";
 import request from "@/lib/request";
 import { useSetRecoilState } from "recoil";
 import allItemsAtom from "@/store/Items";

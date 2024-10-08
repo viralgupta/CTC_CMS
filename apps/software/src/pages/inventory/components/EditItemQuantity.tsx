@@ -26,7 +26,7 @@ import allItemsAtom, {
   viewItemIDAtom,
 } from "@/store/Items";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { editQuantityType } from "../../../../../../packages/types/api/item";
+import { editQuantityType } from "@type/api/item";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
