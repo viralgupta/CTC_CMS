@@ -121,7 +121,7 @@ const CreateCustomerForm = () => {
   async function onSubmit(values: z.infer<typeof createCustomerType>) {
     try {
       const res = await request.post("/customer/createCustomer", values);
-      if(res.data.success){
+      if(res.status == 200){
         form.reset();
         setCustomers([]);
       }

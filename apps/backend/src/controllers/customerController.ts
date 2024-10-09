@@ -74,8 +74,8 @@ const createCustomer = async (req: Request, res: Response) => {
               city: address.city,
               state: address.state,
               isPrimary: address.isPrimary,
-              latitude: address.cordinates.latitude,
-              longitude: address.cordinates.longitude
+              latitude: address.cordinates?.latitude ?? undefined,
+              longitude: address.cordinates?.longitude ?? undefined
             }
           })
         )
@@ -461,14 +461,16 @@ const getCustomer = async (req: Request, res: Response) => {
               }
             }
           },
+        },
+        phone_numbers: {
           columns: {
-            address: true,
-            house_number: true,
+            id: true,
+            country_code: true,
+            phone_number: true,
             isPrimary: true,
-            id: true
+            whatsappChatId: true,
           }
         },
-        phone_numbers: true,
         orders: {
           columns: {
             id: true,
@@ -486,6 +488,7 @@ const getCustomer = async (req: Request, res: Response) => {
             id: true,
             total_estimate_amount: true,
             created_at: true,
+            updated_at: true
           },
           orderBy: (estimate, { desc }) => [desc(estimate.created_at)],
         }
@@ -494,7 +497,7 @@ const getCustomer = async (req: Request, res: Response) => {
         total_order_value: false
       }
     })
-
+    getCustomer?.addresses
     if(!getCustomer){
       return res.status(400).json({success: false, message: "Customer not found"});
     }

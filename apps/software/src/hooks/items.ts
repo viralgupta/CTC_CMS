@@ -11,6 +11,7 @@ const useAllItems = () => {
     loading = true;
     try {
       const res = await request("/inventory/getAllItems");
+      if (res.status != 200) return;
       setItems(res.data.data as itemType[]);
     } catch (error) {
       console.error("Error fetching items:", error);

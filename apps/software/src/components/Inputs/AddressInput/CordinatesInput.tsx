@@ -29,7 +29,7 @@ import { toast } from "sonner";
 
 type CordinatesInputProps = {
   onCordinateSelect: ({latitude, longitude}: {latitude: number, longitude: number}) => void;
-  values: {
+  values?: {
     latitude?: number;
     longitude?: number;
   };

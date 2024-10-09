@@ -43,14 +43,22 @@ import { WhatsappConnectedAtom } from "@/store/whatsapp";
 import { toast } from "sonner";
 import React from "react";
 import { FakeButton } from "@/components/ui/fake-button";
+import { viewCustomerType } from "@/store/Customer";
 
-const PhoneNumberArray = z.array(phone_numberType);
+const PhoneNumberArray = z.array(phone_numberType.extend({
+  id: z.string().optional()
+}));
 
 type PhoneNumberInputProps = {
-  value: z.infer<typeof PhoneNumberArray>;
-  OnProfileURLChange: (value: string) => void;
+  value: z.infer<typeof PhoneNumberArray>
+  OnProfileURLChange?: (value: string) => void;
   AddNumber: (data: z.infer<typeof phone_numberType>) => void;
-  removeNumber: (value: string) => void;
+  removeNumber?: (value: string) => void;
+  deleteNumber?: ({ children, phone }: {
+    children: React.ReactNode;
+    phone: viewCustomerType["phone_numbers"][number];
+  }) => JSX.Element
+  children?: React.ReactNode
 };
 
 const PhoneNumberInput = ({
@@ -58,6 +66,8 @@ const PhoneNumberInput = ({
   value,
   OnProfileURLChange,
   removeNumber,
+  deleteNumber,
+  children
 }: PhoneNumberInputProps) => {
   const [whatSappVerificationStatus, setWhatSappVerificationStatus] =
     React.useState<{
@@ -104,7 +114,7 @@ const PhoneNumberInput = ({
       });
       form.setValue("whatsappChatId", data.WID);
       toast.success("Whatsapp Verified!");
-      if (data.ProfileUrl) {
+      if (data.ProfileUrl && OnProfileURLChange) {
         OnProfileURLChange(data.ProfileUrl);
       }
       form.handleSubmit(onSubmit)();
@@ -171,8 +181,8 @@ const PhoneNumberInput = ({
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full">
-        <Input
+      <DialogTrigger className="w-full" asChild={children ? true : false}>
+        {!children ? <Input
           placeholder={
             value.length > 0
               ? [
@@ -183,7 +193,7 @@ const PhoneNumberInput = ({
                 ].join(", ")
               : "Enter Phone Number..."
           }
-        />
+        /> : children}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -238,70 +248,136 @@ const PhoneNumberInput = ({
                   </FormItem>
                 )}
               />
-            <Button disabled={form.formState.isSubmitting} type="submit">
+            <Button disabled={form.formState.isSubmitting} onClick={() => {form.handleSubmit(onSubmit)();}} type="button">
               {form.formState.isSubmitting && <Spinner />}
               {!form.formState.isSubmitting && "Submit"}
             </Button>
             </div>
           </form>
         </Form>
-        <Table>
-          <TableCaption>
-            {!value
-              ? "No Phone Number Added!"
-              : "A list of added phone numbers."}
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-min text-center">Country Code</TableHead>
-              <TableHead className="w-min text-center">Phone Number</TableHead>
-              <TableHead className="w-min text-center">
-                Whatsapp Verified
-              </TableHead>
-              <TableHead className="w-min text-center">Primary</TableHead>
-              <TableHead className="w-min text-center">Delete</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {!!value &&
-              value.map((v, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium text-center">
-                      {v.country_code}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {v.phone_number}
-                    </TableCell>
-                    <TableCell>
-                      {v.whatsappChatId ? (
-                        <Check className="mx-auto" />
-                      ) : (
-                        <X className="mx-auto" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {v.isPrimary ? (
-                        <Check className="mx-auto stroke-primary" />
-                      ) : (
-                        <X className="mx-auto" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size={"icon"}
-                        onClick={() => removeNumber(v.phone_number)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
+        <PhoneNumberTable value={value.map((phone) => {return {...phone, id: phone.id ? phone.id : ""}})} action={{
+          message: "Delete",
+          Icon: Trash2,
+          fun: removeNumber,
+          Element: deleteNumber
+        }}/>
       </DialogContent>
     </Dialog>
+  );
+};
+
+export const PhoneNumberTable = ({
+  value,
+  action,
+  action2,
+}: {
+  value: viewCustomerType["phone_numbers"];
+  action?: {
+    message: string;
+    Icon: any;
+    Element?: ({
+      children,
+      phone,
+    }: {
+      children: React.ReactNode;
+      phone: viewCustomerType["phone_numbers"][number];
+    }) => JSX.Element;
+    fun?: (phone: string) => void;
+  };
+  action2?: {
+    message: string;
+    Icon: any;
+    Element?: ({
+      children,
+      phone,
+    }: {
+      children: React.ReactNode;
+      phone: viewCustomerType["phone_numbers"][number];
+    }) => JSX.Element;
+    fun?: (phone: string) => void;
+  };
+}) => {
+  return (
+    <Table>
+      <TableCaption>
+        {!value ? "No Phone Number Added!" : "A list of added phone numbers."}
+      </TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-min text-center">Country Code</TableHead>
+          <TableHead className="w-min text-center">Phone Number</TableHead>
+          <TableHead className="w-min text-center">Whatsapp Verified</TableHead>
+          <TableHead className="w-min text-center">Primary</TableHead>
+          {action2 && (
+            <TableHead className="w-min text-center">
+              {action2.message}
+            </TableHead>
+          )}
+          {action && (
+            <TableHead className="w-min text-center">
+              {action.message}
+            </TableHead>
+          )}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {!!value &&
+          value.map((v, index) => {
+            return (
+              <TableRow key={index}>
+                <TableCell className="font-medium text-center">
+                  {v.country_code}
+                </TableCell>
+                <TableCell className="text-center">{v.phone_number}</TableCell>
+                <TableCell>
+                  {v.whatsappChatId ? (
+                    <Check className="mx-auto" />
+                  ) : (
+                    <X className="mx-auto" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {v.isPrimary ? (
+                    <Check className="mx-auto stroke-primary" />
+                  ) : (
+                    <X className="mx-auto" />
+                  )}
+                </TableCell>
+                {action2 && (
+                  <TableCell>
+                    {action2.Element ? (
+                      <action2.Element phone={v}>
+                        <Button size={"icon"}>
+                          <action2.Icon />
+                        </Button>
+                      </action2.Element>
+                    ) : (
+                      <Button onClick={() => { if(action2.fun) action2.fun(v.phone_number) }} size={"icon"}>
+                        <action2.Icon />
+                      </Button>
+                    )}
+                  </TableCell>
+                )}
+                {action && (
+                  <TableCell>
+                    {action.Element ? (
+                      <action.Element phone={v}>
+                        <Button size={"icon"}>
+                          <action.Icon />
+                        </Button>
+                      </action.Element>
+                    ) : (
+                      <Button onClick={() => { if(action.fun) action.fun(v.phone_number) }} size={"icon"}>
+                        <action.Icon />
+                      </Button>
+                    )}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+      </TableBody>
+    </Table>
   );
 };
 

@@ -11,6 +11,7 @@ const useAddressAreas = () => {
     loading = true;
     try {
       const res = await request("/customer/getAllAddressAreas");
+      if (res.status != 200) return;
       setAddressAreas(res.data.data as AddressArea);
     } catch (error) {
       console.error("Error fetching address areas:", error);

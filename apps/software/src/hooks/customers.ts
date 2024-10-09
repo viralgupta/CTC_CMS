@@ -11,6 +11,7 @@ const useAllCustomer = () => {
     loading = true;
     try {
       const res = await request("/customer/getAllCustomers");
+      if (res.status != 200) return;
       setCustomer(res.data.data as CustomerType[]);
     } catch (error) {
       console.error("Error fetching customer:", error);

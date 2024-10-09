@@ -90,70 +90,9 @@ const createPhone = async (req: Request, res: Response) => {
   }
 }
 
-const editPhone = async (req: Request, res: Response) => {
-  const editPhoneTypeAnswer = editPhoneType.safeParse(req.body);
-
-  if (!editPhoneTypeAnswer.success) {
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editPhoneTypeAnswer.error.flatten()})
-  }
-
-  try {
-    const editedPhone = await db.transaction(async (tx) => {
-      if(editPhoneTypeAnswer.data.isPrimary == true){
-
-        await tx.update(phone_number).set({isPrimary: false}).where(
-          editPhoneTypeAnswer.data.customer_id
-          ? and(
-              eq(phone_number.customer_id, editPhoneTypeAnswer.data.customer_id),
-              eq(phone_number.isPrimary, true)
-            )
-          : editPhoneTypeAnswer.data.architect_id
-          ? and(
-              eq(phone_number.architect_id, editPhoneTypeAnswer.data.architect_id),
-              eq(phone_number.isPrimary, true)
-            )
-          : editPhoneTypeAnswer.data.carpanter_id
-          ? and(
-              eq(phone_number.carpanter_id, editPhoneTypeAnswer.data.carpanter_id),
-              eq(phone_number.isPrimary, true)
-            )
-          : editPhoneTypeAnswer.data.driver_id
-          ? and(
-              eq(phone_number.driver_id, editPhoneTypeAnswer.data.driver_id),
-              eq(phone_number.isPrimary, true)
-            )
-          : undefined
-        );
-      } else if (editPhoneTypeAnswer.data.isPrimary == false){
-        const foundPhone = await tx.query.phone_number.findFirst({
-          where: (phone_number, { eq }) => eq(phone_number.id, editPhoneTypeAnswer.data.phone_number_id),
-          columns: {
-            isPrimary: true
-          }
-        })
-
-        if(!foundPhone){
-          return new Error("Phone number not found")
-        }
-
-        if(foundPhone.isPrimary === true){
-          return new Error("At least one phone number should be primary")
-        }
-      }
-
-      const {"phone_number_id": _, ...dataToUpdate} = editPhoneTypeAnswer.data;
-
-      return await tx.update(phone_number).set(dataToUpdate).where(eq(phone_number.id, editPhoneTypeAnswer.data.phone_number_id)).returning();
-    })
-    
-    return res.status(200).json({success: true, message: "Phone number edited", data: editedPhone});
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to edit phone number", error: error.message ? error.message : error});
-  }
-}
-
 const deletePhone = async (req: Request, res: Response) => {
   const deletePhoneTypeAnswer = deletePhoneType.safeParse(req.body);
+
 
   if (!deletePhoneTypeAnswer.success) {
     return res.status(400).json({success: false, message: "Input fields are not correct", error: deletePhoneTypeAnswer.error.flatten()})
@@ -180,7 +119,7 @@ const deletePhone = async (req: Request, res: Response) => {
       if(foundPhone.isPrimary === true){
         // try to find another phone number and make it primary
 
-        await tx.update(phone_number).set({isPrimary: true}).where(
+        const nonPrimaryPhones = await tx.select().from(phone_number).where(
           foundPhone.customer_id
           ? and(
               eq(phone_number.customer_id, foundPhone.customer_id),
@@ -202,7 +141,13 @@ const deletePhone = async (req: Request, res: Response) => {
               eq(phone_number.isPrimary, false)
             )
           : undefined
-        )
+        );
+
+        if (nonPrimaryPhones.length == 0){
+          throw new Error("Minimum 1 Phone Number is required!");
+        }
+
+        await tx.update(phone_number).set({ isPrimary: true }).where(eq(phone_number.id, nonPrimaryPhones[0].id))
       }
 
       await tx.delete(phone_number).where(eq(phone_number.id, deletePhoneTypeAnswer.data.phone_number_id));
@@ -357,7 +302,6 @@ const getAllResources = async (_req: Request, res: Response) => {
 
 export {
   createPhone,
-  editPhone,
   deletePhone,
   createPutSignedURL,
   editResource,

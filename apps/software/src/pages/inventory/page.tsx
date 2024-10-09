@@ -2,9 +2,7 @@ import CreateItem from './components/CreateItem'
 import SearchItem from './components/SearchItem'
 import LowStockItems from './components/LowStockItems'
 import AllItems from './components/AllItems'
-import ViewItem from './components/ViewItem'
-import EditItem from './components/EditItem'
-import EditItemQuantity from './components/EditItemQuantity'
+import ViewItem from './components/ViewItem/ViewItem'
 
 const Inventory = () => {
   return (
@@ -21,8 +19,6 @@ const Inventory = () => {
         <LowStockItems/>
         <AllItems/>
         <ViewItem/>
-        <EditItem/>
-        <EditItemQuantity/>
         <div>&nbsp;</div>
         <div>&nbsp;</div>
       </div>

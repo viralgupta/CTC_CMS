@@ -10,6 +10,7 @@ import { useRecoilState } from "recoil";
 import request from "@/lib/request";
 import ItemCard from "./ItemCard";
 import React from "react";
+import ViewItemOrdersTable from "./ViewItemOrdersTable";
 
 const ViewItem = () => {
   const [itemId, setItemID] = useRecoilState(viewItemIDAtom);
@@ -18,6 +19,7 @@ const ViewItem = () => {
   React.useEffect(() => {
     if (itemId) {
       request(`/inventory/getItem?item_id=${itemId}`).then((res) => {
+        if(res.status != 200) return;
         setViewItem(res.data.data as viewItemType);
       })
     }
@@ -40,6 +42,7 @@ const ViewItem = () => {
           <DialogTitle></DialogTitle>
         </DialogHeader>
           <ItemCard item={viewItem} />
+          <ViewItemOrdersTable item={viewItem}/>
       </DialogContent>
     </Dialog>
   );

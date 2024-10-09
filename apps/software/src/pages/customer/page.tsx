@@ -1,5 +1,6 @@
 import CreateCustomer from './components/CreateCustomer'
 import SearchCustomer from './components/SearchCustomer'
+import ViewCustomer from './components/ViewCustomer'
 
 const Customer = () => {
   return (
@@ -14,10 +15,8 @@ const Customer = () => {
     </div>
     <div className='w-full h-full space-y-8'>
       {/* <LowStockItems/>
-      <AllItems/>
-      <ViewItem/>
-      <EditItem/>
-      <EditItemQuantity/> */}
+      <AllItems/> */}
+      <ViewCustomer/>
       <div>&nbsp;</div>
       <div>&nbsp;</div>
     </div>

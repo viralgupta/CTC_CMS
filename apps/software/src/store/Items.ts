@@ -32,14 +32,4 @@ export const viewItemIDAtom = atom<string | null>({
   default: null
 });
 
-export const editItemQuantityIDAtom = atom<string | null>({
-  key: "editItemQuantityIDAtom",
-  default: null
-});
-
-export const editItemIDAtom = atom<string | null>({
-  key: "editItemIDAtom",
-  default: null
-});
-
 export default allItemsAtom;

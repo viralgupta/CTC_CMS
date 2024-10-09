@@ -40,7 +40,7 @@ export const addressType = z
     cordinates: z.object({
       latitude: z.number().optional(),
       longitude: z.number().optional(),
-    })
+    }).optional()
   })
   .strict("Too many fields in request body");
 

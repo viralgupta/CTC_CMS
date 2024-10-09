@@ -1,10 +1,9 @@
 import express from "express"
-import { createPhone, editPhone, deletePhone, createPutSignedURL, createGetSignedURL, editResource, deleteResource, getAllResources } from "../controllers/miscellaneousController"
+import { createPhone, deletePhone, createPutSignedURL, createGetSignedURL, editResource, deleteResource, getAllResources } from "../controllers/miscellaneousController"
 
 const miscellaneousRouter = express.Router()
 
 miscellaneousRouter.route('/createPhone').post(createPhone)
-miscellaneousRouter.route('/editPhone').put(editPhone)
 miscellaneousRouter.route('/deletePhone').delete(deletePhone)
 miscellaneousRouter.route('/createPutSignedURL').get(createPutSignedURL)
 miscellaneousRouter.route('/editResource').put(editResource)

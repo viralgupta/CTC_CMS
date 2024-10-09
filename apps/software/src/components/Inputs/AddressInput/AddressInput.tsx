@@ -38,50 +38,61 @@ import { APIProvider } from "@vis.gl/react-google-maps";
 import { useRecoilValue } from "recoil";
 import addressAreaAtom from "@/store/addressArea";
 
-const AddressArray = z.array(addressType);
+const addressTypeWithOptionals = addressType.extend({
+  id: z.string().optional(),
+  address_area: z.string().optional()
+})
+
+const AddressArrayWithOptionals = z.array(addressTypeWithOptionals);
 
 type AddressInputProps = {
-  AddAddress: (data: z.infer<typeof addressType>) => void;
-  removeAddress: (value: string) => void;
-  values: z.infer<typeof AddressArray>;
+  AddAddress: (data: z.infer<typeof addressTypeWithOptionals>) => void;
+  removeAddress?: (value: string) => void;
+  deleteAddress?: ({ children, addressId, }: {
+    children: React.ReactNode;
+    addressId: string;
+  }) => JSX.Element
+  values: z.infer<typeof AddressArrayWithOptionals>;
+  children?: React.ReactNode
 };
 
 const AddressInput = ({
   AddAddress,
   removeAddress,
   values,
+  deleteAddress: DeleteAddress,
+  children
 }: AddressInputProps) => {
   const addressAreas = useRecoilValue(addressAreaAtom);
 
-  const form = useForm<z.infer<typeof addressType>>({
-    resolver: zodResolver(addressType),
+  const form = useForm<z.infer<typeof addressTypeWithOptionals>>({
+    resolver: zodResolver(addressTypeWithOptionals),
     reValidateMode: "onChange",
     defaultValues: {
       house_number: "",
       address: "",
-      address_area_id: "",
       city: "Ghaziabad",
       state: "Uttar Pradesh",
       isPrimary: values.length > 0 ? false : true,
     },
   });
 
-  async function onSubmit(values: z.infer<typeof addressType>) {
-    AddAddress(values);
+  async function onSubmit(values: z.infer<typeof addressTypeWithOptionals>) {
+    await AddAddress(values);
     form.reset();
     return;
   }
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full">
-        <Input
+      <DialogTrigger className="w-full" asChild={children ? true : false}>
+        {children ? children : <Input
           placeholder={
             values.length > 0
               ? `${values.find((v) => v.isPrimary == true)?.house_number ?? ""}, ${values.find((v) => v.isPrimary == true)?.address ?? ""}`
               : "Enter Address..."
           }
-        />
+        />}
       </DialogTrigger>
       <DialogContent size="2xl">
         <DialogHeader>
@@ -220,8 +231,9 @@ const AddressInput = ({
               />
               <Button
                 disabled={form.formState.isSubmitting}
-                type="submit"
+                type="button"
                 className="ml-auto"
+                onClick={() => form.handleSubmit(onSubmit)()}
               >
                 {form.formState.isSubmitting && <Spinner />}
                 {!form.formState.isSubmitting && "Submit"}
@@ -254,7 +266,15 @@ const AddressInput = ({
                       {v.house_number}
                     </TableCell>
                     <TableCell className="text-center">{v.address}</TableCell>
-                    <TableCell className="text-center">{addressAreas.length > 0 ? addressAreas.find((area) => area.id == v.address_area_id)?.area ?? "" : ""}</TableCell>
+                    <TableCell className="text-center">
+                      {v.address_area
+                        ? v.address_area
+                        : addressAreas.length > 0
+                          ? (addressAreas.find(
+                              (area) => area.id == v.address_area_id
+                            )?.area ?? "")
+                          : ""}
+                    </TableCell>
                     <TableCell className="text-center">{v.city}</TableCell>
                     <TableCell>
                       {v.isPrimary ? (
@@ -264,12 +284,27 @@ const AddressInput = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        size={"icon"}
-                        onClick={() => removeAddress(v.address)}
-                      >
-                        <Trash2 />
-                      </Button>
+                      {DeleteAddress ? (
+                        <DeleteAddress addressId={v.id ? v.id : ""}>
+                          <Button
+                            size={"icon"}
+                            onClick={() =>
+                              removeAddress && removeAddress(v.address)
+                            }
+                          >
+                            <Trash2 />
+                          </Button>
+                        </DeleteAddress>
+                      ) : (
+                        <Button
+                          size={"icon"}
+                          onClick={() =>
+                            removeAddress && removeAddress(v.address)
+                          }
+                        >
+                          <Trash2 />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

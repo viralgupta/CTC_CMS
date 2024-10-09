@@ -45,7 +45,7 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
         "/customer/addAddressArea",
         addressAreaToAdd.data
       );
-      if (res.data.success) {
+      if (res.status == 200) {
         setInputAddressArea("");
         refetchAddressAreas();
       }
@@ -143,7 +143,7 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
                               address_area_id: area.item.id
                             }
                           }).then((res) => {
-                            if (res.data.success) {
+                            if (res.status == 200) {
                               refetchAddressAreas();
                             }
                           })
@@ -159,7 +159,7 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
                       <div className="w-full flex space-x-1" key={index}>
                         <Button
                           variant={"ghost"}
-                          className="w-full border border-border border-x-0 border-y"
+                          className="w-full border border-border border-x-0 border-t-0 border-b"
                           onClick={() => {
                             onChange(area.id);
                             setOpen(false);
@@ -173,7 +173,7 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
                               address_area_id: area.id
                             }
                           }).then((res) => {
-                            if (res.data.success) {
+                            if (res.status == 200) {
                               refetchAddressAreas();
                             }
                           })

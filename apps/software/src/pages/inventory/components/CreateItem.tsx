@@ -44,7 +44,7 @@ const CreateItemForm = () => {
 
     try {
       const res = await request.post("/inventory/createItem", values);
-      if(res.data.success){
+      if(res.status == 200){
         form.reset();
         setItem([]);
       }
