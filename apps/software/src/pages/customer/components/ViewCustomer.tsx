@@ -10,6 +10,7 @@ import { useRecoilState } from "recoil";
 import request from "@/lib/request";
 import CustomerCard from "./CustomerCard/CustomerCard";
 import React from "react";
+import CustomerOrders from "./CustomerOrders";
 
 const ViewCustomer = () => {
   const [viewCustomerId, setViewCustomerID] = useRecoilState(viewCustomerIDAtom);
@@ -41,6 +42,7 @@ const ViewCustomer = () => {
           <DialogTitle></DialogTitle>
         </DialogHeader>
           <CustomerCard customer={viewCustomer}/>
+          <CustomerOrders />
       </DialogContent>
     </Dialog>
   );

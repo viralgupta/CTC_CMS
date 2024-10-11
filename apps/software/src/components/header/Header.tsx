@@ -14,10 +14,10 @@ const Header = () => {
         Chintpurni Plywoods
       </div>
       <div className="flex items-center space-x-4 mr-2">
+        <ThemeToggle/>
         <React.Suspense fallback={<Button disabled><Spinner/></Button>}>
           <WhatsappLogin/>
         </React.Suspense>
-        <ThemeToggle/>
         <User/>
         <Logout/>
       </div>

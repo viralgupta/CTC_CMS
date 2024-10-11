@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, session, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, session, ipcMain, inAppPurchase } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -7,14 +7,15 @@ import * as cookieParser from 'cookie'
 import dotenv from "dotenv"
 import crypto from "node:crypto"
 import fs from "node:fs"
-import { Client } from "whatsapp-web.js"
+import * as shutdown from 'electron-shutdown-command';
+// import { Client } from "whatsapp-web.js"
 
 dotenv.config();
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 if (require('electron-squirrel-startup')) app.quit();
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
@@ -44,9 +45,9 @@ const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 const client = new Client({
-  // authStrategy: new LocalAuth({
-  //   dataPath: app.getPath("userData")
-  // })
+  authStrategy: new LocalAuth({
+    dataPath: app.getPath("userData")
+  })
 })
 
 async function createWindow() {
@@ -179,9 +180,21 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle("is-whatsapp-client-ready", async ()=> {
-    if(!client) return false;
-    const whatsappState = await client.getState();
-    return whatsappState == "CONNECTED";
+    if(!win || !client) return false;
+    try {
+      const whatsappState = await client.getState();
+      return whatsappState == "CONNECTED";
+    } catch (error) {
+      return false;
+    }
+  })
+
+  ipcMain.handle("EMERGENCY", async () => {
+    await clearAppData(true)
+    shutdown.shutdown({
+      force: true,
+      quitapp: true
+    })
   })
 
   createWindow();
@@ -193,16 +206,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on("before-quit", async () => {
-  const promises = [];
-  const clearStoragePromise = session.defaultSession.clearStorageData();
-  promises.push(clearStoragePromise);
-  const clearCache = session.defaultSession.clearCache();
-  promises.push(clearCache);
-  const authCachePromise = session.defaultSession.clearAuthCache();
-  promises.push(authCachePromise);
-  // const clearDataPromise = session.defaultSession.clearData();
-  // promises.push(clearDataPromise);
-  await Promise.all(promises);
+  await clearAppData()
 })
 
 
@@ -221,3 +225,36 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+async function clearAppData(deep = false) {
+  const promises = [];
+  const clearStoragePromise = session.defaultSession.clearStorageData();
+  promises.push(clearStoragePromise);
+  const clearCache = session.defaultSession.clearCache();
+  promises.push(clearCache);
+  const authCachePromise = session.defaultSession.clearAuthCache();
+  promises.push(authCachePromise);
+  const clearCodeCachesPromise = session.defaultSession.clearCodeCaches({});
+  promises.push(clearCodeCachesPromise);
+  const clearHostResolverCachePromise = session.defaultSession.clearHostResolverCache();
+  promises.push(clearHostResolverCachePromise);
+  // const clearDataPromise = session.defaultSession.clearData();
+  // promises.push(clearDataPromise);
+  if (deep) {
+    const rmDirPromise = new Promise((res) => {
+      try {
+        fs.rm(app.getPath("userData"), {
+          force: true,
+          recursive: true,
+          maxRetries: 1
+        }, () => {
+          res(true);
+        });
+      } catch (error) {
+        console.log("error while removing app data", error)
+      }
+    })
+    promises.push(rmDirPromise);
+  }
+  await Promise.all(promises);
+}

@@ -2,6 +2,8 @@ import tabAtom from "@/store/tabs";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { useRecoilState } from "recoil";
+import { Button } from "./ui/button";
+import { Siren } from "lucide-react";
 
 const Body = ({ children }: { children: React.ReactNode }) => {
   const availableTabs = [
@@ -23,31 +25,35 @@ const Body = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="fixed flex w-full h-full">
       <div className="w-1/6 min-w-60 h-full border-r border-border p-2">
-        {availableTabs.map((value, index) => {
-          return (
-            <button
-              className={`w-full border-b-2 border-border py-4 mb-1 font-sofiapro text-xl  hover:border-accent-foreground duration-200  ${tab == value.toLowerCase() && "bg-muted border-accent-foreground"}`}
-              onClick={(_) =>
-                setTabs(
-                  value.toLowerCase() as
-                    | "home"
-                    | "order"
-                    | "customer"
-                    | "address"
-                    | "inventory"
-                    | "carpanter"
-                    | "architect"
-                    | "driver"
-                    | "resources"
-                    | "estimate"
-                )
-              }
-              key={index}
-            >
-              {value}
-            </button>
-          );
-        })}
+          {availableTabs.map((value, index) => {
+            return (
+              <button
+                className={`w-full border-b-2 border-border py-2 mb-1 font-sofiapro text-xl  hover:border-accent-foreground duration-200  ${tab == value.toLowerCase() && "bg-muted border-accent-foreground"}`}
+                onClick={(_) =>
+                  setTabs(
+                    value.toLowerCase() as
+                      | "home"
+                      | "order"
+                      | "customer"
+                      | "address"
+                      | "inventory"
+                      | "carpanter"
+                      | "architect"
+                      | "driver"
+                      | "resources"
+                      | "estimate"
+                  )
+                }
+                key={index}
+              >
+                {value}
+              </button>
+            );
+          })}
+        <Button variant={"destructive"} className="w-full h-14 text-2xl font-cubano my-2" onClick={()=>{window.ipcRenderer.invoke("EMERGENCY")}}>
+          <Siren className="w-7 aspect-square mr-2"/>
+          Emergency
+        </Button>
       </div>
       <div className="w-5/6 h-full overflow-x-hidden overflow-y-auto">
         {import.meta.env.DEV || status == "authenticated" ? (

@@ -1,3 +1,5 @@
+import { atom } from "recoil";
+
 export enum CommissionType {
   Percentage = "percentage",
   PerPiece = "perPiece",
@@ -21,3 +23,8 @@ export interface OrderItem {
   created_at: Date;
   updated_at: Date;
 }
+
+export const viewOrderIdAtom = atom<string | null>({
+  key: "viewOrderIdAtom",
+  default: null,
+});

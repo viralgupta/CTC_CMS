@@ -34,6 +34,7 @@ import DeleteCustomer from "./DeleteCustomer";
 import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import ViewAllAddresses from "./ViewAllAddresses";
 import EditCustomer from "./EditCustomer";
+import ViewCustomerEstimates from "./ViewCustomerEstimates";
 
 export default function CustomerCard({
   customer,
@@ -149,10 +150,12 @@ export default function CustomerCard({
               View All Addresses
             </Button>
           </ViewAllAddresses>
-          <Button size="sm" variant="outline" className="w-full">
-            <FileTextIcon className="h-4 w-4 mr-2" />
-            View All Estimates
-          </Button>
+          <ViewCustomerEstimates>
+            <Button size="sm" variant="outline" className="w-full">
+              <FileTextIcon className="h-4 w-4 mr-2" />
+              View All Estimates
+            </Button>
+          </ViewCustomerEstimates>
         </div>
       </CardContent>
     </Card>
