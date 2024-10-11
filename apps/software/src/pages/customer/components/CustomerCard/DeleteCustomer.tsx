@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import request from "@/lib/request";
 import { useSetRecoilState } from "recoil";
-import allCustomerAtom, {
+import {
   viewCustomerAtom,
   viewCustomerIDAtom,
 } from "@/store/Customer";
 import React from "react";
+import { useAllCustomer } from "@/hooks/customers";
 
 const DeleteCustomer = ({
   children,
@@ -24,7 +25,7 @@ const DeleteCustomer = ({
   children: React.ReactNode;
   customerId: string;
 }) => {
-  const setAllCustomers = useSetRecoilState(allCustomerAtom);
+  const { refetchCustomers } = useAllCustomer();
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const setViewCustomer = useSetRecoilState(viewCustomerAtom)
 
@@ -35,7 +36,7 @@ const DeleteCustomer = ({
       },
     });
     if (res.status == 200) {
-      setAllCustomers([]);
+      refetchCustomers();
       setViewCustomer(null);
       setViewCustomerId(null);
     }

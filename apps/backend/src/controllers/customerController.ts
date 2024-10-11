@@ -632,7 +632,7 @@ const getAllCustomers = async (_req: Request, res: Response) => {
           limit: 1
         }
       },
-      orderBy: (customer, { desc }) => [desc(customer.balance)],
+      orderBy: (customer, { asc }) => [asc(customer.balance)],
     });
 
     return res.status(200).json({success: true, message: "Customers found", data: customers});

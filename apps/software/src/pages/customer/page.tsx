@@ -1,3 +1,4 @@
+import AllCustomersTable from './components/AllCustomersTable'
 import CreateCustomer from './components/CreateCustomer'
 import SearchCustomer from './components/SearchCustomer'
 import ViewCustomer from './components/ViewCustomer'
@@ -14,8 +15,7 @@ const Customer = () => {
       <SearchCustomer/>
     </div>
     <div className='w-full h-full space-y-8'>
-      {/* <LowStockItems/>
-      <AllItems/> */}
+      <AllCustomersTable/>
       <ViewCustomer/>
       <div>&nbsp;</div>
       <div>&nbsp;</div>

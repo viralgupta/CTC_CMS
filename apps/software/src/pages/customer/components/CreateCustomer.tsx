@@ -26,11 +26,10 @@ import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import AddressInput from "@/components/Inputs/AddressInput/AddressInput";
 import request from "@/lib/request";
-import allCustomerAtom from "@/store/Customer";
-import { useSetRecoilState } from "recoil";
+import { useAllCustomer } from "@/hooks/customers";
 
 const CreateCustomerForm = () => {
-  const setCustomers = useSetRecoilState(allCustomerAtom);
+  const { refetchCustomers } = useAllCustomer();
 
   const form = useForm<z.infer<typeof createCustomerType>>({
     resolver: zodResolver(createCustomerType),
@@ -123,7 +122,7 @@ const CreateCustomerForm = () => {
       const res = await request.post("/customer/createCustomer", values);
       if(res.status == 200){
         form.reset();
-        setCustomers([]);
+        refetchCustomers()
       }
     } catch (error) {
       console.log(error);

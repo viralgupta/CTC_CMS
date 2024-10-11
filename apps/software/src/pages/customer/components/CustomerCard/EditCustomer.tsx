@@ -1,39 +1,11 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import {
-  CircleUserRound,
-  CreditCard,
-  Edit2Icon,
-  FileTextIcon,
-  MapPinIcon,
-  PhoneIcon,
-  Trash2,
-  Trash2Icon,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import request from "@/lib/request";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import allCustomerAtom, {
+import {
   viewCustomerAtom,
   viewCustomerIDAtom,
-  viewCustomerType,
 } from "@/store/Customer";
-import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
 import React from "react";
-import AddressInput from "@/components/Inputs/AddressInput/AddressInput";
-import { addressType } from "@type/api/miscellaneous";
 import { z } from "zod";
 import {
   Form,
@@ -43,16 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { parseBalanceToFloat } from "@/lib/utils";
 import { useForm } from "react-hook-form";
-import { editCustomerType, settleBalanceType } from "@type/api/customer";
+import { editCustomerType } from "@type/api/customer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import Spinner from "@/components/ui/Spinner";
@@ -65,12 +29,13 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
+import { useAllCustomer } from "@/hooks/customers";
 
 const EditCustomer = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewCustomer, setViewCustomer] = useRecoilState(viewCustomerAtom);
   const setViewCustomerID = useSetRecoilState(viewCustomerIDAtom);
-  const setAllCustomers = useSetRecoilState(allCustomerAtom);
+  const { refetchCustomers } = useAllCustomer();
 
   const EditItemForm = () => {
     const form = useForm<z.infer<typeof editCustomerType>>({
@@ -88,7 +53,7 @@ const EditCustomer = ({ children }: { children: React.ReactNode }) => {
       if (res.status == 200) setOpen(false);
       setViewCustomerID(null);
       setViewCustomer(null);
-      setAllCustomers([]);
+      refetchCustomers();
     }
 
     return (

@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import request from "@/lib/request";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import allCustomerAtom, {
+import {
   viewCustomerAtom,
   viewCustomerIDAtom,
   viewCustomerType,
@@ -35,6 +35,7 @@ import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import ViewAllAddresses from "./ViewAllAddresses";
 import EditCustomer from "./EditCustomer";
 import ViewCustomerEstimates from "./ViewCustomerEstimates";
+import { useAllCustomer } from "@/hooks/customers";
 
 export default function CustomerCard({
   customer,
@@ -169,7 +170,7 @@ const SettleBalance = ({
   children: React.ReactNode;
 }) => {
   const [open, setOpen] = React.useState(false);
-  const setAllCustomers = useSetRecoilState(allCustomerAtom);
+  const { refetchCustomers } = useAllCustomer();
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const [viewCustomer, setViewCustomer] = useRecoilState(viewCustomerAtom);
 
@@ -180,7 +181,7 @@ const SettleBalance = ({
     });
     if (res.status == 200) {
       setOpen(false);
-      setAllCustomers([]);
+      refetchCustomers();
       setViewCustomer(null);
       setViewCustomerId(null);
     }

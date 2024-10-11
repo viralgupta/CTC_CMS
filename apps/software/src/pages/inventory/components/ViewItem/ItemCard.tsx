@@ -35,7 +35,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import allItemsAtom, {
+import {
   viewItemAtom,
   viewItemIDAtom,
 } from "@/store/Items";
@@ -52,6 +52,7 @@ import { z } from "zod";
 import request from "@/lib/request";
 import React from "react";
 import { editItemType } from "@type/api/item";
+import { useAllItems } from "@/hooks/items";
 
 interface ItemType {
   id: string;
@@ -171,7 +172,7 @@ export default function ItemCard({ item }: { item: ItemType | null }) {
 const EditItem = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
-  const setAllItems = useSetRecoilState(allItemsAtom);
+  const { refetchItems } = useAllItems();
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
 
   const EditItemForm = () => {
@@ -196,7 +197,7 @@ const EditItem = ({ children }: { children: React.ReactNode }) => {
         setOpen(false);
         setViewItemID(null);
         setViewItem(null);
-        setAllItems([]);
+        refetchItems();
       }
     }
 
@@ -373,7 +374,7 @@ const EditItem = ({ children }: { children: React.ReactNode }) => {
 const EditItemQuantity = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
-  const setAllItems = useSetRecoilState(allItemsAtom);
+  const { refetchItems } = useAllItems();
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
 
   const EditItemQuantityForm = () => {
@@ -395,7 +396,7 @@ const EditItemQuantity = ({ children }: { children: React.ReactNode }) => {
         setOpen(false);
         setViewItemID(null);
         setViewItem(null);
-        setAllItems([]);
+        refetchItems();
       }
     }
 
@@ -503,7 +504,7 @@ const DeleteItem = ({
   children: React.ReactNode;
   itemId: string;
 }) => {
-  const setAllItems = useSetRecoilState(allItemsAtom);
+  const { refetchItems } = useAllItems();
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
 
   const handleDelete = async () => {
@@ -513,7 +514,7 @@ const DeleteItem = ({
       },
     });
     if(res.status == 200) {
-      setAllItems([]);
+      refetchItems();
       setViewItemId(null);
     }
   };

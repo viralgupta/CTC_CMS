@@ -190,7 +190,8 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle("EMERGENCY", async () => {
-    await clearAppData(true)
+    await clearAppData(true);
+    // lock the db
     shutdown.shutdown({
       force: true,
       quitapp: true

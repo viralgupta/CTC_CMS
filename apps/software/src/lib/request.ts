@@ -16,25 +16,28 @@ request.interceptors.response.use(function (response) {
     console.log("error", error.response.data);
   }
   if(error.response.data.message){
-    let formErrors = "";
-    let fieldErrors = "";
+    let errorDescription = "";
 
     if(error.response.data?.error?.formErrors && error.response.data?.error?.formErrors.length > 0){
-      formErrors = "Form errors: ";
+      errorDescription += "Form errors: ";
       error.response.data?.error?.formErrors.forEach((error: string) => {
-        formErrors += `${error}, `;
+        errorDescription += `${error}, `;
       });
     }
 
     if(error.response.data?.error?.fieldErrors && Object.keys(error.response.data?.error?.fieldErrors).length > 0){
-      fieldErrors = "Field errors: ";
+      errorDescription += "Field errors: ";
       for (const [key, value] of Object.entries(error.response.data?.error?.fieldErrors as Record<string, string[]>)) {
-        fieldErrors += `${key}: ${value.join(", ")}`;
+        errorDescription += `${key}: ${value.join(", ")}`;
       }
     }
 
+    if(error.response.data?.error?.code){
+      errorDescription += `CODE: ${error.response.data?.error?.code}`
+    }
+
     toast.error(error.response.data.message, {
-      description: typeof(error.response.data.error) == "string" ? error.response.data.errors : `${formErrors} ${fieldErrors}`
+      description: typeof(error.response.data.error) == "string" ? error.response.data.error : errorDescription
     });
   }
   return Promise.resolve(error);
