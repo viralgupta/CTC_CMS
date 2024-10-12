@@ -19,7 +19,6 @@ import { setDebouncedValue } from "@/lib/utils";
 import {
   AdvancedMarker,
   Map,
-  useMap,
   useMapsLibrary,
   type MapCameraChangedEvent,
 } from "@vis.gl/react-google-maps";
@@ -48,7 +47,6 @@ const CordinatesInput = ({
 }: CordinatesInputProps) => {
   const { resolvedTheme } = useTheme();
   const geocodingLib = useMapsLibrary("geocoding");
-  const map = useMap("map");
   const [address, setAddress] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [cordinates, setCordinates] = React.useState({
@@ -84,10 +82,6 @@ const CordinatesInput = ({
           latitude: lat,
           longitude: lng,
         });
-        if (map) {
-          map.setCenter({ lat, lng });
-          map.setZoom(15);
-        }
       }
     }
   }
@@ -182,7 +176,7 @@ const CordinatesInput = ({
           mapId={"8d0a820dd0d59a20"}
           colorScheme={resolvedTheme == "dark" ? "DARK" : "LIGHT"}
           defaultZoom={15}
-          defaultCenter={{
+          center={{
             lat: cordinates.latitude ?? 0,
             lng: cordinates.longitude ?? 0
           }}

@@ -301,7 +301,17 @@ const addAddress = async (req: Request, res: Response) => {
         }
       }
 
-      await tx.insert(address).values(addAddressTypeAnswer.data);;      
+      await tx.insert(address).values({
+        customer_id: addAddressTypeAnswer.data.customer_id,
+        house_number: addAddressTypeAnswer.data.house_number,
+        address: addAddressTypeAnswer.data.address,
+        address_area_id: addAddressTypeAnswer.data.address_area_id,
+        city: addAddressTypeAnswer.data.city,
+        state: addAddressTypeAnswer.data.state,
+        isPrimary: addAddressTypeAnswer.data.isPrimary,
+        latitude: addAddressTypeAnswer.data.cordinates?.latitude,
+        longitude: addAddressTypeAnswer.data.cordinates?.longitude
+      });;      
     })
 
 
@@ -350,9 +360,17 @@ const editAddress = async (req: Request, res: Response) => {
         }
       }
 
-      const {"address_id": _, ...dataToUpdate} = editAddressTypeAnswer.data;
 
-      return await tx.update(address).set(dataToUpdate).where(eq(address.id, editAddressTypeAnswer.data.address_id)).returning();
+      return await tx.update(address).set({
+        house_number: editAddressTypeAnswer.data.house_number,
+        address: editAddressTypeAnswer.data.address,
+        address_area_id: editAddressTypeAnswer.data.address_area_id,
+        city: editAddressTypeAnswer.data.city,
+        state: editAddressTypeAnswer.data.state,
+        isPrimary: editAddressTypeAnswer.data.isPrimary,
+        latitude: editAddressTypeAnswer.data.cordinates?.latitude,
+        longitude: editAddressTypeAnswer.data.cordinates?.longitude
+      }).where(eq(address.id, editAddressTypeAnswer.data.address_id)).returning();
     })
 
     return res.status(200).json({success: true, message: "Address updated successfully", data: updatedAddress});
