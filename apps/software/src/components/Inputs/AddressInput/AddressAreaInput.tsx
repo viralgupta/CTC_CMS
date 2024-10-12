@@ -23,13 +23,15 @@ import { toast } from "sonner";
 import request from "@/lib/request";
 import Spinner from "../../ui/Spinner";
 import Fuse from "fuse.js";
+import { cn } from "@/lib/utils";
 
 type AddressAreaInputProps = {
   onChange: (value: string) => void;
   value: string;
+  className?: string;
 };
 
-const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
+const AddressAreaInput = ({ onChange, value, className }: AddressAreaInputProps) => {
   const [open, setOpen] = useState(false);
   const [inputAddressArea, setInputAddressArea] = useState("");
   const [addAddressAreaLoading, setAddAddressAreaLoading] = useState(false);
@@ -67,10 +69,11 @@ const AddressAreaInput = ({ onChange, value }: AddressAreaInputProps) => {
       }}
       open={open}
     >
-      <DialogTrigger className="w-full">
+      <DialogTrigger className={cn("w-full", className)}>
         <Input
+          className="h-full"
           placeholder={
-            value ? addressAreas.find((area) => area.id == value)?.area : ""
+            value ? addressAreas.find((area) => area.id == value)?.area : "Select Address Area..."
           }
         />
       </DialogTrigger>

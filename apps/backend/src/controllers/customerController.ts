@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import db from "@db/db";
 import { address, address_area, customer, phone_number } from "@db/schema";
-import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getCustomerAddressesType, getCustomersByAreaType, getCustomerType, settleBalanceType } from "@type/api/customer";
+import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getAddressType, getCustomerAddressesType, getCustomersByAreaType, getCustomerType, settleBalanceType } from "@type/api/customer";
 import { eq, and } from "drizzle-orm";
 
 const createCustomer = async (req: Request, res: Response) => {
@@ -174,6 +174,97 @@ const getAllAddressAreas = async (_req: Request, res: Response) => {
   }
 }
 
+const getAllAddresses = async (_req: Request, res: Response) => {
+  try {
+
+    const allAddresses = await db.transaction(async (tx) => {
+      return await tx.query.address.findMany({
+        columns: {
+          address_area_id: false,
+          latitude: false,
+          longitude: false,
+          state: false,
+          customer_id: false
+        },
+        with: {
+          customer: {
+            columns: {
+              id: true,
+              name: true
+            }
+          },
+          address_area: {
+            columns: {
+              area: true,
+              id: true
+            }
+          }
+        }
+      })
+    })
+
+    return res.status(200).json({success: true, message: "Addresses found!", data: allAddresses});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find addresses", error: error.message ? error.message : error});
+  }
+}
+
+const getAddress = async (req: Request, res: Response) => {
+  const getAddressTypeAnswer = getAddressType.safeParse(req.query);
+
+  if (!getAddressTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getAddressTypeAnswer.error?.flatten()})
+  }
+
+  try {
+
+    const foundAddress = await db.transaction(async (tx) => {
+      const txAddress = await tx.query.address.findFirst({
+        columns: {
+          address_area_id: false,
+          customer_id: false
+        },
+        where: (address, { eq }) => eq(address.id, getAddressTypeAnswer.data.address_id),
+        with: {
+          orders: {
+            columns: {
+              id: true,
+              total_order_amount: true,
+              status: true,
+              payment_status: true,
+              delivery_date: true,
+              created_at: true
+            },
+            orderBy: (address, { desc }) => [desc(address.created_at)]
+          },
+          address_area: {
+            columns: {
+              id: true,
+              area: true
+            }
+          },
+          customer: {
+            columns: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      })
+      
+      if (!txAddress) {
+        throw new Error("Address Not Found");
+      }
+
+      return txAddress;
+    })
+
+    return res.status(200).json({success: true, message: "Address found!", data: foundAddress});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to add address", error: error.message ? error.message : error});
+  }  
+}
+
 const addAddress = async (req: Request, res: Response) => {
   const addAddressTypeAnswer = addAddressType.safeParse(req.body);
 
@@ -315,40 +406,6 @@ const deleteAddress = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Address deleted successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete address", error: error.message ? error.message : error});
-  }
-}
-
-const getCustomerAddresses = async (req: Request, res: Response) => {
-  const getCustomerAddressesTypeAnswer = getCustomerAddressesType.safeParse(req.query);
-
-  if(!getCustomerAddressesTypeAnswer.success) {
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: getCustomerAddressesTypeAnswer.error?.flatten()})
-  }
-
-  try {
-
-    const addresses = await db.transaction(async (tx) => {
-      const tAddresses = await tx.query.address.findMany({
-        where: (address, { eq }) => eq(address.customer_id, getCustomerAddressesTypeAnswer.data.customer_id),
-        columns: {
-          house_number: true,
-          address: true,
-          isPrimary: true,
-        }, 
-        with: {
-          address_area: {
-            columns: {
-              area: true
-            }
-          }
-        }
-      })
-      return tAddresses;
-    })
-    
-    return res.status(200).json({success: true, message: "Customer Address fetched successfully", data: addresses});
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to get customer address", error: error.message ? error.message : error});
   }
 }
 
@@ -643,11 +700,12 @@ const getAllCustomers = async (_req: Request, res: Response) => {
 
 export {
   createCustomer,
+  getAllAddresses,
+  getAddress,
   addAddress,
   deleteAddressArea,
   editAddress,
   deleteAddress,
-  getCustomerAddresses,
   addAddressArea,
   getAllAddressAreas,
   editCustomer,

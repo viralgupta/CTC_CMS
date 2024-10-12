@@ -13,6 +13,9 @@ import Resources from "./pages/resources/page"
 import Address from "./pages/address/page"
 import Inventory from "./pages/inventory/page"
 import Estimate from "./pages/estimate/page"
+import ViewCustomer from "./pages/customer/components/ViewCustomer"
+import ViewItem from "./pages/inventory/components/ViewItem/ViewItem"
+import ViewAddress from "./pages/address/components/ViewAddress"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -47,6 +50,9 @@ function App() {
   return (
     <div className='w-full h-full'>
       <Header/>
+      <ViewCustomer/>
+      <ViewItem/>
+      <ViewAddress/>
       <Body>
           {renderTabContent()}
       </Body>

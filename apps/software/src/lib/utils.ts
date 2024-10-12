@@ -39,7 +39,11 @@ export function parseBalanceToFloat(balance: string | null) {
   return parseFloat(balance);
 }
 
-export function parseDateToString(date: Date) {
+export function parseDateToString(date: Date | null) {
+  if (date === null) {
+    return "--";
+  }
+
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "short",

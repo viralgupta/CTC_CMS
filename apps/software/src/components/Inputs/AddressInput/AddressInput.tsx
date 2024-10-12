@@ -31,12 +31,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Eye, Trash2 } from "lucide-react";
 import AddressAreaInput from "./AddressAreaInput";
 import CordinatesInput from "./CordinatesInput";
-import { APIProvider } from "@vis.gl/react-google-maps";
-import { useRecoilValue } from "recoil";
-import addressAreaAtom from "@/store/addressArea";
+import { useAddressAreas } from "@/hooks/addressArea";
 
 const addressTypeWithOptionals = addressType.extend({
   id: z.string().optional(),
@@ -48,22 +46,19 @@ const AddressArrayWithOptionals = z.array(addressTypeWithOptionals);
 type AddressInputProps = {
   AddAddress: (data: z.infer<typeof addressTypeWithOptionals>) => void;
   removeAddress?: (value: string) => void;
-  deleteAddress?: ({ children, addressId, }: {
-    children: React.ReactNode;
-    addressId: string;
-  }) => JSX.Element
+  viewAddress?: (id: string) => void;
   values: z.infer<typeof AddressArrayWithOptionals>;
   children?: React.ReactNode
 };
 
 const AddressInput = ({
   AddAddress,
+  viewAddress,
   removeAddress,
   values,
-  deleteAddress: DeleteAddress,
   children
 }: AddressInputProps) => {
-  const addressAreas = useRecoilValue(addressAreaAtom);
+  const { addressAreas } = useAddressAreas();
 
   const form = useForm<z.infer<typeof addressTypeWithOptionals>>({
     resolver: zodResolver(addressTypeWithOptionals),
@@ -125,6 +120,7 @@ const AddressInput = ({
                       <AddressAreaInput
                         onChange={field.onChange}
                         value={field.value}
+                        className="h-10"
                       />
                     </FormControl>
                     <FormMessage />
@@ -199,9 +195,6 @@ const AddressInput = ({
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <APIProvider
-                        apiKey={import.meta.env.VITE_GOOGLE_MAPS_API}
-                      >
                         <CordinatesInput
                           disabled={
                             form.getValues("address") == "" ||
@@ -223,7 +216,6 @@ const AddressInput = ({
                             );
                           }}
                         />
-                      </APIProvider>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -254,7 +246,7 @@ const AddressInput = ({
               <TableHead className="w-min text-center">Address Area</TableHead>
               <TableHead className="w-min text-center">City</TableHead>
               <TableHead className="w-min text-center">Primary</TableHead>
-              <TableHead className="w-min text-center">Delete</TableHead>
+              <TableHead className="w-min text-center">{viewAddress ? "View" : "Remove"}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -283,28 +275,20 @@ const AddressInput = ({
                         <X className="mx-auto" />
                       )}
                     </TableCell>
-                    <TableCell>
-                      {DeleteAddress ? (
-                        <DeleteAddress addressId={v.id ? v.id : ""}>
-                          <Button
-                            size={"icon"}
-                            onClick={() =>
-                              removeAddress && removeAddress(v.address)
-                            }
-                          >
-                            <Trash2 />
-                          </Button>
-                        </DeleteAddress>
-                      ) : (
-                        <Button
-                          size={"icon"}
-                          onClick={() =>
-                            removeAddress && removeAddress(v.address)
+                    <TableCell className="flex justify-center">
+                      <Button
+                        size={"icon"}
+                        onClick={() => {
+                          if (viewAddress) {
+                            viewAddress(v.id ?? "");
+                          } else if (removeAddress) {
+                            removeAddress(v.address);
                           }
-                        >
-                          <Trash2 />
-                        </Button>
-                      )}
+                        }}
+                      >
+                        {viewAddress && <Eye/>}
+                        {removeAddress && <Trash2 />}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

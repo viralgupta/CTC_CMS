@@ -27,6 +27,7 @@ const ViewCustomer = () => {
 
   return (
     <Dialog
+      key={viewCustomerId}
       open={viewCustomerId ? true : false}
       onOpenChange={(o) => {
         if (!o) {

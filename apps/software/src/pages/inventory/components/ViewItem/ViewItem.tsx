@@ -27,6 +27,7 @@ const ViewItem = () => {
 
   return (
     <Dialog
+      key={itemId}
       open={itemId ? true : false}
       onOpenChange={(o) => {
         if (!o) {

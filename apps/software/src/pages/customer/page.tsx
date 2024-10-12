@@ -1,7 +1,6 @@
 import AllCustomersTable from './components/AllCustomersTable'
 import CreateCustomer from './components/CreateCustomer'
 import SearchCustomer from './components/SearchCustomer'
-import ViewCustomer from './components/ViewCustomer'
 
 const Customer = () => {
   return (
@@ -16,7 +15,6 @@ const Customer = () => {
     </div>
     <div className='w-full h-full space-y-8'>
       <AllCustomersTable/>
-      <ViewCustomer/>
       <div>&nbsp;</div>
       <div>&nbsp;</div>
     </div>

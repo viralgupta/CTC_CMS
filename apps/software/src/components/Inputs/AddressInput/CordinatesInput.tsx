@@ -178,7 +178,7 @@ const CordinatesInput = ({
           </Button>
         </div>
         <Map
-          id="map"
+          id="map2"
           mapId={"8d0a820dd0d59a20"}
           colorScheme={resolvedTheme == "dark" ? "DARK" : "LIGHT"}
           defaultZoom={15}

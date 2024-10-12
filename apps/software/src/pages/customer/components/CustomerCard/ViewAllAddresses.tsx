@@ -1,14 +1,3 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import request from "@/lib/request";
 import { useSetRecoilState } from "recoil";
 import {
@@ -20,6 +9,7 @@ import React from "react";
 import AddressInput from "@/components/Inputs/AddressInput/AddressInput";
 import { addressType } from "@type/api/miscellaneous";
 import { z } from "zod";
+import { allAddressAtom, viewAddressIdAtom } from "@/store/address";
 
 const ViewAllAddresses = ({
   children,
@@ -32,55 +22,8 @@ const ViewAllAddresses = ({
 }) => {
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const setViewCustomer = useSetRecoilState(viewCustomerAtom);
-
-  const deleteAddress = ({
-    children,
-    addressId,
-  }: {
-    children: React.ReactNode;
-    addressId: string;
-  }) => {
-    const [open, setOpen] = React.useState(false);
-
-    async function handleDelete(id: string) {
-      const res = await request.delete("/customer/deleteAddress", {
-        data: {
-          address_id: id
-        },
-      });
-      if (res.status == 200) {
-        setOpen(false);
-        setViewCustomerId(null);
-        setViewCustomer(null);
-      }
-    }
-
-    return (
-      <AlertDialog onOpenChange={setOpen} open={open}>
-        <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you sure you want to delete address?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete Address linked to the customer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                handleDelete(addressId);
-              }}
-            >
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  };
+  const setViewAddressId = useSetRecoilState(viewAddressIdAtom);
+  const setAllAddresses = useSetRecoilState(allAddressAtom);
 
   const AddAddress = (
     data: z.infer<typeof addressType>
@@ -92,13 +35,14 @@ const ViewAllAddresses = ({
       if (res.status == 200) {
         setViewCustomer(null);
         setViewCustomerId(null);
+        setAllAddresses([]);
       }
     })
   };
 
   return (
     <AddressInput
-      deleteAddress={deleteAddress}
+      viewAddress={setViewAddressId}
       AddAddress={AddAddress}
       values={values.map((address) => {
         return {

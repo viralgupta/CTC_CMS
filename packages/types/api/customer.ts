@@ -45,9 +45,11 @@ export const editAddressType = addressType
     customer_id: z.string(),
   });
 
-export const deleteAddressType = z.object({
+export const getAddressType = z.object({
   address_id: z.string(),
 });
+
+export const deleteAddressType = getAddressType;
 
 export const getCustomerAddressesType = z.object({
   customer_id: z.string().uuid()
