@@ -11,10 +11,19 @@ export interface itemType {
   rate_dimension: "Rft" | "sq/ft" | "piece";
 };
 
+type viewItemOrderItems = Omit<OrderItem, "item_id">  & {
+  order: {
+    customer_id: string | null;
+    customer: {
+      name: string;
+    } | null;
+  };
+}
+
 export interface viewItemType extends itemType {
   multiplier: number;
   min_rate: number | null;
-  order_items: Omit<OrderItem, "id" | "total_value">[]
+  order_items: viewItemOrderItems[];
 }
 
 const allItemsAtom = atom<itemType[]>({

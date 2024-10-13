@@ -49,7 +49,20 @@ const getItem = async (req: Request, res: Response) => {
         order_items: {
           columns: {
             item_id: false,
-            total_value: false,
+          },
+          with: {
+            order: {
+              with: {
+                customer: {
+                  columns: {
+                    name: true
+                  }
+                }
+              },
+              columns: {
+                customer_id: true
+              }
+            }
           },
           orderBy: (item, { desc }) => [desc(item.created_at)],
           limit: 20
