@@ -3,8 +3,8 @@ import { useRecoilValue } from "recoil";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import request from "@/lib/request";
-import SearchCustomer from "@/pages/customer/components/SearchCustomer";
 import { useAllOrders } from "@/hooks/orders";
+import SearchArchitect from "@/pages/architect/components/SearchArchitect";
 
 const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
@@ -22,7 +22,7 @@ const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
 
   return (
     <div className="space-y-4 flex flex-col">
-      <SearchCustomer
+      <SearchArchitect
         value={architect_id}
         onChange={setArchitect_id}
         className="rounded-lg"

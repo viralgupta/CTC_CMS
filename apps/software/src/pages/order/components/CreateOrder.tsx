@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import SelectOrderItems from "./Input/SelectOrderItems/SelectOrderItems";
 import { useAllItems } from "@/hooks/items";
 import React from "react";
+import SearchArchitect from "@/pages/architect/components/SearchArchitect";
 
 const CreateOrder = () => {
   return (
@@ -177,7 +178,7 @@ const CreateOrderForm = () => {
                 <FormItem className="w-full">
                   <FormLabel>Architect</FormLabel>
                   <FormControl>
-                    <SearchCustomer
+                    <SearchArchitect
                       value={field.value}
                       onChange={field.onChange}
                       className="rounded-lg"

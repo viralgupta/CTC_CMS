@@ -142,6 +142,7 @@ const getArchitect = async (req: Request, res: Response) => {
       with: {
         phone_numbers: {
           columns: {
+            id: true,
             phone_number: true,
             country_code: true,
             isPrimary: true,
@@ -149,17 +150,26 @@ const getArchitect = async (req: Request, res: Response) => {
           }
         },
         orders: {
+          orderBy: (order, { desc }) => [desc(order.created_at)],
           columns: {
             id: true,
             architect_commision: true,
+            status: true,
+            created_at: true
           },
           with: {
             delivery_address: {
                columns: {
+                 house_number: true,
                  address: true,
                }
+            },
+            customer: {
+              columns: {
+                name: true
+              }
             }
-          }
+          },
         }
       }
     });
@@ -227,6 +237,15 @@ const getAllArchitects = async (_req: Request, res: Response) => {
     const architects = await db.query.architect.findMany({
       columns: {
         profileUrl: false
+      },
+      with: {
+        phone_numbers: {
+          columns: {
+            phone_number: true
+          },
+          where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+          limit: 1
+        }
       }
     });
 
