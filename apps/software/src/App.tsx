@@ -16,6 +16,7 @@ import Estimate from "./pages/estimate/page"
 import ViewCustomer from "./pages/customer/components/ViewCustomer"
 import ViewItem from "./pages/inventory/components/ViewItem/ViewItem"
 import ViewAddress from "./pages/address/components/ViewAddress"
+import ViewOrder from "./pages/order/components/ViewOrder"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -53,6 +54,7 @@ function App() {
       <ViewCustomer/>
       <ViewItem/>
       <ViewAddress/>
+      <ViewOrder/>
       <Body>
           {renderTabContent()}
       </Body>

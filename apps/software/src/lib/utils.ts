@@ -55,3 +55,35 @@ export function parseDateToString(date: Date | null) {
 
   return new Date(date).toLocaleString("en-US", options)
 }
+
+export const calculateCommissionFromTotalCommission = (
+  commission: string | undefined,
+  type: "percentage" | "perPiece" | undefined | null,
+  totalValue: string | undefined,
+  quantity: number
+) => {
+  const Ncommission = parseFloat(commission ?? "0.00");
+  const NTotalValue = parseFloat(totalValue ?? "0.00");
+  if(Ncommission == 0){
+    return {
+      value: 0,
+      bracket: ""
+    }
+  }
+  if (type == "percentage") {
+    return {
+      value: (Ncommission * 100) / NTotalValue,
+      bracket: `( ${(Ncommission * 100) / NTotalValue}% of ${NTotalValue} )`
+    }
+  } else if (type == "perPiece") {
+    return {
+      value: Ncommission / quantity,
+      bracket: `( ${Ncommission / quantity} per piece )`
+    }
+  } else {
+    return {
+      value: 0,
+      bracket: ""
+    }
+  }
+};

@@ -37,6 +37,10 @@ export const getItemType = z.object({
   item_id: z.string().uuid("Invalid Item ID"),
 })
 
+export const getItemRatesType = getItemType.extend({
+  customer_id: z.string().uuid().optional()
+});
+
 export const editItemType = createItemType
   .extend({
     item_id: z.string().uuid("Invalid Item ID"),

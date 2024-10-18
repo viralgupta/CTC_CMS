@@ -271,9 +271,9 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
       })
     })
 
-    return res.status(200).json({success: true, message: "Updated Order Status!!!"})
+    return res.status(200).json({success: true, message: "Updated Order Customer!!!"})
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to create order", error: error.message ? error.message : error});  
+    return res.status(400).json({success: false, message: "Unable to update customer for order!", error: error.message ? error.message : error});  
   }
 }
 
@@ -518,7 +518,7 @@ const editOrderPriority = async (req: Request, res: Response) => {
     await db.transaction(async (tx) => {
       await tx.update(order).set({
         priority: editOrderPriorityTypeAnswer.data.priority
-      }).where(eq(order.id, editOrderPriorityTypeAnswer.data.priority));
+      }).where(eq(order.id, editOrderPriorityTypeAnswer.data.order_id));
     })
     
     return res.status(200).json({success: true, message: "Updated Order Priority!!!"})
@@ -1057,70 +1057,96 @@ const getAllOrders = async (req: Request, res: Response) => {
        const tOrders = await tx.query.order.findMany({
          limit: 10,
          where(order, { lt, eq, and }) {
-           if (!getAllOrdersTypeAnswer.data.filter) {
-             if (getAllOrdersTypeAnswer.data.cursor) {
-               return lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor);
-             } else {
-               return undefined;
-             }
-           } else {
-             switch (getAllOrdersTypeAnswer.data.filter) {
-              case "Status-Pending":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.status, "Pending"))
-                } else {
-                  return eq(order.status, "Pending")
-                }
-              case "Status-Delivered":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.status, "Delivered"))
-                } else {
-                  return eq(order.status, "Delivered")
-                }
-              case "Payment-UnPaid":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.payment_status, "UnPaid"))
-                } else {
-                  return eq(order.payment_status, "UnPaid")
-                }
-              case "Payment-Partial":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.payment_status, "Partial"))
-                } else {
-                  return eq(order.payment_status, "Partial")
-                }
-              case "Payment-Paid":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.payment_status, "Paid"))
-                } else {
-                  return eq(order.payment_status, "Paid")
-                }
-              case "Priority-Low":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.priority, "Low"))
-                } else {
-                  return eq(order.priority, "Low")
-                }
-              case "Priority-Medium":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.priority, "Medium"))
-                } else {
-                  return eq(order.priority, "Medium")
-                }
-              case "Priority-High":
-                if(getAllOrdersTypeAnswer.data.cursor){
-                  return and(lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor), eq(order.priority, "High"))
-                } else {
-                  return eq(order.priority, "High")
-                }
-              default:
-                undefined;
-                break;
-             }
+           switch (getAllOrdersTypeAnswer.data.filter) {
+             case "Status-Pending":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.status, "Pending")
+                 );
+               } else {
+                 return eq(order.status, "Pending");
+               }
+             case "Status-Delivered":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.status, "Delivered")
+                 );
+               } else {
+                 return eq(order.status, "Delivered");
+               }
+             case "Payment-UnPaid":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.payment_status, "UnPaid")
+                 );
+               } else {
+                 return eq(order.payment_status, "UnPaid");
+               }
+             case "Payment-Partial":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.payment_status, "Partial")
+                 );
+               } else {
+                 return eq(order.payment_status, "Partial");
+               }
+             case "Payment-Paid":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.payment_status, "Paid")
+                 );
+               } else {
+                 return eq(order.payment_status, "Paid");
+               }
+             case "Priority-Low":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.priority, "Low")
+                 );
+               } else {
+                 return eq(order.priority, "Low");
+               }
+             case "Priority-Medium":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.priority, "Medium")
+                 );
+               } else {
+                 return eq(order.priority, "Medium");
+               }
+             case "Priority-High":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return and(
+                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                   eq(order.priority, "High")
+                 );
+               } else {
+                 return eq(order.priority, "High");
+               }
+             case "All":
+               if (getAllOrdersTypeAnswer.data.cursor) {
+                 return lt(
+                   order.updated_at,
+                   getAllOrdersTypeAnswer.data.cursor
+                 );
+               } else {
+                 return undefined;
+               }
+             default:
+               undefined;
+               break;
            }
          },
          orderBy: (order, { desc }) => [desc(order.updated_at)],
          columns: {
+           id: true,
            status: true,
            payment_status: true,
            priority: true,
@@ -1150,7 +1176,7 @@ const getAllOrders = async (req: Request, res: Response) => {
 }
 
 const getOrder = async (req: Request, res: Response) => {
-  const getOrderTypeAnswer = getOrderType.safeParse(req.body);
+  const getOrderTypeAnswer = getOrderType.safeParse(req.query);
 
   if(!getOrderTypeAnswer.success) {
     return res.status(400).json({success: false, message: "Input fields are not correct", error: getOrderTypeAnswer.error.flatten()})
@@ -1208,9 +1234,35 @@ const getOrder = async (req: Request, res: Response) => {
           },
           delivery_address: {
             columns: {
+              id: true,
               house_number: true,
               address: true,
-              city: true
+            },
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          },
+          order_items: {
+            columns: {
+              quantity: true,
+              rate: true,
+              total_value: true,
+              architect_commision: true,
+              architect_commision_type: true,
+              carpanter_commision: true,
+              carpanter_commision_type: true,
+              item_id: true
+            },
+            with: {
+              item: {
+                columns: {
+                  rate_dimension: true
+                }
+              }
             }
           }
         },

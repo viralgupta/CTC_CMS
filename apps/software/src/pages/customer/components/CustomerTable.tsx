@@ -13,15 +13,21 @@ interface DataTableProps {
   CompKey: string;
   data: CustomerType[];
   columnFilters?: ColumnFiltersState;
+  onChange?: (cusId: string) => void;
 }
 
-declare module '@tanstack/react-table' {
+declare module "@tanstack/react-table" {
   interface FilterFns {
-    fuzzy: FilterFn<unknown>
+    fuzzy: FilterFn<unknown>;
   }
 }
 
-function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
+function CustomerTable({
+  CompKey: key,
+  data,
+  columnFilters = [],
+  onChange,
+}: DataTableProps) {
   const setViewCustomerIdAtom = useSetRecoilState(viewCustomerIDAtom);
 
   const columns: ColumnDef<CustomerType>[] = [
@@ -34,15 +40,15 @@ function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProp
       id: "name",
       accessorKey: "name",
       header: "Name",
-      filterFn: "fuzzy"
+      filterFn: "fuzzy",
     },
     {
       id: "phone_number",
       accessorFn: (row) => {
-        return `${row.phone_numbers[0].phone_number ?? "--"}`
+        return `${row.phone_numbers[0].phone_number ?? "--"}`;
       },
       header: "Phone Number",
-      filterFn: "fuzzy"
+      filterFn: "fuzzy",
     },
     {
       id: "balance",
@@ -50,7 +56,13 @@ function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProp
       header: "Balance",
       cell: ({ row }) => {
         return (
-          <div className={parseBalanceToFloat(row.original.balance) < 0 ? "text-red-500" : ""}>
+          <div
+            className={
+              parseBalanceToFloat(row.original.balance) < 0
+                ? "text-red-500"
+                : ""
+            }
+          >
             {row.original.balance}
           </div>
         );
@@ -59,14 +71,14 @@ function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProp
     {
       id: "house_number",
       accessorFn: (originalRow) => {
-        return originalRow.addresses[0]?.house_number ?? "--"
+        return originalRow.addresses[0]?.house_number ?? "--";
       },
       header: "House Number",
     },
     {
       id: "area",
       accessorFn: (originalRow) => {
-        return originalRow.addresses[0]?.address_area?.area ?? "--"
+        return originalRow.addresses[0]?.address_area?.area ?? "--";
       },
       header: "Area",
     },
@@ -84,10 +96,14 @@ function CustomerTable({ CompKey: key, data, columnFilters = [] }: DataTableProp
             variant="outline"
             className="px-2"
             onClick={() => {
-              setViewCustomerIdAtom(customerId);
+              if (onChange) {
+                onChange(customerId);
+              } else {
+                setViewCustomerIdAtom(customerId);
+              }
             }}
           >
-            View Customer
+            {onChange ? "Select Customer" : "View Customer"}
           </Button>
         );
       },

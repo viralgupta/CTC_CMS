@@ -27,7 +27,7 @@ const SettleBalanceForm = ({
   onSubmit,
   existingBalance
 }: {
-  onSubmit: (values: Omit<Omit<z.infer<typeof settleBalanceType>, "customer_id">, "amount"> & { amount: string }) => void;
+  onSubmit: (values: Omit<z.infer<typeof settleBalanceType>, "customer_id" | "amount"> & { amount: string }) => void;
   existingBalance: string
 }) => {
   const [totalValue, setTotalValue] = React.useState<number | null>(

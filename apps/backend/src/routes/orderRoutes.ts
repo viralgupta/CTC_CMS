@@ -15,9 +15,9 @@ orderRouter.route('/editOrderDeliveryDate').put(editOrderDeliveryDate)
 orderRouter.route('/editOrderDeliveryAddressId').put(editOrderDeliveryAddressId)
 orderRouter.route('/editOrderLabourAndFrateCost').put(editOrderLabourAndFrateCost)
 orderRouter.route('/editOrderDiscount').put(editOrderDiscount)
-orderRouter.route('/settleBalance').put(settleBalance)
 orderRouter.route('/editOrderItems').put(editOrderItems)
-orderRouter.route('/getAllOrders').get(getAllOrders)
+orderRouter.route('/settleBalance').put(settleBalance)
+orderRouter.route('/getAllOrders').post(getAllOrders)
 orderRouter.route('/getOrder').get(getOrder)
 
 export default orderRouter;

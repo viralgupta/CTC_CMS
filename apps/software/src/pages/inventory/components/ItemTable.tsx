@@ -1,7 +1,4 @@
-import {
-  ColumnDef,
-  ColumnFiltersState,
-} from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import {
   Tooltip,
   TooltipContent,
@@ -17,9 +14,10 @@ interface DataTableProps {
   CompKey: string;
   data: itemType[];
   columnFilters?: ColumnFiltersState;
+  onChange?: (val: string) => void;
 }
 
-function ItemTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
+function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTableProps) {
   const setViewItemIDAtom = useSetRecoilState(viewItemIDAtom);
 
   const columns: ColumnDef<itemType>[] = [
@@ -79,13 +77,24 @@ function ItemTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
       id: "actions",
       enableHiding: false,
       meta: {
-        align: "right"
+        align: "right",
       },
       cell: ({ row }) => {
         const itemId = row.original.id;
         return (
-          <Button size={"sm"} variant="outline" className="px-2" onClick={() => {setViewItemIDAtom(itemId)}}>
-            View Items
+          <Button
+            size={"sm"}
+            variant="outline"
+            className="px-2"
+            onClick={() => {
+              if (onChange) {
+                onChange(itemId);
+              } else {
+                setViewItemIDAtom(itemId);
+              }
+            }}
+          >
+            {onChange ? "Select Item" :"View Item"}
           </Button>
         );
       },
@@ -105,9 +114,9 @@ function ItemTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
       defaultColumn={{
         meta: {
           headerStyle: {
-            textAlign: "center"
+            textAlign: "center",
           },
-          align: "center"
+          align: "center",
         },
       }}
       message="No Items Found"

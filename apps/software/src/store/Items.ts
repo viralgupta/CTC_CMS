@@ -26,6 +26,19 @@ export interface viewItemType extends itemType {
   order_items: viewItemOrderItems[];
 }
 
+export interface selectedItemRateType {
+  multiplier: number;
+  min_rate: number | null;
+  sale_rate: number;
+  order_items: {
+      carpanter_commision: string | null;
+      architect_commision: string | null;
+      rate: number;
+      carpanter_commision_type: "percentage" | "perPiece" | null;
+      architect_commision_type: "percentage" | "perPiece" | null;
+  }[];
+}
+
 const allItemsAtom = atom<itemType[]>({
   key: "allItemsAtom",
   default: []
@@ -38,6 +51,12 @@ export const viewItemAtom = atom<viewItemType | null>({
 
 export const viewItemIDAtom = atom<string | null>({
   key: "viewItemIDAtom",
+  default: null
+});
+
+
+export const selectedItemRateAtom = atom<selectedItemRateType | null>({
+  key: "selectedItemRateAtom",
   default: null
 });
 

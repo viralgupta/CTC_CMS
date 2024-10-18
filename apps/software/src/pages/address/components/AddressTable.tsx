@@ -13,9 +13,10 @@ interface DataTableProps {
   CompKey: string;
   data: AddressType[];
   columnFilters?: ColumnFiltersState;
+  onChange?: (addId: string) => void;
 }
 
-function AddressTable({ CompKey: key, data, columnFilters = [] }: DataTableProps) {
+function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: DataTableProps) {
   const setViewAddressId = useSetRecoilState(viewAddressIdAtom);
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
 
@@ -70,6 +71,7 @@ function AddressTable({ CompKey: key, data, columnFilters = [] }: DataTableProps
       },
       cell: ({ row }) => {
         const customerId = row.original.customer.id;
+        if (onChange) return null;
         return (
           <Button
             size={"sm"}
@@ -98,10 +100,14 @@ function AddressTable({ CompKey: key, data, columnFilters = [] }: DataTableProps
             variant="outline"
             className="px-2"
             onClick={() => {
-              setViewAddressId(addressId);
+              if(onChange) {
+                onChange(addressId);
+              } else {
+                setViewAddressId(addressId);
+              }
             }}
           >
-            View Address
+            {onChange ? "Select Address" : "View Address"}
           </Button>
         );
       },

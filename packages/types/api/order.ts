@@ -136,7 +136,7 @@ export const editOrderItemsType = z.object({
 
 
 export const getAllOrdersType = z.object({
-  cursor: z.date(),
+  cursor: z.date().optional(),
   filter: z
     .enum([
       "Status-Pending",
@@ -147,8 +147,8 @@ export const getAllOrdersType = z.object({
       "Payment-UnPaid",
       "Payment-Partial",
       "Payment-Paid",
+      "All"
     ])
-    .optional(),
 });
 
 export const getOrderType = z.object({

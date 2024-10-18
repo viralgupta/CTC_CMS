@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { viewItemType } from "@/store/Items";
+import { ViewOrderType } from "@/store/order";
 import {
   Table,
   TableBody,
@@ -9,38 +9,39 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { viewItemIDAtom } from "@/store/Items";
 import { useSetRecoilState } from "recoil";
-import { viewOrderIdAtom } from "@/store/order";
+import { Button } from "@/components/ui/button";
 import { calculateCommissionFromTotalCommission } from "@/lib/utils";
 
-const ViewItemOrdersTable = ({ item }: { item: viewItemType | null }) => {
-  if (!item) return <Skeleton className="w-full h-48 mt-2" />;
-  const setVIewOrderID = useSetRecoilState(viewOrderIdAtom);
+const OrderItemsTable = ({
+  order_items,
+}: {
+  order_items: ViewOrderType["order_items"];
+}) => {
+  if (!order_items) return <Skeleton className="w-full h-48 mt-2" />;
+  const setVIewItemID = useSetRecoilState(viewItemIDAtom);
+
 
   return (
     <Table>
-      <TableCaption>A list of recent order's with this item.</TableCaption>
+      <TableCaption>A list of items in the order.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-center">Customer Name</TableHead>
           <TableHead className="text-center">Quantity</TableHead>
           <TableHead className="text-center">Rate</TableHead>
           <TableHead className="text-center">Total Value</TableHead>
           <TableHead className="text-center">Architect Commission</TableHead>
           <TableHead className="text-center">Carpenter Commission</TableHead>
-          <TableHead className="text-center">View Order</TableHead>
+          <TableHead className="text-center">View Item</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {item.order_items.map((oi, i) => {
+        {order_items.map((oi, i) => {
           return (
             <TableRow key={i}>
-              <TableCell className="text-center">
-                {oi.order.customer?.name ?? "--"}
-              </TableCell>
               <TableCell className="text-center">{oi.quantity}</TableCell>
-              <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${item.rate_dimension}`}</TableCell>
+              <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${oi.item?.rate_dimension}`}</TableCell>
               <TableCell className="text-center">{`₹${oi.total_value}`}</TableCell>
               <TableCell className="text-center">
                 {oi.architect_commision
@@ -56,17 +57,18 @@ const ViewItemOrdersTable = ({ item }: { item: viewItemType | null }) => {
                 <Button
                   size={"sm"}
                   onClick={() => {
-                    setVIewOrderID(oi.order_id);
+                    setVIewItemID(oi.item_id);
                   }}
                 >
-                  View Order
+                  View Item
                 </Button>
               </TableCell>
             </TableRow>
-          );})}
+          );
+        })}
       </TableBody>
     </Table>
   );
 };
 
-export default ViewItemOrdersTable;
+export default OrderItemsTable;

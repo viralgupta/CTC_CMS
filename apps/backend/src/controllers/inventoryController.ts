@@ -1,6 +1,6 @@
 import db from '@db/db';
 import { item } from '@db/schema';
-import { createItemType, deleteItemType, editQuantityType, editItemType, getItemType } from '@type/api/item';
+import { createItemType, deleteItemType, editQuantityType, editItemType, getItemType, getItemRatesType } from '@type/api/item';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
 
@@ -77,6 +77,46 @@ const getItem = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Item found successfully", data: foundItem});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to find item", error: error.message ? error.message : error});
+  }
+}
+
+const getItemRates = async (req: Request, res: Response) => {
+  const getItemRateTypeAnswer = getItemRatesType.safeParse(req.body);
+
+  if (!getItemRateTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getItemRateTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const foundItem = await db.query.item.findFirst({
+      where: (item, { eq }) => eq(item.id, getItemRateTypeAnswer.data.item_id),
+      columns: {
+        multiplier: true,
+        min_rate: true,
+        sale_rate: true
+      },
+      with: {
+        order_items: {
+          limit: 1,
+          orderBy: (item, { desc }) => [desc(item.updated_at)],
+          columns: {
+            rate: true,
+            architect_commision: true,
+            architect_commision_type: true,
+            carpanter_commision: true,
+            carpanter_commision_type: true
+          }
+        }
+      }
+    })
+
+    if(!foundItem){
+      return res.status(400).json({success: false, message: "Unable to find item!"})
+    }
+
+    return res.status(200).json({success: true, message: "Item Rates Found!!!", data: foundItem});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find Rates!", error: error.message ? error.message : error});
   }
 }
 
@@ -199,7 +239,7 @@ const getAllItems = async (_req: Request, res: Response) => {
         quantity: true,
         min_quantity: true,
         sale_rate: true,
-        rate_dimension: true
+        rate_dimension: true,
       }
     });
     return res.status(200).json({success: true, message: "Items Found", data: items});
@@ -212,6 +252,7 @@ export {
   createItem,
   getAllItems,
   getItem,
+  getItemRates,
   editItem,
   editQuantity,
   deleteItem
