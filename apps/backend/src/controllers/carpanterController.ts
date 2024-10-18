@@ -143,6 +143,7 @@ const getCarpanter = async (req: Request, res: Response) => {
       with: {
         phone_numbers: {
           columns: {
+            id: true,
             phone_number: true,
             country_code: true,
             isPrimary: true,
@@ -150,17 +151,26 @@ const getCarpanter = async (req: Request, res: Response) => {
           }
         },
         orders: {
+          orderBy: (order, { desc }) => [desc(order.created_at)],
           columns: {
             id: true,
             carpanter_commision: true,
+            status: true,
+            created_at: true
           },
           with: {
             delivery_address: {
                columns: {
+                 house_number: true,
                  address: true,
                }
+            },
+            customer: {
+              columns: {
+                name: true
+              }
             }
-          }
+          },
         }
       }
     });
@@ -228,6 +238,15 @@ const getAllCarpanters = async (_req: Request, res: Response) => {
     const carpanters = await db.query.carpanter.findMany({
       columns: {
         profileUrl: false
+      },
+      with: {
+        phone_numbers: {
+          columns: {
+            phone_number: true
+          },
+          where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+          limit: 1
+        }
       }
     });
 

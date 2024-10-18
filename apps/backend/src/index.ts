@@ -31,7 +31,7 @@ if(process.env.SST_STAGE !== "dev"){
 app.use("/api/*", allowedToken);
 
 app.use("/api/architect", architectRouter);
-app.use("/api/carpanter", carpanterRouter);
+app.use("/api/carpenter", carpanterRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/driver", driverRouter);
 app.use("/api/estimate", estimateRouter);

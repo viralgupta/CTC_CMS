@@ -7,7 +7,7 @@ import Home from "./pages/home/page"
 import Customer from "./pages/customer/page"
 import Order from "./pages/order/page"
 import Architect from "./pages/architect/page"
-import Carpanter from "./pages/carpanter/page"
+import Carpanter from "./pages/carpenter/page"
 import Driver from "./pages/driver/page"
 import Resources from "./pages/resources/page"
 import Address from "./pages/address/page"
@@ -18,6 +18,7 @@ import ViewItem from "./pages/inventory/components/ViewItem/ViewItem"
 import ViewAddress from "./pages/address/components/ViewAddress"
 import ViewOrder from "./pages/order/components/ViewOrder"
 import ViewArchitect from "./pages/architect/components/ViewArchitect"
+import ViewCarpenter from "./pages/carpenter/components/ViewCarpenter"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -57,6 +58,7 @@ function App() {
       <ViewAddress/>
       <ViewOrder/>
       <ViewArchitect/>
+      <ViewCarpenter/>
       <Body>
           {renderTabContent()}
       </Body>
