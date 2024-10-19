@@ -22,7 +22,6 @@ const OrderItemsTable = ({
   if (!order_items) return <Skeleton className="w-full h-48 mt-2" />;
   const setVIewItemID = useSetRecoilState(viewItemIDAtom);
 
-
   return (
     <Table>
       <TableCaption>A list of items in the order.</TableCaption>

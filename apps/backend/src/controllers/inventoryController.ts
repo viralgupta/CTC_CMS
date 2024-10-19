@@ -81,7 +81,7 @@ const getItem = async (req: Request, res: Response) => {
 }
 
 const getItemRates = async (req: Request, res: Response) => {
-  const getItemRateTypeAnswer = getItemRatesType.safeParse(req.body);
+  const getItemRateTypeAnswer = getItemRatesType.safeParse(req.query);
 
   if (!getItemRateTypeAnswer.success){
     return res.status(400).json({success: false, message: "Input fields are not correct", error: getItemRateTypeAnswer.error.flatten()})

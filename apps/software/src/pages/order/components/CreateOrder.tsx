@@ -43,6 +43,7 @@ import SelectOrderItems from "./Input/SelectOrderItems/SelectOrderItems";
 import { useAllItems } from "@/hooks/items";
 import React from "react";
 import SearchArchitect from "@/pages/architect/components/SearchArchitect";
+import SearchCarpenter from "@/pages/carpenter/components/SearchCarpenter";
 
 const CreateOrder = () => {
   return (
@@ -161,7 +162,7 @@ const CreateOrderForm = () => {
                 <FormItem className="w-full">
                   <FormLabel>Carpenter</FormLabel>
                   <FormControl>
-                    <SearchCustomer
+                    <SearchCarpenter
                       value={field.value}
                       onChange={field.onChange}
                       className="rounded-lg"
@@ -434,11 +435,11 @@ const CreateOrderForm = () => {
               Total Order Value
               <span>{total_order_value.toFixed(2)}</span>
             </div>
-            <div className="w-full text-lg font-mono flex justify-between">
+            <div className="w-full text-lg font-mono flex justify-between text-foreground/60">
               + Labour And Frate
               <span>{lfc ? lfc.toFixed(2) : "0.00"}</span>
             </div>
-            <div className="w-full text-lg font-mono flex justify-between">
+            <div className="w-full text-lg font-mono flex justify-between text-foreground/60">
               - Discount
               <span>
                 {discount ? parseFloat(discount).toFixed(2) : "0.00"}
@@ -449,7 +450,7 @@ const CreateOrderForm = () => {
               Final Order Value
               <span>{final_amount.toFixed(2)}</span>
             </div>
-            <div className="w-full text-lg font-mono flex justify-between">
+            <div className="w-full text-lg font-mono flex justify-between text-foreground/60">
               - Amount Paid
               <span>
                 {amount_paid ? parseFloat(amount_paid).toFixed(2) : "0.00"}

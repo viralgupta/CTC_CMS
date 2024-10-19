@@ -111,7 +111,7 @@ const AddNewItem = ({
     form.reset();
   }
 
-  function calculateFinalCommission(
+  function calculateTotalCommission(
     value: z.infer<
       typeof createOrderType
     >["order_items"][number]["architect_commision"],
@@ -135,9 +135,11 @@ const AddNewItem = ({
 
   async function getItemRate(item_id: string) {
     setLoading(true);
-    const res = await request.post("/inventory/getItemRates", { item_id });
-    setSelectedItemRates(res.data.data as selectedItemRateType);
-    setLoading(false);
+    const res = await request(`/inventory/getItemRates?item_id=${item_id}`);
+    if(res.status == 200){
+      setSelectedItemRates(res.data.data as selectedItemRateType);
+      setLoading(false);
+    }
   }
 
   const [
@@ -173,7 +175,7 @@ const AddNewItem = ({
 
   React.useEffect(() => {
     setArchitectCommission(
-      calculateFinalCommission(
+      calculateTotalCommission(
         architect_commision,
         architect_commision_type,
         total_value
@@ -183,7 +185,7 @@ const AddNewItem = ({
 
   React.useEffect(() => {
     setCarpenterCommission(
-      calculateFinalCommission(
+      calculateTotalCommission(
         carpanter_commision,
         carpanter_commision_type,
         total_value
