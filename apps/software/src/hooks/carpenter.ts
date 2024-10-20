@@ -3,6 +3,7 @@ import request from "@/lib/request";
 import { allCarpenterAtom, CarpenterType } from "@/store/carpenter";
 
 let loading = false;
+let firstTime = false;
 
 const useAllCarpenter = () => {
   const [carpenters, setCarpenters] = useRecoilState(allCarpenterAtom);
@@ -20,8 +21,9 @@ const useAllCarpenter = () => {
     }
   };
   
-  if (carpenters.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllCarpenters();
+    firstTime = true;
   }
   
   const refetchCarpenters = () => {

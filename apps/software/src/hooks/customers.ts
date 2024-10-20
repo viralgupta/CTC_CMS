@@ -3,6 +3,7 @@ import allCustomerAtom, { CustomerType } from "@/store/Customer";
 import request from "@/lib/request";
 
 let loading = false;
+let firstTime = false;
 
 const useAllCustomer = () => {
   const [customers, setCustomer] = useRecoilState(allCustomerAtom);
@@ -20,8 +21,9 @@ const useAllCustomer = () => {
     }
   };
   
-  if (customers.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllCustomer();
+    firstTime = true;
   }
   
   const refetchCustomers = () => {

@@ -3,6 +3,7 @@ import allItemsAtom, { itemType } from "@/store/Items";
 import request from "@/lib/request";
 
 let loading = false;
+let firstTime = false;
 
 const useAllItems = () => {
   const [items, setItems] = useRecoilState(allItemsAtom);
@@ -20,8 +21,9 @@ const useAllItems = () => {
     }
   };
   
-  if (items.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllItems();
+    firstTime = true;
   }
   
   const refetchItems = () => {

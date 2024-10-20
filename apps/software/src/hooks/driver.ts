@@ -3,6 +3,7 @@ import request from "@/lib/request";
 import { allDriverAtom, DriverType } from "@/store/driver";
 
 let loading = false;
+let firstTime = false;
 
 const useAllDrivers = () => {
   const [drivers, setDrivers] = useRecoilState(allDriverAtom);
@@ -20,8 +21,9 @@ const useAllDrivers = () => {
     }
   };
   
-  if (drivers.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllDrivers();
+    firstTime = true;
   }
   
   const refetchDrivers = () => {

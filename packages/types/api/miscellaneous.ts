@@ -96,10 +96,9 @@ export const deletePhoneType = z
   })
 
 export const createPutSignedURLType = z.object({
-  type: z.enum(["PROFILE", "DOCUMENT"]),
-  file_name: z.string(),
-  extension: z.string().max(5),
-  name: z.string().max(100),
+  file_name: z.string().min(1),
+  extension: z.string().min(1).max(5),
+  name: z.string().min(5).max(100),
   description: z.string().optional(),
 })
 

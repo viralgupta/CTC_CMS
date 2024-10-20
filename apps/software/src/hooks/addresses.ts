@@ -3,6 +3,7 @@ import request from "@/lib/request";
 import { AddressType, allAddressAtom } from "@/store/address";
 
 let loading = false;
+let firstTime = false;
 
 const useAllAddresses = () => {
   const [addresses, setAddresses] = useRecoilState(allAddressAtom);
@@ -20,8 +21,9 @@ const useAllAddresses = () => {
     }
   };
   
-  if (addresses.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllAddresses();
+    firstTime = true;
   }
   
   const refetchAddresses = () => {

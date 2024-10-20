@@ -5,7 +5,7 @@ const miscellaneousRouter = express.Router()
 
 miscellaneousRouter.route('/createPhone').post(createPhone)
 miscellaneousRouter.route('/deletePhone').delete(deletePhone)
-miscellaneousRouter.route('/createPutSignedURL').get(createPutSignedURL)
+miscellaneousRouter.route('/createPutSignedURL').post(createPutSignedURL)
 miscellaneousRouter.route('/editResource').put(editResource)
 miscellaneousRouter.route('/deleteResource').delete(deleteResource)
 miscellaneousRouter.route('/getAllResources').get(getAllResources)

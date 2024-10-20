@@ -100,17 +100,17 @@ async function ConvertFromImage(body: Uint8Array, extension: string): Promise<Bu
 
       // Converting Image to PNG
       await Jimp.read(inputname, (err, image) => {
-        if(err) throw new Error("Error while reading the image using Jimp", err)
+        if(err) reject("Error while reading the image using Jimp");
 
         return image.resize(330, Jimp.AUTO).quality(50).write(outputname, (err) => {
-          if(err) throw new Error("Error while writing the image using Jimp", err)
+          if(err) reject("Error while writing the image using Jimp");
             
           // reading File
           const file = fs.readFileSync(outputname);
           resolve(file);
         });
-      }).catch((err) => {
-        throw new Error("Error while converting the image", err)
+      }).catch((_err) => {
+        reject("Error while converting the image");
       })
 
     } catch (error: any) {

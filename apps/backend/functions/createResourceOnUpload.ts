@@ -44,8 +44,12 @@ const createResourceOnUploadHandler = async (evt: any) => {
       description: createResourceOnUploadHandlerTypeAnswer.data.description,
     })
 
-    if(fileExtension === "pdf" || fileExtension === "png" || fileExtension === "jpg" || fileExtension === "jpeg") {
-      await createPreviewOnUpload(createResourceOnUploadHandlerTypeAnswer.data.key, fileExtension, bucketName, client, await object.Body?.transformToByteArray());    
+    try {
+      if(fileExtension === "pdf" || fileExtension === "png" || fileExtension === "jpg" || fileExtension === "jpeg") {
+        await createPreviewOnUpload(createResourceOnUploadHandlerTypeAnswer.data.key, fileExtension, bucketName, client, await object.Body?.transformToByteArray());    
+      }
+    } catch (error) {
+      return; // do nothing if not able to create preview
     }
 
   } catch (error) {

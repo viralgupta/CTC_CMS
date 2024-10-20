@@ -3,6 +3,7 @@ import addressAreaAtom, { AddressArea } from "@/store/addressArea";
 import request from "../lib/request";
 
 let loading = false;
+let firstTime = false;
 
 const useAddressAreas = () => {
   const [addressAreas, setAddressAreas] = useRecoilState(addressAreaAtom);
@@ -20,8 +21,9 @@ const useAddressAreas = () => {
     }
   };
   
-  if (addressAreas.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllItems();
+    firstTime = true;
   }
   
   const refetchAddressAreas = () => {

@@ -3,6 +3,7 @@ import request from "@/lib/request";
 import { allArchitectAtom, ArchitectType } from "@/store/architect";
 
 let loading = false;
+let firstTime = false;
 
 const useAllArchitect = () => {
   const [architects, setArchitects] = useRecoilState(allArchitectAtom);
@@ -20,8 +21,9 @@ const useAllArchitect = () => {
     }
   };
   
-  if (architects.length === 0 && !loading) {
+  if (!firstTime) {
     fetchAllArchitects();
+    firstTime = true;
   }
   
   const refetchArchitects = () => {

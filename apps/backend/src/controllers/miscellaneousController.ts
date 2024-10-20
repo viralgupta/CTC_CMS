@@ -248,7 +248,7 @@ const deleteResource = async (req: Request, res: Response) => {
 }
 
 const createGetSignedURL = async (req: Request, res: Response) => {
-  const createGetSignedURLTypeAnswer = createGetSignedURLType.safeParse(req.body);
+  const createGetSignedURLTypeAnswer = createGetSignedURLType.safeParse(req.query);
 
   if (!createGetSignedURLTypeAnswer.success) {
     return res.status(400).json({success: false, message: "Input fields are not correct", error: createGetSignedURLTypeAnswer.error.flatten()})
@@ -259,7 +259,11 @@ const createGetSignedURL = async (req: Request, res: Response) => {
     const resource = await db.query.resource.findFirst({
       where: (resource, { eq }) => eq(resource.id, createGetSignedURLTypeAnswer.data.resource_id),
       columns: {
-        key: true
+        id: true,
+        key: true,
+        name: true,
+        description: true,
+        extension: true
       }
     })
 
@@ -276,11 +280,29 @@ const createGetSignedURL = async (req: Request, res: Response) => {
       expiresIn: Config.STAGE == 'dev' ? 60 * 60 : 60 * 5, // 60 / 5 minutes
     });
 
-    return res.status(200).json({success: true, message: "GET Signed URL created", data: url});
+    const resourceWithUrl = {
+      ...resource,
+      url
+    }
+
+    return res.status(200).json({success: true, message: "Resource Found", data: resourceWithUrl});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to create GET signed URL", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to find Resource!", error: error.message ? error.message : error});
   }
 }
+
+type Resource = {
+  id: string;
+  name: string;
+  previewKey: string | null | undefined;
+  previewUrl?: string;
+};
+
+type ReturnResource = {
+  id: string;
+  name: string;
+  previewUrl?: string;
+};
 
 const getAllResources = async (_req: Request, res: Response) => {
   try {
@@ -288,13 +310,28 @@ const getAllResources = async (_req: Request, res: Response) => {
       columns: {
         id: true,
         name: true,
-        description: true,
         previewKey: true,
         extension: true
       }
     });
 
-    return res.status(200).json({success: true, message: "Resources fetched", data: resources});
+    const resourcesWithPreviewUrl = await Promise.all(
+      resources.map(async (resource: Resource) => {
+        if (resource.previewKey) {
+          const command = new S3.GetObjectCommand({
+            Bucket: Bucket.ResourceBucket.bucketName,
+            Key: resource.previewKey,
+          });
+    
+          const url = await getSignedUrl(new S3.S3Client({}), command);
+          resource.previewUrl = url;
+        }
+        resource.previewKey = undefined;
+        return resource as ReturnResource;
+      })
+    );
+
+    return res.status(200).json({success: true, message: "Resources fetched", data: resourcesWithPreviewUrl});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch resources", error: error.message ? error.message : error});
   }

@@ -1,9 +1,17 @@
-import React from 'react'
+import AllResources from "./components/AllResources";
+import CreateResource from "./components/CreateResource";
 
 const Resources = () => {
   return (
-    <div>Resources</div>
-  )
-}
+    <div className="w-full h-full">
+      <CreateResource/>
+      <div className="w-full h-full space-y-8">
+        <AllResources/>
+        <div>&nbsp;</div>
+        <div>&nbsp;</div>
+      </div>
+    </div>
+  );
+};
 
-export default Resources
+export default Resources;

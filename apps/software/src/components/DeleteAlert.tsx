@@ -22,14 +22,14 @@ const DeleteAlert = ({
 }: {
   children: React.ReactNode;
   refetchFunction: () => void
-  type: "customer" | "architect" | "carpanter" | "driver"
+  type: "customer" | "architect" | "carpanter" | "driver" | "resource"
   viewObjectAtom: RecoilState<any | null>
   viewObjectIdAtom: RecoilState<string | null>
 }) => {
   const setViewX = useSetRecoilState(viewObjectAtom);
   const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);
 
-  const deleteUrl = `/${type !== "carpanter" ? type : "carpenter"}/delete${(type.charAt(0).toUpperCase() + type.slice(1))}`
+  const deleteUrl = `/${type !== "carpanter" ? type !== "resource" ? type : "miscellaneous" : "carpenter"}/delete${(type.charAt(0).toUpperCase() + type.slice(1))}`
   const handleDelete = async () => {
   const res = await request.delete(deleteUrl, {
       data: {

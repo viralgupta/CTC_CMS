@@ -27,7 +27,6 @@ export function API({ stack }: StackContext) {
     },
   });
 
-  const ProfileBucket = new Bucket(stack, "ProfileBucket");
   const ResourceBucket = new Bucket(stack, "ResourceBucket", {
     blockPublicACLs: true,
     notifications: {
@@ -59,7 +58,7 @@ export function API({ stack }: StackContext) {
   ResourceBucket.attachPermissionsToNotification("createResourceOnUpload", ["s3"])
   ResourceBucket.attachPermissionsToNotification("removeResourceOnDelete", ["s3"])
 
-  api.bind([AUTH_SECRET, DB_URL, HIGH_PRIORITY_CUSTOMER, MID_PRIORITY_CUSTOMER, ProfileBucket, ResourceBucket]);
+  api.bind([AUTH_SECRET, DB_URL, HIGH_PRIORITY_CUSTOMER, MID_PRIORITY_CUSTOMER, ResourceBucket]);
 
   stack.addOutputs({
     ApiEndpoint: api.url,

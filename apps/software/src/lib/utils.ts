@@ -87,3 +87,34 @@ export const calculateCommissionFromTotalCommission = (
     }
   }
 };
+
+
+export const getImageUrlFromExtension = (theme: "dark" | "light" | "system", ext?: string, url?: string) => {
+  if (url) return url;
+  switch (ext) {
+    case "png":
+      return `/stock/image-${theme ?? "dark"}.png`;
+    case "jpg":
+      return `/stock/image-${theme ?? "dark"}.png`;
+    case "jpeg":
+      return `/stock/image-${theme ?? "dark"}.png`;
+    case "webp":
+      return `/stock/image-${theme ?? "dark"}.png`;
+    case "docx":
+      return `/stock/word-${theme ?? "dark"}.png`;
+    case "doc":
+      return `/stock/word-${theme ?? "dark"}.png`;
+    case "xlsx":
+      return `/stock/excel-${theme ?? "dark"}.png`;
+    case "xls":
+      return `/stock/excel-${theme ?? "dark"}.png`;
+    case "csv":
+      return `/stock/excel-${theme ?? "dark"}.png`;
+    case "doc":
+      return `/stock/word-${theme ?? "dark"}.png`;
+    case "pdf":
+      return `/stock/pdf-${theme ?? "dark"}.png`;
+    default:
+      return `/stock/default-${theme ?? "dark"}.png`;
+  }
+};

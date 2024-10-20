@@ -1,3 +1,4 @@
+import { useTheme } from "@/components/providers/theme";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,7 +23,6 @@ import {
   useMapsLibrary,
   type MapCameraChangedEvent,
 } from "@vis.gl/react-google-maps";
-import { useTheme } from "next-themes";
 import React from "react";
 import { toast } from "sonner";
 
@@ -45,7 +45,7 @@ const CordinatesInput = ({
   disabled,
   getAddress,
 }: CordinatesInputProps) => {
-  const { resolvedTheme } = useTheme();
+  const { theme } = useTheme();
   const geocodingLib = useMapsLibrary("geocoding");
   const [address, setAddress] = React.useState("");
   const [open, setOpen] = React.useState(false);
@@ -174,7 +174,7 @@ const CordinatesInput = ({
         <Map
           id="map2"
           mapId={"8d0a820dd0d59a20"}
-          colorScheme={resolvedTheme == "dark" ? "DARK" : "LIGHT"}
+          colorScheme={theme == "dark" ? "DARK" : "LIGHT"}
           defaultZoom={15}
           center={{
             lat: cordinates.latitude ?? 0,
