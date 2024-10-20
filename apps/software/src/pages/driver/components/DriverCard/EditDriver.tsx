@@ -27,7 +27,7 @@ import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewDriverAtom, viewDriverIdAtom } from "@/store/driver";
 import { useAllDrivers } from "@/hooks/driver";
 import { editDriverType } from "@type/api/driver";
-import { SelectDriverSizeOfVehicle } from "../CreateDriver";
+import { SelectDriverSizeOfVehicle } from "@/components/Inputs/SelectDriverSizeOfVehicle";
 
 const EditDriver = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)

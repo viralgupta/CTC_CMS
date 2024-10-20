@@ -15,13 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { createDriverType } from "@type/api/driver";
@@ -33,6 +26,7 @@ import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import request from "@/lib/request";
 import { useAllDrivers } from "@/hooks/driver";
+import { SelectDriverSizeOfVehicle } from "@/components/Inputs/SelectDriverSizeOfVehicle";
 
 const CreateDriverForm = () => {
   const { refetchDrivers } = useAllDrivers();
@@ -217,26 +211,3 @@ const CreateDriver = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default CreateDriver;
-
-export const SelectDriverSizeOfVehicle = ({
-  onChange,
-  value
-}: {
-  onChange: (val: string) => void;
-  value: string;
-}) => {
-  return (
-    <Select onValueChange={onChange} value={value}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Vehicle Type" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="rickshaw">Rickshaw</SelectItem>
-        <SelectItem value="tempo">Tempo</SelectItem>
-        <SelectItem value="chota-hathi">Chota Hathi</SelectItem>
-        <SelectItem value="tata">Tata</SelectItem>
-        <SelectItem value="truck">Truck</SelectItem>
-      </SelectContent>
-    </Select>
-  );
-};

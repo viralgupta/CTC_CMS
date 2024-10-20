@@ -1,10 +1,10 @@
 import { viewOrderAtom } from "@/store/order";
 import { useRecoilValue } from "recoil";
 import request from "@/lib/request";
-import SettleBalanceForm from "@/pages/customer/components/CustomerCard/SettleBalanceForm";
 import { z } from "zod";
 import { settleBalanceType } from "@type/api/order";
 import { useAllOrders } from "@/hooks/orders";
+import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
 
 const SettleBalance = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
