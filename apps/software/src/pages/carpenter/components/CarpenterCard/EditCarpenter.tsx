@@ -34,7 +34,7 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
   const setViewCarpenterID = useSetRecoilState(viewCarpenterIdAtom);
   const { refetchCarpenters } = useAllCarpenter();
 
-  const EditItemForm = () => {
+  const EditCarpenterForm = () => {
     const form = useForm<z.infer<typeof editCarpanterType>>({
       resolver: zodResolver(editCarpanterType),
       reValidateMode: "onChange",
@@ -112,7 +112,7 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
           <DialogTitle>Edit Carpenter</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
-        {viewCarpenter && <EditItemForm />}
+        {viewCarpenter && <EditCarpenterForm />}
         {!viewCarpenter && (
           <div className="w-full h-40 flex items-center justify-center">
             Unable to find carpenter to edit!!!

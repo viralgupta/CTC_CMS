@@ -34,7 +34,7 @@ const EditArchitect = ({ children }: { children: React.ReactNode }) => {
   const setViewArchitectID = useSetRecoilState(viewArchitectIdAtom);
   const { refetchArchitects } = useAllArchitect();
 
-  const EditItemForm = () => {
+  const EditArchitectForm = () => {
     const form = useForm<z.infer<typeof editArchitectType>>({
       resolver: zodResolver(editArchitectType),
       reValidateMode: "onChange",
@@ -112,7 +112,7 @@ const EditArchitect = ({ children }: { children: React.ReactNode }) => {
           <DialogTitle>Edit Architect</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
-        {viewArchitect && <EditItemForm />}
+        {viewArchitect && <EditArchitectForm />}
         {!viewArchitect && (
           <div className="w-full h-40 flex items-center justify-center">
             Unable to find architect to edit!!!

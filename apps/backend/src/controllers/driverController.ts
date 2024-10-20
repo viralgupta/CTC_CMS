@@ -98,19 +98,35 @@ const getDriver = async (req: Request, res: Response) => {
     const foundDriver = await db.query.driver.findFirst({
       where: (driver, { eq }) => eq(driver.id, getDriverTypeAnswer.data.driver_id),
       with: {
-        phone_numbers: true,
+        phone_numbers: {
+          columns: {
+            id: true,
+            phone_number: true,
+            country_code: true,
+            isPrimary: true,
+            whatsappChatId: true
+          }
+        },
         orders: {
           orderBy: (order, { desc }) => [desc(order.created_at)],
           columns: {
             id: true,
-            priority: true,
             status: true,
-            payment_status: true,
-            total_order_amount: true,
-            amount_paid: true,
-            created_at: true,
+            created_at: true
           },
-          limit: 20
+          with: {
+            delivery_address: {
+               columns: {
+                 house_number: true,
+                 address: true,
+               }
+            },
+            customer: {
+              columns: {
+                name: true
+              }
+            }
+          },
         }
       }
     })
@@ -126,7 +142,7 @@ const getDriver = async (req: Request, res: Response) => {
 }
 
 const deleteDriver = async (req: Request, res: Response) => {
-    const deleteDriverTypeAnswer = deleteDriverType.safeParse(req.params);
+    const deleteDriverTypeAnswer = deleteDriverType.safeParse(req.body);
   
     if (!deleteDriverTypeAnswer.success){
       return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteDriverTypeAnswer.error?.flatten()})
@@ -148,13 +164,14 @@ const getAllDrivers = async (_req: Request, res: Response) => {
       with: {
         phone_numbers: {
           columns: {
-            whatsappChatId: false,
+            phone_number: true
           },
           where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
         },
       },
       columns: {
-        profileUrl: false
+        profileUrl: false,
+        vehicle_number: false
       }
     });
 
