@@ -21,9 +21,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import SettleBalanceForm from "./SettleBalanceForm";
-import DeleteArchitect from "./DeleteArchitect";
-import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import EditArchitect from "./EditArchitect";
 import {
   viewArchitectAtom,
@@ -32,12 +29,16 @@ import {
 } from "@/store/architect";
 import { useAllArchitect } from "@/hooks/architect";
 import { settleBalanceType } from "@type/api/architect";
+import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
+import DeleteAlert from "@/components/DeleteAlert";
+import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
 
 export default function ArchitectCard({
   architect,
 }: {
   architect: ViewArchitectType | null;
 }) {
+  const { refetchArchitects } = useAllArchitect()
   if (!architect) {
     return (
       <Card className="w-full p-6">
@@ -76,12 +77,12 @@ export default function ArchitectCard({
                   Edit Architect
                 </Button>
               </EditArchitect>
-              <DeleteArchitect architect_id={architect.id}>
+              <DeleteAlert refetchFunction={refetchArchitects} type="architect" viewObjectAtom={viewArchitectAtom} viewObjectIdAtom={viewArchitectIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Architect
                 </Button>
-              </DeleteArchitect>
+              </DeleteAlert>
               <SettleBalance>
                 <Button size="sm" variant="outline">
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -111,7 +112,7 @@ export default function ArchitectCard({
             </div>
             <div className="col-span-2">
               <ViewAllPhoneNumbers
-                architect_id={architect.id}
+                type="architect"
                 values={architect.phone_numbers.map((pn) => {
                   return {
                     id: pn.id,
@@ -121,6 +122,8 @@ export default function ArchitectCard({
                     isPrimary: pn.isPrimary ?? undefined,
                   };
                 })}
+                viewObjectAtom={viewArchitectAtom}
+                viewObjectIdAtom={viewArchitectIdAtom}
               >
                 <Button size="sm" variant="outline" className="w-full">
                   <PhoneIcon className="h-4 w-4 mr-2" />

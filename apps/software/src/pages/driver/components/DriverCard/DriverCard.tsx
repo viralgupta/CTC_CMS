@@ -8,16 +8,18 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import DeleteDriver from "./DeleteDriver";
-import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import EditDriver from "./EditDriver";
-import { ViewDriverType } from "@/store/driver";
+import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver";
+import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
+import DeleteAlert from "@/components/DeleteAlert";
+import { useAllDrivers } from "@/hooks/driver";
 
 export default function DriverCard({
   driver,
 }: {
   driver: ViewDriverType | null;
 }) {
+  const { refetchDrivers } = useAllDrivers()
   if (!driver) {
     return (
       <Card className="w-full p-6">
@@ -56,12 +58,12 @@ export default function DriverCard({
                   Edit Driver
                 </Button>
               </EditDriver>
-              <DeleteDriver driver_id={driver.id}>
+              <DeleteAlert refetchFunction={refetchDrivers} type="driver" viewObjectAtom={viewDriverAtom} viewObjectIdAtom={viewDriverIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Driver
                 </Button>
-              </DeleteDriver>
+              </DeleteAlert>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -97,7 +99,7 @@ export default function DriverCard({
             </div>
             <div>
               <ViewAllPhoneNumbers
-                driver_id={driver.id}
+                type="driver"
                 values={driver.phone_numbers.map((pn) => {
                   return {
                     id: pn.id,
@@ -107,6 +109,8 @@ export default function DriverCard({
                     isPrimary: pn.isPrimary ?? undefined,
                   };
                 })}
+                viewObjectAtom={viewDriverAtom}
+                viewObjectIdAtom={viewDriverIdAtom}
               >
                 <Button size="sm" variant="outline" className="w-full">
                   <PhoneIcon className="h-4 w-4 mr-2" />

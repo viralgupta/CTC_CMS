@@ -21,9 +21,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import SettleBalanceForm from "./SettleBalanceForm";
-import DeleteCarpenter from "./DeleteCarpenter";
-import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import EditCarpenter from "./EditCarpenter";
 import {
   viewCarpenterAtom,
@@ -31,13 +28,17 @@ import {
   ViewCarpenterType,
 } from "@/store/carpenter";
 import { useAllCarpenter } from "@/hooks/carpenter";
-import { settleBalanceType } from "@type/api/carpanter";
+import { settleBalanceType } from "@type/api/architect";
+import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
+import DeleteAlert from "@/components/DeleteAlert";
+import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
 
 export default function CarpenterCard({
   carpenter,
 }: {
   carpenter: ViewCarpenterType | null;
 }) {
+  const { refetchCarpenters } = useAllCarpenter();
   if (!carpenter) {
     return (
       <Card className="w-full p-6">
@@ -76,12 +77,12 @@ export default function CarpenterCard({
                   Edit Carpenter
                 </Button>
               </EditCarpenter>
-              <DeleteCarpenter carpenter_id={carpenter.id}>
+              <DeleteAlert type="carpanter" refetchFunction={refetchCarpenters} viewObjectAtom={viewCarpenterAtom} viewObjectIdAtom={viewCarpenterIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Carpenter
                 </Button>
-              </DeleteCarpenter>
+              </DeleteAlert>
               <SettleBalance>
                 <Button size="sm" variant="outline">
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -111,7 +112,7 @@ export default function CarpenterCard({
             </div>
             <div className="col-span-2">
               <ViewAllPhoneNumbers
-                carpenter_id={carpenter.id}
+                type="carpanter"
                 values={carpenter.phone_numbers.map((pn) => {
                   return {
                     id: pn.id,
@@ -121,6 +122,8 @@ export default function CarpenterCard({
                     isPrimary: pn.isPrimary ?? undefined,
                   };
                 })}
+                viewObjectAtom={viewCarpenterAtom}
+                viewObjectIdAtom={viewCarpenterIdAtom}
               >
                 <Button size="sm" variant="outline" className="w-full">
                   <PhoneIcon className="h-4 w-4 mr-2" />
@@ -143,7 +146,7 @@ const SettleBalance = ({ children }: { children: React.ReactNode }) => {
 
   const settleCarpenterBalance = async (
     values: Omit<
-      Omit<z.infer<typeof settleBalanceType>, "carpenter_id">,
+      Omit<z.infer<typeof settleBalanceType>, "architect_id">,
       "amount"
     > & { amount: string }
   ) => {

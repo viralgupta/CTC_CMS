@@ -21,6 +21,10 @@ const createDriver = async (req: Request, res: Response) => {
         size_of_vehicle: createDriverTypeAnswer.data.size_of_vehicle
       }).returning();
 
+      if(createDriverTypeAnswer.data.phone_numbers.length === 0){
+        throw new Error("Atleast 1 Phone number is required!");
+      }
+
       const numberswithPrimary = createDriverTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
       const primaryPhoneIndex = createDriverTypeAnswer.data.phone_numbers.findIndex((phone_number) => phone_number.isPrimary);
@@ -35,7 +39,6 @@ const createDriver = async (req: Request, res: Response) => {
           createDriverTypeAnswer.data.phone_numbers[0].isPrimary = true;
         }
       }
-
 
       await tx.insert(phone_number).values(
         createDriverTypeAnswer.data.phone_numbers.map((phone_number) => {

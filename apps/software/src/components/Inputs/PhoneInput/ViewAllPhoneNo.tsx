@@ -9,24 +9,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import request from "@/lib/request";
-import { useSetRecoilState } from "recoil";
-import { viewCustomerType } from "@/store/Customer";
 import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
+import { type RecoilState, useSetRecoilState, useRecoilState } from "recoil";
+import { viewCustomerType } from "@/store/Customer";
+import request from "@/lib/request";
 import React from "react";
-import { viewCarpenterAtom, viewCarpenterIdAtom } from "@/store/carpenter";
 
 const ViewAllPhoneNumbers = ({
   children,
   values,
-  carpenter_id,
+  type,
+  viewObjectAtom,
+  viewObjectIdAtom
 }: {
   children: React.ReactNode;
   values: viewCustomerType["phone_numbers"];
-  carpenter_id: string;
+  type: "customer" | "architect" | "carpanter" | "driver"
+  viewObjectAtom: RecoilState<any | null>
+  viewObjectIdAtom: RecoilState<string | null>
 }) => {
-  const setViewCarpenterId = useSetRecoilState(viewCarpenterIdAtom);
-  const setViewCarpenter = useSetRecoilState(viewCarpenterAtom);
+  const setViewX = useSetRecoilState(viewObjectAtom);
+  const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);
 
   const deletePhoneNumber = ({
     children,
@@ -45,8 +48,8 @@ const ViewAllPhoneNumbers = ({
       });
       if (res.status == 200) {
         setOpen(false);
-        setViewCarpenterId(null);
-        setViewCarpenter(null);
+        setViewXId(null);
+        setViewX(null);
       }
     }
 
@@ -60,7 +63,7 @@ const ViewAllPhoneNumbers = ({
             </AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete Phone
-              Number linked to the carpenter.
+              Number linked to the {type}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -84,12 +87,12 @@ const ViewAllPhoneNumbers = ({
     request
       .post("/miscellaneous/createPhone", {
         ...phone,
-        carpenter_id,
+        [type.concat("_id")]: XId,
       })
       .then((res) => {
         if (res.status == 200) {
-          setViewCarpenter(null);
-          setViewCarpenterId(null);
+          setViewX(null);
+          setViewXId(null);
         }
       });
   };

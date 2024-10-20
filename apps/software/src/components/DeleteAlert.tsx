@@ -10,32 +10,36 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import request from "@/lib/request";
-import { useSetRecoilState } from "recoil";
+import { RecoilState, useRecoilState, useSetRecoilState } from "recoil";
 import React from "react";
-import { viewCarpenterAtom, viewCarpenterIdAtom } from "@/store/carpenter";
-import { useAllCarpenter } from "@/hooks/carpenter";
 
-const DeleteCarpenter = ({
+const DeleteAlert = ({
   children,
-  carpenter_id,
+  type,
+  refetchFunction,
+  viewObjectAtom,
+  viewObjectIdAtom
 }: {
   children: React.ReactNode;
-  carpenter_id: string;
+  refetchFunction: () => void
+  type: "customer" | "architect" | "carpanter" | "driver"
+  viewObjectAtom: RecoilState<any | null>
+  viewObjectIdAtom: RecoilState<string | null>
 }) => {
-  const { refetchCarpenters } = useAllCarpenter();
-  const setViewCarpenterId = useSetRecoilState(viewCarpenterIdAtom);
-  const setViewCarpenter = useSetRecoilState(viewCarpenterAtom);
+  const setViewX = useSetRecoilState(viewObjectAtom);
+  const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);
 
+  const deleteUrl = `/${type !== "carpanter" ? type : "carpenter"}/delete${(type.charAt(0).toUpperCase() + type.slice(1))}`
   const handleDelete = async () => {
-    const res = await request.delete("/carpenter/deleteCarpanter", {
+  const res = await request.delete(deleteUrl, {
       data: {
-        carpanter_id: carpenter_id,
+        [type.concat("_id")]: XId,
       },
     });
     if (res.status == 200) {
-      refetchCarpenters();
-      setViewCarpenter(null);
-      setViewCarpenterId(null);
+      refetchFunction();
+      setViewX(null);
+      setViewXId(null);
     }
   };
 
@@ -45,10 +49,10 @@ const DeleteCarpenter = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Are you sure you want to delete carpenter?
+            Are you sure you want to delete {type}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete carpenter
+            This action cannot be undone. This will permanently delete {type}
             and remove data from servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -61,4 +65,4 @@ const DeleteCarpenter = ({
   );
 };
 
-export default DeleteCarpenter;
+export default DeleteAlert;

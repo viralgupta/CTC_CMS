@@ -20,7 +20,7 @@ import {
 } from "@/store/Customer";
 import React from "react";
 import { z } from "zod";
-import { settleBalanceType } from "@type/api/customer";
+import { settleBalanceType } from "@type/api/architect";
 import {
   Dialog,
   DialogContent,
@@ -29,19 +29,20 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import SettleBalanceForm from "./SettleBalanceForm";
-import DeleteCustomer from "./DeleteCustomer";
-import ViewAllPhoneNumbers from "./ViewAllPhoneNo";
 import ViewAllAddresses from "./ViewAllAddresses";
 import EditCustomer from "./EditCustomer";
 import ViewCustomerEstimates from "./ViewCustomerEstimates";
 import { useAllCustomer } from "@/hooks/customers";
+import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
+import DeleteAlert from "@/components/DeleteAlert";
+import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
 
 export default function CustomerCard({
   customer,
 }: {
   customer: viewCustomerType | null;
 }) {
+  const { refetchCustomers } = useAllCustomer()
   if (!customer) {
     return (
       <Card className="w-full p-6">
@@ -83,12 +84,12 @@ export default function CustomerCard({
                   Edit Customer
                 </Button>
               </EditCustomer>
-              <DeleteCustomer customerId={customer.id}>
+              <DeleteAlert type="customer" refetchFunction={refetchCustomers} viewObjectAtom={viewCustomerAtom} viewObjectIdAtom={viewCustomerIDAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Customer
                 </Button>
-              </DeleteCustomer>
+              </DeleteAlert>
               <SettleBalance>
                 <Button size="sm" variant="outline">
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -139,7 +140,7 @@ export default function CustomerCard({
           </div>
         </div>
         <div className="flex justify-around space-x-2 mt-2">
-          <ViewAllPhoneNumbers customer_id={customer.id} values={customer.phone_numbers}>
+          <ViewAllPhoneNumbers type="customer" values={customer.phone_numbers} viewObjectAtom={viewCustomerAtom} viewObjectIdAtom={viewCustomerIDAtom}>
             <Button size="sm" variant="outline" className="w-full">
               <PhoneIcon className="h-4 w-4 mr-2" />
               View All Phone Numbers
@@ -174,7 +175,7 @@ const SettleBalance = ({
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const [viewCustomer, setViewCustomer] = useRecoilState(viewCustomerAtom);
 
-  const settleCustomerBalance = async (values: Omit<Omit<z.infer<typeof settleBalanceType>, "customer_id">, "amount"> & { amount: string }) => {
+  const settleCustomerBalance = async (values: Omit<Omit<z.infer<typeof settleBalanceType>, "architect_id">, "amount"> & { amount: string }) => {
     const res = await request.put("/customer/settleBalance", {
       ...values,
       customer_id: viewCustomer!.id ?? undefined,
