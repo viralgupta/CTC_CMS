@@ -21,6 +21,7 @@ import ViewArchitect from "./pages/architect/components/ViewArchitect"
 import ViewCarpenter from "./pages/carpenter/components/ViewCarpenter"
 import ViewDriver from "./pages/driver/components/ViewDriver"
 import ViewResource from "./pages/resources/components/ViewResource"
+import ViewEstimate from "./pages/estimate/components/ViewEstimate"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -63,6 +64,7 @@ function App() {
       <ViewCarpenter/>
       <ViewDriver/>
       <ViewResource/>
+      <ViewEstimate/>
       <Body>
           {renderTabContent()}
       </Body>

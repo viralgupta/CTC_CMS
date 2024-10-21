@@ -37,7 +37,7 @@ const ViewOrder = () => {
         }
       }}
     >
-      <DialogContent size="6xl">
+      <DialogContent size="7xl">
         <DialogHeader className="hidden">
           <DialogDescription></DialogDescription>
           <DialogTitle></DialogTitle>

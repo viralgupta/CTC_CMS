@@ -150,6 +150,7 @@ export type ViewOrderType = {
         item_id: string;
         item:
           | {
+              name: string;
               rate_dimension: "Rft" | "sq/ft" | "piece";
             }
           | undefined;

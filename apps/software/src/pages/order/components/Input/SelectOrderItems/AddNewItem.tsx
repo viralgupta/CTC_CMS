@@ -479,7 +479,7 @@ const AddNewItem = ({
   );
 };
 
-const FormLabelWithToolTip = ({
+export const FormLabelWithToolTip = ({
   heading,
   data,
 }: {

@@ -268,7 +268,7 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
       await tx.update(order).set({
         customer_id: addOrderCustomerIdTypeAnswer.data.customer_id,
         delivery_address_id: null
-      })
+      }).where(eq(order.id, addOrderCustomerIdTypeAnswer.data.order_id));
     })
 
     return res.status(200).json({success: true, message: "Updated Order Customer!!!"})
@@ -1260,6 +1260,7 @@ const getOrder = async (req: Request, res: Response) => {
             with: {
               item: {
                 columns: {
+                  name: true,
                   rate_dimension: true
                 }
               }

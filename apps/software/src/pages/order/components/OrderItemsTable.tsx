@@ -27,6 +27,7 @@ const OrderItemsTable = ({
       <TableCaption>A list of items in the order.</TableCaption>
       <TableHeader>
         <TableRow>
+          <TableHead className="text-center">Name</TableHead>
           <TableHead className="text-center">Quantity</TableHead>
           <TableHead className="text-center">Rate</TableHead>
           <TableHead className="text-center">Total Value</TableHead>
@@ -39,6 +40,7 @@ const OrderItemsTable = ({
         {order_items.map((oi, i) => {
           return (
             <TableRow key={i}>
+              <TableCell className="text-center">{oi.item?.name}</TableCell>
               <TableCell className="text-center">{oi.quantity}</TableCell>
               <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${oi.item?.rate_dimension}`}</TableCell>
               <TableCell className="text-center">{`₹${oi.total_value}`}</TableCell>

@@ -22,7 +22,7 @@ const DeleteAlert = ({
 }: {
   children: React.ReactNode;
   refetchFunction: () => void
-  type: "customer" | "architect" | "carpanter" | "driver" | "resource"
+  type: "customer" | "architect" | "carpanter" | "driver" | "resource" | "estimate"
   viewObjectAtom: RecoilState<any | null>
   viewObjectIdAtom: RecoilState<string | null>
 }) => {
@@ -52,8 +52,7 @@ const DeleteAlert = ({
             Are you sure you want to delete {type}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete {type}
-            and remove data from servers.
+            This action cannot be undone. This will permanently delete {type} and remove data from servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
