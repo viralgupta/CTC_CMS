@@ -1,9 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { CircleUserRound, Trash2 } from "lucide-react";
+import { CircleUserRound, Printer, Trash2 } from "lucide-react";
 import DivButton from "@/components/ui/div-button";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { viewCustomerIDAtom } from "@/store/Customer";
 import EditEstimate from "./EditEstimate";
 import {
@@ -15,10 +15,34 @@ import { parseDateToString } from "@/lib/utils";
 import DeleteAlert from "@/components/DeleteAlert";
 import { Button } from "@/components/ui/button";
 import { useAllEstimates } from "@/hooks/estimate";
+import printInfoAtom from "@/store/print";
+import { toast } from "sonner";
 
 const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
   const setViewCustomerID = useSetRecoilState(viewCustomerIDAtom);
+  const setPrintInfo = useSetRecoilState(printInfoAtom);
+  const viewEstimate = useRecoilValue(viewEstimateAtom);
   const { refetchEstimates } = useAllEstimates();
+
+  const setPrintEstimateInfo = (estimate: ViewEstimateType | null) => {
+    if(!estimate) {
+      toast.info("No info provided to set for print!");
+      return;
+    };
+    setPrintInfo({
+      customerName: estimate.customer.name,
+      date: parseDateToString(estimate.created_at),
+      estimate_items: estimate.estimate_items.map((item) => {
+        return {
+          name: item.item.name,
+          quantity: item.quantity.toString(),
+          rate: `${item.rate} per ${item.item.rate_dimension}`,
+          total: item.total_value
+        }
+      }),
+      totalEstimateCost: estimate.total_estimate_amount
+    })
+  }
 
   if (!estimate) return <Skeleton className="w-full h-96" />;
   return (
@@ -77,11 +101,15 @@ const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
             viewObjectAtom={viewEstimateAtom}
             viewObjectIdAtom={viewEstimateIdAtom}
           >
-            <Button variant={"outline"} className="gap-2 w-1/2">
+            <Button variant={"outline"} className="gap-2 w-full">
               <Trash2 />
               Delete Estimate
             </Button>
           </DeleteAlert>
+          <Button variant={"outline"} onClick={() => setPrintEstimateInfo(viewEstimate)} className="w-full gap-2">
+            <Printer />
+            Print Estimate
+          </Button>
         </div>
       </CardContent>
     </Card>

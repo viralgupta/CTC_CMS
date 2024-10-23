@@ -110,8 +110,6 @@ export const getImageUrlFromExtension = (theme: "dark" | "light" | "system", ext
       return `/stock/excel-${theme ?? "dark"}.png`;
     case "csv":
       return `/stock/excel-${theme ?? "dark"}.png`;
-    case "doc":
-      return `/stock/word-${theme ?? "dark"}.png`;
     case "pdf":
       return `/stock/pdf-${theme ?? "dark"}.png`;
     default:

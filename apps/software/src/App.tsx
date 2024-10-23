@@ -22,6 +22,7 @@ import ViewCarpenter from "./pages/carpenter/components/ViewCarpenter"
 import ViewDriver from "./pages/driver/components/ViewDriver"
 import ViewResource from "./pages/resources/components/ViewResource"
 import ViewEstimate from "./pages/estimate/components/ViewEstimate"
+import ViewPrintOptions from "./components/ViewPrintOption"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -65,6 +66,7 @@ function App() {
       <ViewDriver/>
       <ViewResource/>
       <ViewEstimate/>
+      <ViewPrintOptions/>
       <Body>
           {renderTabContent()}
       </Body>
@@ -72,8 +74,10 @@ function App() {
   )
 }
 
-window.ipcRenderer.on("Error", (_ev, args) => {
-  toast.error(args)
+window.ipcRenderer.on("Error", (_ev, message, desc) => {
+  toast.error(message, {
+    description: desc ?? undefined
+  });
 })
 
 export default App

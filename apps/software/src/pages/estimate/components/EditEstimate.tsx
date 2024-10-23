@@ -19,7 +19,7 @@ const EditEstimate = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={"outline"} className="w-1/2">
+        <Button variant={"outline"} className="w-full">
           <Pencil />
           &nbsp;&nbsp;Edit Estimate
         </Button>
