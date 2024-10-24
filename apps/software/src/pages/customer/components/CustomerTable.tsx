@@ -58,7 +58,7 @@ function CustomerTable({
         return (
           <div
             className={
-              parseBalanceToFloat(row.original.balance) < 0
+              parseBalanceToFloat(row.original.balance) > 0
                 ? "text-red-500"
                 : ""
             }

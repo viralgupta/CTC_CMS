@@ -5,7 +5,7 @@ export const createCarpanterType = z
   .object({
     name: z.string(),
     profileUrl: z.string().optional(),
-    phone_numbers: z.array(phone_numberType),
+    phone_numbers: z.array(phone_numberType).min(1),
     area: z.string(),
     balance: z.string().optional(),
   })

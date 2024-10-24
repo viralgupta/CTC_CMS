@@ -12,15 +12,14 @@ const createCarpanter = async (req: Request, res: Response) => {
   }
 
   try {
-    const createdCarpanter = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
 
       const tCarpanter = await tx.insert(carpanter).values({
         name: createCarpanterTypeAnswer.data.name,
         profileUrl: createCarpanterTypeAnswer.data.profileUrl,
         area: createCarpanterTypeAnswer.data.area,
         balance: createCarpanterTypeAnswer.data.balance
-      }).returning();
-
+      }).returning({id: carpanter.id});
       
       const numberswithPrimary = createCarpanterTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -48,11 +47,9 @@ const createCarpanter = async (req: Request, res: Response) => {
           };
         })
       );
-
-      return tCarpanter[0];
     })
     
-    return res.status(200).json({success: true, message: "Carpanter created successfully", data: createdCarpanter});
+    return res.status(200).json({success: true, message: "Carpanter created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create Carpanter", error: error.message ? error.message : error});
   }
@@ -78,16 +75,15 @@ const editCarpanter = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Carpanter not found" });
     }
 
-    const updatedCarpanter = await db.update(carpanter).set({
+    await db.update(carpanter).set({
       name: editCarpanterTypeAnswer.data.name,
       profileUrl: editCarpanterTypeAnswer.data.profileUrl,
       area: editCarpanterTypeAnswer.data.area,
     }).where(eq(carpanter.id, tCarpanter.id))
-    .returning();
 
-    return res.status(200).json({success: true, message: "Carpanter Edited Successfully", data: updatedCarpanter[0]});
+    return res.status(200).json({success: true, message: "Carpanter Update Successfully"});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to edit Carpanter", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to update Carpanter", error: error.message ? error.message : error});
   }
 };
 
@@ -120,11 +116,11 @@ const settleBalance = async (req: Request, res: Response) => {
     : parseFloat(parseFloat(tCarpanter.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
 
     
-    const updatedCarpanter = await db.update(carpanter).set({
+    await db.update(carpanter).set({
       balance: newBalance.toFixed(2)
-    }).where(eq(carpanter.id, tCarpanter.id)).returning();
+    }).where(eq(carpanter.id, tCarpanter.id));
 
-    return res.status(200).json({success: true, message: "Carpanter balance updated", data: updatedCarpanter[0]});
+    return res.status(200).json({success: true, message: "Carpanter balance updated"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update carpanter balance", error: error.message ? error.message : error});
   }
@@ -221,7 +217,7 @@ const deleteCarpanter = async (req: Request, res: Response) => {
       }
 
       if(tCarpanter.orders.length > 0){
-        throw new Error("Carpanter has orders which have Not Null Commision, Cannot Delete Carpanter!")
+        throw new Error("Carpanter has been linked to orders, Cannot Delete Carpanter!")
       }
       
       await tx.delete(carpanter).where(eq(carpanter.id, deleteCarpanterTypeAnswer.data.carpanter_id));

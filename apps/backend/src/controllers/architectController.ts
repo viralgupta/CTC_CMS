@@ -12,14 +12,14 @@ const createArchitect = async (req: Request, res: Response) => {
   }
 
   try {
-    const createdArchitect = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
 
       const tArchitect = await tx.insert(architect).values({
         name: createArchitectTypeAnswer.data.name,
         profileUrl: createArchitectTypeAnswer.data.profileUrl,
         area: createArchitectTypeAnswer.data.area,
         balance: createArchitectTypeAnswer.data.balance
-      }).returning();
+      }).returning({ id: architect.id });
 
       const numberswithPrimary = createArchitectTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -47,11 +47,9 @@ const createArchitect = async (req: Request, res: Response) => {
           };
         })
       );
-
-      return tArchitect[0];
     })
     
-    return res.status(200).json({success: true, message: "Architect created successfully", data: createdArchitect});
+    return res.status(200).json({success: true, message: "Architect created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create Architect", error: error.message ? error.message : error});
   }
@@ -77,16 +75,15 @@ const editArchitect = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Architect not found" });
     }
 
-    const updatedArchitect = await db.update(architect).set({
+    await db.update(architect).set({
       name: editArchitectTypeAnswer.data.name,
       profileUrl: editArchitectTypeAnswer.data.profileUrl,
       area: editArchitectTypeAnswer.data.area,
     }).where(eq(architect.id, tArchitect.id))
-    .returning();
 
-    return res.status(200).json({success: true, message: "Architect Edited Successfully", data: updatedArchitect[0]});
+    return res.status(200).json({success: true, message: "Architect Updated Successfully"});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to edit Architect", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to update Architect", error: error.message ? error.message : error});
   }
 };
 
@@ -119,11 +116,11 @@ const settleBalance = async (req: Request, res: Response) => {
     : parseFloat(parseFloat(tArchitect.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
 
     
-    const updatedArchitect = await db.update(architect).set({
+    await db.update(architect).set({
       balance: newBalance.toFixed(2)
-    }).where(eq(architect.id, tArchitect.id)).returning();
+    }).where(eq(architect.id, tArchitect.id));
 
-    return res.status(200).json({success: true, message: "Architect balance updated", data: updatedArchitect[0]});
+    return res.status(200).json({success: true, message: "Architect balance updated"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update architect balance", error: error.message ? error.message : error});
   }
@@ -220,7 +217,7 @@ const deleteArchitect = async (req: Request, res: Response) => {
       }
 
       if(tArchitect.orders.length > 0){
-        throw new Error("Architect has orders which have Not Null Commision, Cannot Delete Architect!")
+        throw new Error("Architect has been linked to orders, Cannot Delete Architect!")
       }
       
       await tx.delete(architect).where(eq(architect.id, deleteArchitectTypeAnswer.data.architect_id));

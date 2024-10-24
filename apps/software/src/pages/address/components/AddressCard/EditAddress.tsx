@@ -22,11 +22,13 @@ import Spinner from "@/components/ui/Spinner";
 import { useAddressAreas } from "@/hooks/addressArea";
 import request from "@/lib/request";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Checkbox } from "@radix-ui/react-checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { addressType as originalAddressType } from "@type/api/miscellaneous";
 import React from 'react'
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useSetRecoilState } from "recoil";
+import { viewAddressAtom, viewAddressIdAtom } from "@/store/address";
 
 const addressType = originalAddressType.extend({
   address_id: z.string(),
@@ -40,6 +42,8 @@ type EditAddressProps = {
 
 const EditAddress = ({ address, children }: EditAddressProps) => {
   const { addressAreas } = useAddressAreas();
+  const setViewAddressId = useSetRecoilState(viewAddressIdAtom);
+  const setViewAddress = useSetRecoilState(viewAddressAtom);
 
   const form = useForm<z.infer<typeof addressType>>({
     resolver: zodResolver(addressType),
@@ -50,6 +54,8 @@ const EditAddress = ({ address, children }: EditAddressProps) => {
   async function onSubmit(values: z.infer<typeof addressType>) {
     await request.put("/customer/editAddress", values);
     form.reset();
+    setViewAddress(null);
+    setViewAddressId(null);
     return;
   }
 
@@ -147,6 +153,7 @@ const EditAddress = ({ address, children }: EditAddressProps) => {
                   <FormLabel>Is&nbsp;Primary</FormLabel>
                   <FormControl>
                     <Checkbox
+                      className=""
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />

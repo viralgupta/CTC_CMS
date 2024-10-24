@@ -61,7 +61,6 @@ export default function ResourceCard({
                 </Button>
               </EditResource>
               <DeleteAlert
-                refetchFunction={refetchResources}
                 type="resource"
                 viewObjectAtom={viewResourceAtom}
                 viewObjectIdAtom={viewResourceIdAtom}

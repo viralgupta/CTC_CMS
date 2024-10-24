@@ -12,7 +12,7 @@ const createEstimate = async (req: Request, res: Response ) => {
   }
 
   try {
-    const createdEstimate = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const total_estimate_value = (createEstimateTypeAnswer.data.estimate_items.reduce((acc, item) => acc + parseFloat(item.total_value), 0)).toFixed(2);
 
       const tcreatedEstimate = await tx.insert(estimate).values({
@@ -33,10 +33,9 @@ const createEstimate = async (req: Request, res: Response ) => {
           }
         })
       );
-      return tcreatedEstimate[0];
     })
 
-    return res.status(200).json({success: true, message: "Estimate created successfully", data: createdEstimate});
+    return res.status(200).json({success: true, message: "Estimate created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create estimate", error: error.message ? error.message : error});
   }

@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseBalanceToFloat, parseDateToString } from "@/lib/utils";
 import { ViewOrderType } from "@/store/order";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   CalendarIcon,
   CircleUserRound,
@@ -100,16 +100,6 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                 <div>
                   <div className="p-1">
                     <div className="text-sm font-medium text-gray-500">
-                      Labour & Frate
-                    </div>
-                    <div className="text-lg font-semibold mt-2">
-                      ₹{order.labour_frate_cost.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="p-1">
-                    <div className="text-sm font-medium text-gray-500">
                       Discount
                     </div>
                     <div className="text-lg font-semibold mt-2">
@@ -135,13 +125,23 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                             <p>
                               Balance: ₹
                               {(
-                                parseFloat(order.total_order_amount) -
-                                parseFloat(order.amount_paid || "0")
+                                parseFloat(order.total_order_amount) - parseFloat(order.discount ?? "0.00") -
+                                parseFloat(order.amount_paid ?? "0")
                               ).toFixed(2)}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="p-1">
+                    <div className="text-sm font-medium text-gray-500">
+                      Labour & Frate
+                    </div>
+                    <div className="text-lg font-semibold mt-2">
+                      ₹{order.labour_frate_cost.toFixed(2)}
                     </div>
                   </div>
                 </div>

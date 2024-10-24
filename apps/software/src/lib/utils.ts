@@ -91,6 +91,7 @@ export const calculateCommissionFromTotalCommission = (
 
 export const getImageUrlFromExtension = (theme: "dark" | "light" | "system", ext?: string, url?: string) => {
   if (url) return url;
+  if (theme == "system") theme = "dark";
   switch (ext) {
     case "png":
       return `/stock/image-${theme ?? "dark"}.png`;

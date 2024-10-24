@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import db from "@db/db";
 import { address, address_area, customer, phone_number } from "@db/schema";
-import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getAddressType, getCustomerAddressesType, getCustomersByAreaType, getCustomerType, settleBalanceType } from "@type/api/customer";
+import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getAddressType, getCustomerType, settleBalanceType } from "@type/api/customer";
 import { eq, and } from "drizzle-orm";
 
 const createCustomer = async (req: Request, res: Response) => {
@@ -13,13 +13,13 @@ const createCustomer = async (req: Request, res: Response) => {
   }
 
   try {
-    const createdCustomer = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
 
       const tCustomer = await tx.insert(customer).values({
         name: createCustomerTypeAnswer.data.name,
         balance: createCustomerTypeAnswer.data.balance,
         profileUrl: createCustomerTypeAnswer.data.profileUrl
-      }).returning();
+      }).returning({ id: customer.id });
 
       const numberswithPrimary = createCustomerTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -80,11 +80,9 @@ const createCustomer = async (req: Request, res: Response) => {
           })
         )
       }
-
-      return tCustomer[0];
     })
     
-    return res.status(200).json({success: true, message: "Customer created successfully", data: createdCustomer});
+    return res.status(200).json({success: true, message: "Customer created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create customer", error: error.message ? error.message : error});
   }
@@ -111,14 +109,11 @@ const addAddressArea = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Area already exists"});
     }
 
-    const newAreas = await db.insert(address_area).values({
+    await db.insert(address_area).values({
       area: addAddressAreaTypeAnswer.data.area
-    }).returning({
-      id: address_area.id,
-      areas: address_area.area
-    })
+    });
 
-    return res.status(200).json({success: true, message: "Address Area added successfully", data: newAreas});
+    return res.status(200).json({success: true, message: "Address Area added successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to add Address Area", error: error.message ? error.message : error});
   }
@@ -150,9 +145,9 @@ const deleteAddressArea = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Area is linked to Address, Cannot Delete!"});
     }
 
-    const newAreas = await db.delete(address_area).where(eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id)).returning();
+    await db.delete(address_area).where(eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id));
 
-    return res.status(200).json({success: true, message: "Address Area deleted successfully", data: newAreas});
+    return res.status(200).json({success: true, message: "Address Area deleted successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete Address Area", error: error.message ? error.message : error});
   }
@@ -168,7 +163,7 @@ const getAllAddressAreas = async (_req: Request, res: Response) => {
       }
     });
 
-    return res.status(200).json({success: true, message: "Areas Found", data: areas});
+    return res.status(200).json({success: true, message: "Address Areas Found", data: areas});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to get Address Areas", error: error.message ? error.message : error});
   }
@@ -203,9 +198,9 @@ const getAllAddresses = async (_req: Request, res: Response) => {
       })
     })
 
-    return res.status(200).json({success: true, message: "Addresses found!", data: allAddresses});
+    return res.status(200).json({success: true, message: "All Addresses fetched!", data: allAddresses});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to find addresses", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to fetch addresses", error: error.message ? error.message : error});
   }
 }
 
@@ -261,7 +256,7 @@ const getAddress = async (req: Request, res: Response) => {
 
     return res.status(200).json({success: true, message: "Address found!", data: foundAddress});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to add address", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to find address", error: error.message ? error.message : error});
   }  
 }
 
@@ -330,7 +325,7 @@ const editAddress = async (req: Request, res: Response) => {
 
   try {
     
-    const updatedAddress = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       if(editAddressTypeAnswer.data.isPrimary == true){
         await tx
           .update(address)
@@ -361,7 +356,7 @@ const editAddress = async (req: Request, res: Response) => {
       }
 
 
-      return await tx.update(address).set({
+      await tx.update(address).set({
         house_number: editAddressTypeAnswer.data.house_number,
         address: editAddressTypeAnswer.data.address,
         address_area_id: editAddressTypeAnswer.data.address_area_id,
@@ -370,10 +365,10 @@ const editAddress = async (req: Request, res: Response) => {
         isPrimary: editAddressTypeAnswer.data.isPrimary,
         latitude: editAddressTypeAnswer.data.cordinates?.latitude,
         longitude: editAddressTypeAnswer.data.cordinates?.longitude
-      }).where(eq(address.id, editAddressTypeAnswer.data.address_id)).returning();
+      }).where(eq(address.id, editAddressTypeAnswer.data.address_id));
     })
 
-    return res.status(200).json({success: true, message: "Address updated successfully", data: updatedAddress});
+    return res.status(200).json({success: true, message: "Address updated successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update address", error: error.message ? error.message : error});
   }
@@ -414,8 +409,19 @@ const deleteAddress = async (req: Request, res: Response) => {
 
       if(foundAddress.isPrimary){
         // try to find another address and make it primary
+        const nonPrimaryAddress = await tx.query.address.findMany({
+          where: (address, { eq }) => eq(address.isPrimary, false),
+          columns: {
+            id: true,
+          }
+        });
+        if(nonPrimaryAddress.length > 0){
+          await tx
+            .update(address)
+            .set({ isPrimary: true })
+            .where(eq(address.id, nonPrimaryAddress[0].id));
+        }
 
-        await tx.update(address).set({isPrimary: true}).where(and(eq(address.customer_id, foundAddress.customer_id), eq(address.isPrimary, false)))
       }
 
       await tx.delete(address).where(eq(address.id, deleteAddressTypeAnswer.data.address_id));
@@ -436,24 +442,21 @@ const editCustomer = async (req: Request, res: Response) => {
 
   try {
     
-    const updatedCustomer = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const tCustomer = await tx.select({id: customer.id}).from(customer).where(eq(customer.id, editCustomerTypeAnswer.data.customer_id));
 
       if(tCustomer.length === 0){
         throw new Error("Customer not found");
       }
 
-      const updatedTCustomer = await tx.update(customer).set({
+      await tx.update(customer).set({
         name: editCustomerTypeAnswer.data.name,
         profileUrl: editCustomerTypeAnswer.data.profileUrl
-      }).where(eq(customer.id, tCustomer[0].id)).returning();
+      }).where(eq(customer.id, tCustomer[0].id));
 
-      return updatedTCustomer[0];
     })
 
-    const  { ["total_order_value"]: _, ...updatedCustomerWithoutTotalOrderValue} = updatedCustomer;
-
-    return res.status(200).json({success: true, message: "Customer updated successfully", data: updatedCustomerWithoutTotalOrderValue});
+    return res.status(200).json({success: true, message: "Customer updated successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update customer", error: error.message ? error.message : error});
   }
@@ -468,7 +471,7 @@ const settleBalance = async (req: Request, res: Response) => {
 
   try {
     
-    const updatedCustomer = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const tCustomer = await tx.select({id: customer.id, balance: customer.balance}).from(customer).where(eq(customer.id, settleBalanceTypeAnswer.data.customer_id));
 
       if(tCustomer.length === 0){
@@ -483,17 +486,12 @@ const settleBalance = async (req: Request, res: Response) => {
         ? parseFloat(parseFloat(tCustomer[0].balance).toFixed(2)) + settleBalanceTypeAnswer.data.amount 
         : parseFloat(parseFloat(tCustomer[0].balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
 
-      const updatedTCustomer = await tx.update(customer).set({
+      await tx.update(customer).set({
         balance: newBalance.toFixed(2)
-      }).where(eq(customer.id, tCustomer[0].id)).returning();
-
-      return updatedTCustomer[0];
+      }).where(eq(customer.id, tCustomer[0].id));
     })
 
-    // remove total_order_value from response
-    const  { ["total_order_value"]: _, ...updatedCustomerWithoutTotalOrderValue} = updatedCustomer;
-
-    return res.status(200).json({success: true, message: "Balance updated successfully", data: updatedCustomerWithoutTotalOrderValue});
+    return res.status(200).json({success: true, message: "Balance updated successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update balance", error: error.message ? error.message : error});
   }
@@ -577,50 +575,9 @@ const getCustomer = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Customer not found"});
     }
 
-    return res.status(200).json({success: true, data: getCustomer});
+    return res.status(200).json({success: true, message: "Customer fetched!", data: getCustomer});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to get customer", error: error.message ? error.message : error});
-  }
-}
-
-const getCustomersByArea = async (req: Request, res: Response) => {
-
-  const getCustomersByAreaTypeAnswer = getCustomersByAreaType.safeParse(req.query);
-
-  if (!getCustomersByAreaTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: getCustomersByAreaTypeAnswer.error?.flatten()})
-  }
-
-  try {
-    const customers = await db.query.address.findMany({
-      where: (address, { eq, and }) =>
-        and(
-          eq(
-            address.address_area_id,
-            getCustomersByAreaTypeAnswer.data.address_area_id
-          ),
-          eq(
-            address.house_number,
-            getCustomersByAreaTypeAnswer.data.house_number
-          )
-        ),
-      columns: {
-        address: true,
-      },
-      with: {
-        customer: {
-          columns: {
-            id: true,
-            name: true,
-            balance: true,
-          }
-        }
-      }
-    });
-
-    return res.status(200).json({success: true, message: "Customers found", data: customers});
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to get customers", error: error.message ? error.message : error});
   }
 }
 
@@ -707,12 +664,12 @@ const getAllCustomers = async (_req: Request, res: Response) => {
           limit: 1
         }
       },
-      orderBy: (customer, { asc }) => [asc(customer.balance)],
+      orderBy: (customer, { desc }) => [desc(customer.balance)],
     });
 
-    return res.status(200).json({success: true, message: "Customers found", data: customers});
+    return res.status(200).json({success: true, message: "All Customers fetched", data: customers});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to get customers", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to fetch customers", error: error.message ? error.message : error});
   }
 }
 
@@ -729,7 +686,6 @@ export {
   editCustomer,
   settleBalance,
   getCustomer,
-  getCustomersByArea,
   deleteCustomer,
   getAllCustomers,
 }

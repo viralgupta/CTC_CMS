@@ -86,7 +86,10 @@ async function ConvertFromPDF(body: Uint8Array): Promise<Buffer> {
 
 async function ConvertFromImage(body: Uint8Array, extension: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
-
+    if(Config.STAGE == "dev") {
+      reject("Unable to resize image in dev mode!");
+      return;
+    };
     try {
       const dir = '/tmp';
       const inputname = path.join(dir, `input.${extension}`); 

@@ -37,57 +37,66 @@ const CreateCarpenterForm = () => {
       name: "",
       balance: "",
       profileUrl: "",
+      area: "",
       phone_numbers: [],
     },
   });
 
   const OnProfileURLChange = (url: string) => {
-    if(url) {
-      form.setValue("profileUrl", url)
+    if (url) {
+      form.setValue("profileUrl", url);
     }
-  }
+  };
 
-  const AddPhoneNumber = (data: z.infer<typeof createCarpanterType>["phone_numbers"][number]) => {
+  const AddPhoneNumber = (
+    data: z.infer<typeof createCarpanterType>["phone_numbers"][number]
+  ) => {
     let oldPhoneNumberArray = form.getValues("phone_numbers") ?? [];
-    
-    const samePhoneNumber = oldPhoneNumberArray.filter((od) => od.phone_number == data.phone_number);
-    if(samePhoneNumber.length > 0) return;
 
-    if(data.isPrimary){
+    const samePhoneNumber = oldPhoneNumberArray.filter(
+      (od) => od.phone_number == data.phone_number
+    );
+    if (samePhoneNumber.length > 0) return;
+
+    if (data.isPrimary) {
       oldPhoneNumberArray = oldPhoneNumberArray.map((phone) => ({
         ...phone,
         isPrimary: false,
       }));
-    } else if(oldPhoneNumberArray.length == 0){
+    } else if (oldPhoneNumberArray.length == 0) {
       data.isPrimary = true;
     }
 
     oldPhoneNumberArray.push(data);
-    
+
     form.setValue("phone_numbers", oldPhoneNumberArray);
     form.trigger("phone_numbers");
-  }
+  };
 
   const removePhoneNumber = (phone_no: string) => {
     let oldPhoneNumberArray = form.getValues("phone_numbers");
 
-    const oldPhoneNumber = oldPhoneNumberArray.find((phone) => phone.phone_number == phone_no);
-    const newPhoneNumberArray = oldPhoneNumberArray.filter((phone) => phone.phone_number !== phone_no);
+    const oldPhoneNumber = oldPhoneNumberArray.find(
+      (phone) => phone.phone_number == phone_no
+    );
+    const newPhoneNumberArray = oldPhoneNumberArray.filter(
+      (phone) => phone.phone_number !== phone_no
+    );
 
-    if(oldPhoneNumber?.isPrimary && newPhoneNumberArray.length > 0){
+    if (oldPhoneNumber?.isPrimary && newPhoneNumberArray.length > 0) {
       newPhoneNumberArray[0].isPrimary = true;
     }
 
     form.setValue("phone_numbers", newPhoneNumberArray);
     form.trigger("phone_numbers");
-  }
+  };
 
   async function onSubmit(values: z.infer<typeof createCarpanterType>) {
     try {
       const res = await request.post("/carpenter/createCarpanter", values);
-      if(res.status == 200){
+      if (res.status == 200) {
         form.reset();
-        refetchCarpenters()
+        refetchCarpenters();
       }
     } catch (error) {
       console.log(error);
@@ -96,7 +105,7 @@ const CreateCarpenterForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
           <FormField
             control={form.control}
@@ -105,7 +114,12 @@ const CreateCarpenterForm = () => {
               <FormItem className="pr-2">
                 <FormLabel>&nbsp;</FormLabel>
                 <FormControl>
-                  <ProfileUrlInput value={field.value} removePhoto={()=>{form.setValue("profileUrl", undefined);}}/>
+                  <ProfileUrlInput
+                    value={field.value}
+                    removePhoto={() => {
+                      form.setValue("profileUrl", undefined);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -124,6 +138,8 @@ const CreateCarpenterForm = () => {
               </FormItem>
             )}
           />
+        </div>
+        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
           <FormField
             control={form.control}
             name="balance"
@@ -131,7 +147,20 @@ const CreateCarpenterForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Carpenter Existing Balance</FormLabel>
                 <FormControl>
-                <Input type="number" {...field} />
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="area"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Carpenter Area</FormLabel>
+                <FormControl>
+                  <Input type="text" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,7 +175,12 @@ const CreateCarpenterForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Carpenter Phone Number</FormLabel>
                 <FormControl>
-                  <PhoneNumberInput OnProfileURLChange={OnProfileURLChange} AddNumber={AddPhoneNumber} removeNumber={removePhoneNumber} value={field.value}/>
+                  <PhoneNumberInput
+                    OnProfileURLChange={OnProfileURLChange}
+                    AddNumber={AddPhoneNumber}
+                    removeNumber={removePhoneNumber}
+                    value={field.value}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -166,7 +200,7 @@ const CreateCarpenter = ({ children }: { children: React.ReactNode }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent size="4xl">
+      <DialogContent size="2xl">
         <DialogHeader>
           <DialogTitle>Create a new Carpenter</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>

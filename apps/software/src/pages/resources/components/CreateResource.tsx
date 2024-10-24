@@ -52,7 +52,6 @@ const CreateResource = () => {
 const CreateResourceForm = () => {
   const [uploadValue, setUploadValue] = React.useState<number | null>(null);
   const FileInputRef = React.useRef<HTMLInputElement>(null);
-  const { refetchResources } = useAllResources();
 
   const form = useForm<z.infer<typeof createPutSignedURLType>>({
     resolver: zodResolver(createPutSignedURLType),
@@ -76,7 +75,7 @@ const CreateResourceForm = () => {
       if (res.status == 200) {
         form.reset();
         await uploadFile(res.data.data);
-        refetchResources();
+        toast.success("Creation in process...")
       }
     } catch (error) {
       console.log(error);

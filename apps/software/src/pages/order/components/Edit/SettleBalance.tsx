@@ -20,13 +20,13 @@ const SettleBalance = ({ closeDialog }: { closeDialog?: () => void }) => {
     <div className="space-y-4 flex flex-col">
       <SettleBalanceForm
         existingBalance={(
-          parseFloat(viewOrder?.total_order_amount ?? "0.00") -
+          parseFloat(viewOrder?.total_order_amount ?? "0.00") - parseFloat(viewOrder?.discount ?? "0.00") -
           parseFloat(viewOrder?.amount_paid ?? "0.00")
         ).toFixed(2)}
         onSubmit={({ amount, operation }) => {
           onSubmit({
             amount,
-            operator: operation == "add" ? "Addition" : "Subtraction",
+            operator: operation,
             order_id: viewOrder?.id ?? "",
           });
         }}

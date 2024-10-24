@@ -12,14 +12,14 @@ const createDriver = async (req: Request, res: Response) => {
   }
 
   try {
-    const createdDriver = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
 
       const tDriver = await tx.insert(driver).values({
         name: createDriverTypeAnswer.data.name,
         profileUrl: createDriverTypeAnswer.data.profileUrl,
         vehicle_number: createDriverTypeAnswer.data.vehicle_number,
         size_of_vehicle: createDriverTypeAnswer.data.size_of_vehicle
-      }).returning();
+      }).returning({ id: driver.id });
 
       if(createDriverTypeAnswer.data.phone_numbers.length === 0){
         throw new Error("Atleast 1 Phone number is required!");
@@ -51,11 +51,9 @@ const createDriver = async (req: Request, res: Response) => {
           };
         })
       );
-
-      return tDriver[0];
     })
     
-    return res.status(200).json({success: true, message: "Driver created successfully", data: createdDriver});
+    return res.status(200).json({success: true, message: "Driver created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create driver", error: error.message ? error.message : error});
   }
@@ -75,15 +73,14 @@ const editDriver = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Driver not found" });
     }
 
-    const updatedDriver = await db.update(driver).set({
+    await db.update(driver).set({
       name: editDriverTypeAnswer.data.name,
       profileUrl: editDriverTypeAnswer.data.profileUrl,
       vehicle_number: editDriverTypeAnswer.data.vehicle_number,
       size_of_vehicle: editDriverTypeAnswer.data.size_of_vehicle
     }).where(eq(driver.id, editDriverTypeAnswer.data.driver_id))
-    .returning();
 
-    return res.status(200).json({success: true, message: "Driver Edited Successfully", data: updatedDriver[0]});
+    return res.status(200).json({success: true, message: "Driver Edited Successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit driver", error: error.message ? error.message : error});
   }
@@ -138,9 +135,9 @@ const getDriver = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Driver not found" });
     }
 
-    return res.status(200).json({success: true, message: "Driver found", data: foundDriver});
+    return res.status(200).json({success: true, message: "Driver fetched", data: foundDriver});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to get driver", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to fetch driver", error: error.message ? error.message : error});
   }
 }
 
@@ -152,7 +149,32 @@ const deleteDriver = async (req: Request, res: Response) => {
     }
   
     try {
-      await db.delete(driver).where(eq(driver.id, deleteDriverTypeAnswer.data.driver_id));
+      await db.transaction(async (tx) => {
+        const foundDrivertx = await tx.query.driver.findFirst({
+          where: (driver, { eq }) => eq(driver.id, deleteDriverTypeAnswer.data.driver_id),
+          columns: {
+            id: true,
+          },
+          with: {
+            orders: {
+              columns: {
+                id: true
+              },
+              limit: 1
+            }
+          }
+        });
+
+        if(!foundDrivertx){
+          throw new Error("Unable to find the driver!");
+        }
+
+        if(foundDrivertx.orders?.length > 0){
+          throw new Error("Driver linked to order cannot delete!");
+        }
+
+        await tx.delete(driver).where(eq(driver.id, deleteDriverTypeAnswer.data.driver_id));
+      })
   
       return res.status(200).json({success: true, message: "Driver deleted successfully"});
     } catch (error: any) {
@@ -178,9 +200,9 @@ const getAllDrivers = async (_req: Request, res: Response) => {
       }
     });
 
-    return res.status(200).json({success: true, message: "Drivers found", data: allDrivers});
+    return res.status(200).json({success: true, message: "All Drivers fetched", data: allDrivers});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to get drivers", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to fetch drivers", error: error.message ? error.message : error});
   }
 }
 

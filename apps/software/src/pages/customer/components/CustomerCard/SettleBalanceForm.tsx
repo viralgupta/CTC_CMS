@@ -53,9 +53,9 @@ const SettleBalanceForm = ({
       return;
     };
     if (form.getValues("operation") == "add") {
-      setTotalValue(parseBalanceToFloat(existingBalance) + parseBalanceToFloat(form.getValues("amount")));
+      setTotalValue(parseBalanceToFloat(existingBalance) + parseBalanceToFloat(amount));
     } else {
-      setTotalValue(parseBalanceToFloat(existingBalance) - parseBalanceToFloat(form.getValues("amount")));
+      setTotalValue(parseBalanceToFloat(existingBalance) - parseBalanceToFloat(amount));
     };
   }, [amount, operation])
 

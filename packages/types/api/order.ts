@@ -126,7 +126,7 @@ export const settleBalanceType = z.object({
     message: "The number must be greater than or equal to 0.00",
   })
   .transform((val) => parseFloat(val).toFixed(2)),
-  operator: z.enum(["Addition", "Subtraction"])
+  operator: z.enum(["add", "subtract"])
 })
 
 export const editOrderItemsType = z.object({

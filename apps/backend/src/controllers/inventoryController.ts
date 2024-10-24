@@ -74,9 +74,9 @@ const getItem = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Unable to find item"})
     }
 
-    return res.status(200).json({success: true, message: "Item found successfully", data: foundItem});
+    return res.status(200).json({success: true, message: "Item fetched", data: foundItem});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to find item", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to fetch item", error: error.message ? error.message : error});
   }
 }
 
@@ -136,13 +136,13 @@ const editItem = async (req: Request, res: Response) => {
       min_rate: editItemTypeAnswer.data.min_rate,
       sale_rate: editItemTypeAnswer.data.sale_rate,
       rate_dimension: editItemTypeAnswer.data.rate_dimension
-    }).where(eq(item.id, editItemTypeAnswer.data.item_id)).returning()
+    }).where(eq(item.id, editItemTypeAnswer.data.item_id)).returning({ id: item.id })
 
     if(!updatedItem[0].id){
       return res.status(400).json({success: false, message: "Unable to edit item"})
     }
 
-    return res.status(200).json({success: true, message: "Item edited successfully", data: updatedItem});
+    return res.status(200).json({success: true, message: "Item edited successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit item", error: error.message ? error.message : error});
   }
@@ -174,13 +174,13 @@ const editQuantity = async (req: Request, res: Response) => {
 
     const updatedItem = await db.update(item).set({
       quantity: newQuantity
-    }).where(eq(item.id, editQuantityTypeAnswer.data.item_id)).returning()
+    }).where(eq(item.id, editQuantityTypeAnswer.data.item_id)).returning({ id: item.id })
 
     if(!updatedItem[0].id){
       return res.status(400).json({success: false, message: "Unable to edit item quantity"})
     }
 
-    return res.status(200).json({success: true, message: "Item quantity edited successfully", data: updatedItem});
+    return res.status(200).json({success: true, message: "Item quantity edited successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit item quantity", error: error.message ? error.message : error});
   }
@@ -221,9 +221,9 @@ const deleteItem = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Item quantity is not 0, cannot delete!"})
     }
 
-    const deletedItem = await db.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id)).returning()
+    await db.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
 
-    return res.status(200).json({success: true, message: "Item deleted successfully", data: deletedItem});
+    return res.status(200).json({success: true, message: "Item deleted successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete item", error: error.message ? error.message : error});
   }
@@ -242,7 +242,7 @@ const getAllItems = async (_req: Request, res: Response) => {
         rate_dimension: true,
       }
     });
-    return res.status(200).json({success: true, message: "Items Found", data: items});
+    return res.status(200).json({success: true, message: "All Items Fetched!", data: items});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch items", error: error.message ? error.message : error});
   }

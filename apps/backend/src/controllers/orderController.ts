@@ -33,7 +33,7 @@ const createOrder = async (req: Request, res: Response) => {
     const calculateCarpanterCommision = createOrderTypeAnswer.data.carpanter_id ? true : false;
     const calculateArchitectCommision = createOrderTypeAnswer.data.architect_id ? true : false;
 
-    const createdOrder = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
 
       // check if duplicate items in order_items array
       let order_item_id: string[] = [];
@@ -190,14 +190,12 @@ const createOrder = async (req: Request, res: Response) => {
       // update activeOrders for driver
       if(createOrderTypeAnswer.data.driver_id && createOrderTypeAnswer.data.status == "Pending"){
         await tx.update(driver).set({
-          activeOrders: sql`${driver.id} + 1`
+          activeOrders: sql`${driver.activeOrders} + 1`
         }).where(eq(driver.id, createOrderTypeAnswer.data.driver_id))
       }
-
-      return tOrder[0].id;
     })
 
-    return res.status(200).json({success: true, message: "Order created successfully", data: createdOrder});
+    return res.status(200).json({success: true, message: "Order created successfully"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create order", error: error.message ? error.message : error});
   }
@@ -239,7 +237,6 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
         where: (order, { eq }) => eq(order.id, addOrderCustomerIdTypeAnswer.data.order_id),
         columns: {
           customer_id: true,
-          delivery_address_id: true,
           total_order_amount: true,
           discount: true,
           amount_paid: true
@@ -271,7 +268,7 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
       }).where(eq(order.id, addOrderCustomerIdTypeAnswer.data.order_id));
     })
 
-    return res.status(200).json({success: true, message: "Updated Order Customer!!!"})
+    return res.status(200).json({success: true, message: "Updated Order's Customer!!!"})
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update customer for order!", error: error.message ? error.message : error});  
   }
@@ -285,7 +282,7 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
   }
 
   try {
-    const newCarpanterId = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const oldOrder = await tx.query.order.findFirst({
         where: (order, { eq }) => eq(order.id, editOrderCarpanterIdTypeAnswer.data.order_id),
         columns: {
@@ -320,16 +317,14 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
       })
 
       // update carpanter in order
-      const newOrder = await tx.update(order).set({
+      await tx.update(order).set({
         carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id
       }).where(eq(order.id, editOrderCarpanterIdTypeAnswer.data.order_id)).returning({
         carpanter_id: order.carpanter_id
       })
-
-      return newOrder[0].carpanter_id;
     })
 
-    return res.status(200).json({success: true, message: "Updated Carpanter in Order", data: newCarpanterId})    
+    return res.status(200).json({success: true, message: "Updated Carpanter in Order"})    
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to Updated Carpanter in Order", error: error.message ? error.message : error});  
   }
@@ -343,7 +338,7 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
   }
 
   try {
-    const newArchitectId = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const oldOrder = await tx.query.order.findFirst({
         where: (order, { eq }) => eq(order.id, editOrderArchitectIdTypeAnswer.data.order_id),
         columns: {
@@ -378,16 +373,14 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
       })
 
       // update architect in order
-      const newOrder = await tx.update(order).set({
+      await tx.update(order).set({
         architect_id: editOrderArchitectIdTypeAnswer.data.architect_id
       }).where(eq(order.id, editOrderArchitectIdTypeAnswer.data.order_id)).returning({
         architect_id: order.architect_id
       })
-
-      return newOrder[0].architect_id;
     })
 
-    return res.status(200).json({success: true, message: "Updated Architect in Order", data: newArchitectId})    
+    return res.status(200).json({success: true, message: "Updated Architect in Order"})    
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to Updated Architect in Order", error: error.message ? error.message : error});  
   }
@@ -465,9 +458,9 @@ const editOrderStatus = async (req: Request, res: Response) => {
       if(!oldOrder) {
         throw new Error("Unable to find Order!!!");
       }
-
+      
       if(oldOrder.status == editOrderStatusTypeAnswer.data.status) {
-        return;
+        throw new Error("Unable to update status since they are same");
       }
 
       // Delivered -> Pending
@@ -497,6 +490,7 @@ const editOrderStatus = async (req: Request, res: Response) => {
       } else {
         await tx.update(order).set({
           status: editOrderStatusTypeAnswer.data.status,
+          delivery_date: null
         }).where(eq(order.id, editOrderStatusTypeAnswer.data.order_id));
       }
     })
@@ -673,13 +667,21 @@ const editOrderDiscount = async (req: Request, res: Response) => {
       }
 
       if(parseFloat(editOrderDiscountTypeAnswer.data.discount) == parseFloat(oldOrder.discount ?? "0.00")){
-        return;
+        throw new Error("Same balance as before, cannot update!");
+      }
+      
+      const amountPending = parseFloat(oldOrder.total_order_amount) - parseFloat(editOrderDiscountTypeAnswer.data.discount ?? "0.00") - parseFloat(oldOrder.amount_paid ?? "0.00");
+
+      if(amountPending < 0){
+        throw new Error("Amount Paid cannot be more than Total Order Value!!!");
+      } else if(amountPending > 0 && !oldOrder.customer){
+        throw new Error("Order with due payment cannot be created without Customer Details!!!");
       }
       
       // update balance for customer
       if(oldOrder.customer){
         const discountDifference = parseFloat(editOrderDiscountTypeAnswer.data.discount) - parseFloat(oldOrder.discount ?? "0.00");
-        const operator: "Addition" | "Subtraction" = discountDifference > 0 ? "Addition" : "Subtraction";
+        const operator = discountDifference > 0 ? "Addition" : "Subtraction";
 
         if(operator == "Addition"){
           await tx.update(customer).set({
@@ -738,7 +740,7 @@ const settleBalance = async (req: Request, res: Response) => {
       
       const actualTotalOrderValue = parseFloat(oldOrder.total_order_amount) - parseFloat(oldOrder.discount ?? "0.00");
       
-      const newAmountPaid = settleBalanceTypeAnswer.data.operator === "Addition" ? parseFloat(oldOrder.amount_paid ?? "0.00") + parseFloat(settleBalanceTypeAnswer.data.amount) : parseFloat(oldOrder.amount_paid ?? "0.00") - parseFloat(settleBalanceTypeAnswer.data.amount)
+      const newAmountPaid = settleBalanceTypeAnswer.data.operator === "subtract" ? parseFloat(oldOrder.amount_paid ?? "0.00") + parseFloat(settleBalanceTypeAnswer.data.amount) : parseFloat(oldOrder.amount_paid ?? "0.00") - parseFloat(settleBalanceTypeAnswer.data.amount)
       
       if(actualTotalOrderValue < newAmountPaid) {
         throw new Error("Updated Amount Paid cannot be more than Total Order Value");
@@ -756,16 +758,16 @@ const settleBalance = async (req: Request, res: Response) => {
 
       // update balance for customer
       if(updatedOrder[0].customer_id){
-        if(settleBalanceTypeAnswer.data.operator == "Addition"){
+        if(settleBalanceTypeAnswer.data.operator == "add"){
           await tx.update(customer).set({
-            balance: sql`${customer.balance} - ${sql.placeholder("AmountPaid")}`
+            balance: sql`${customer.balance} + ${sql.placeholder("AmountIncreased")}`
           })
           .where(eq(customer.id, updatedOrder[0].customer_id)).execute({
-            AmountPaid: settleBalanceTypeAnswer.data.amount
+            AmountIncreased: settleBalanceTypeAnswer.data.amount
           })
         } else {
           await tx.update(customer).set({
-            balance: sql`${customer.balance} + ${sql.placeholder("AmountReduced")}`
+            balance: sql`${customer.balance} - ${sql.placeholder("AmountReduced")}`
           })
           .where(eq(customer.id, updatedOrder[0].customer_id)).execute({
             AmountReduced: settleBalanceTypeAnswer.data.amount
@@ -793,7 +795,7 @@ const editOrderItems = async (req: Request, res: Response) => {
     editOrderItemsTypeAnswer.data.order_items.forEach((order_item) => new_order_item_ids.push(order_item.item_id))
     const hasDuplicate = new Set(new_order_item_ids).size !== editOrderItemsTypeAnswer.data.order_items.length;
     if(hasDuplicate) {
-      throw new Error("Multiple Order Items of same Kind!!!, Cannot Create Order!");
+      throw new Error("Multiple Order Items of same Kind!!!, Cannot update order items!");
     }
 
     await db.transaction(async (tx) => {
@@ -833,8 +835,8 @@ const editOrderItems = async (req: Request, res: Response) => {
       oldOrder.order_items.forEach((oldItem) => old_order_item_ids.push(oldItem.item_id))
 
       const sameItems = oldOrder.order_items.filter((oldItem) => new_order_item_ids.includes(oldItem.item_id));
-      const addedItems = editOrderItemsTypeAnswer.data.order_items.filter((newItem) => !old_order_item_ids.includes(newItem.item_id));
       const removedItems = oldOrder.order_items.filter((oldItem) => !new_order_item_ids.includes(oldItem.item_id));
+      const addedItems = editOrderItemsTypeAnswer.data.order_items.filter((newItem) => !old_order_item_ids.includes(newItem.item_id));
       
       let newCarpanterCommision = 0;
       let newArchitectCommision = 0;
@@ -851,49 +853,47 @@ const editOrderItems = async (req: Request, res: Response) => {
         newArchitectCommision += parseFloat(sameNewItem.architect_commision ?? "0.00");
         new_total_order_amount += parseFloat(sameNewItem.total_value ?? "0.00");
 
-        
         // check quantity, rate, totalValue of the item is same or not, update item, update order_item
-
-        if(sameNewItem.quantity == sameOldItem.quantity && sameNewItem.rate == sameOldItem.rate && sameNewItem.total_value == sameOldItem.total_value){
+        if(sameNewItem.quantity == sameOldItem.quantity && sameNewItem.rate == sameOldItem.rate && parseFloat(sameNewItem.total_value) == parseFloat(sameOldItem.total_value)){
           return;
-        }
-
-        // update quantity of item
-        if(sameNewItem.quantity == sameOldItem.quantity){
-          return;
-        } else if(sameNewItem.quantity > sameOldItem.quantity){
-          // quantity increased
-          const updatedItem = await tx.update(item).set({
-            quantity: sql`${item.quantity} - ${sql.placeholder("difference")}`
-          }).where(eq(item.id, sameOldItem.item_id)).returning({
-            id: item.id,
-            quantity: item.quantity
-          }).execute({
-            difference: sameNewItem.quantity - sameOldItem.quantity
-          });
-
-          if(!updatedItem) {
-            throw new Error("Unable to find Item to update!!!")
-          }
-
-          quantities.push(updatedItem[0])
         } else {
-          // quantity decreased
-          const updatedItem = await tx.update(item).set({
-            quantity: sql`${item.quantity} + ${sql.placeholder("difference")}`
-          }).where(eq(item.id, sameOldItem.item_id)).returning({
-            id: item.id,
-            quantity: item.quantity
-          }).execute({
-            difference: sameOldItem.quantity - sameNewItem.quantity
-          });
+          // update quantity of item
+          if(sameNewItem.quantity == sameOldItem.quantity){
+            return;
+          } else if(sameNewItem.quantity > sameOldItem.quantity){
+            // quantity increased
+            const updatedItem = await tx.update(item).set({
+              quantity: sql`${item.quantity} - ${sql.placeholder("difference")}`
+            }).where(eq(item.id, sameOldItem.item_id)).returning({
+              id: item.id,
+              quantity: item.quantity
+            }).execute({
+              difference: sameNewItem.quantity - sameOldItem.quantity
+            });
 
-          
-          if(!updatedItem) {
-            throw new Error("Unable to find Item to update!!!")
+            if(!updatedItem) {
+              throw new Error("Unable to find Item to update!!!")
+            }
+
+            quantities.push(updatedItem[0])
+          } else {
+            // quantity decreased
+            const updatedItem = await tx.update(item).set({
+              quantity: sql`${item.quantity} + ${sql.placeholder("difference")}`
+            }).where(eq(item.id, sameOldItem.item_id)).returning({
+              id: item.id,
+              quantity: item.quantity
+            }).execute({
+              difference: sameOldItem.quantity - sameNewItem.quantity
+            });
+
+            
+            if(!updatedItem) {
+              throw new Error("Unable to find Item to update!!!")
+            }
+
+            quantities.push(updatedItem[0])
           }
-
-          quantities.push(updatedItem[0])
         }
 
         // update order_item
@@ -944,25 +944,25 @@ const editOrderItems = async (req: Request, res: Response) => {
         });
       })
       
-      removedItems.forEach(async (sameItem) => {
+      removedItems.forEach(async (removedOrderItem) => {
         // update / add quantity of deleted items
         await tx.update(item).set({
           quantity: sql`${item.quantity} + ${sql.placeholder("quantity")}`
-        }).where(eq(item.id, sameItem.item_id)).execute({
-          quantity: sameItem.quantity
+        }).where(eq(item.id, removedOrderItem.item_id)).execute({
+          quantity: removedOrderItem.quantity
         });
 
         // delete order_item
-        await tx.delete(order_item).where(eq(order_item.id, sameItem.id));
+        await tx.delete(order_item).where(eq(order_item.id, removedOrderItem.id));
       });
 
       // update carpanter commission
       const oldCarpanterCommision = parseFloat(oldOrder.carpanter_commision ?? "0.00");
       if(oldOrder.carpanter_id){
 
-        if(newCarpanterCommision == oldCarpanterCommision) return;
-
-        if (newCarpanterCommision > oldCarpanterCommision) {
+        if(newCarpanterCommision == oldCarpanterCommision) {
+          return;
+        } else if (newCarpanterCommision > oldCarpanterCommision) {
           const carpanterCommisionDiff = newCarpanterCommision - oldCarpanterCommision;
           await tx.update(carpanter).set({
             balance: sql`${carpanter.balance} + ${sql.placeholder("carpanterCommisionDiff")}`,
@@ -983,9 +983,9 @@ const editOrderItems = async (req: Request, res: Response) => {
       const oldArchitectCommision = parseFloat(oldOrder.architect_commision ?? "0.00");
       if(oldOrder.architect_id){
 
-        if(newArchitectCommision == oldArchitectCommision) return;
-
-        if (newArchitectCommision > oldArchitectCommision) {
+        if(newArchitectCommision == oldArchitectCommision){ 
+          return;
+        } else if (newArchitectCommision > oldArchitectCommision) {
           const architectCommisionDiff = newArchitectCommision - oldArchitectCommision;
           await tx.update(architect).set({
             balance: sql`${architect.balance} + ${sql.placeholder("architectCommisionDiff")}`,
@@ -1015,12 +1015,13 @@ const editOrderItems = async (req: Request, res: Response) => {
       
       
       // update total order value, balance for customer
-      const oldTotalOrderValue = parseFloat(oldOrder.total_order_amount);
+      const oldActualTotalOrderValue = parseFloat(oldOrder.total_order_amount) - parseFloat(oldOrder.discount ?? "0.00");
+      const newActualTotalOrderValue = new_total_order_amount - parseFloat(oldOrder.discount ?? "0.00")
       if(oldOrder.customer_id){
-        if(new_total_order_amount == oldTotalOrderValue) return;
-
-        if(new_total_order_amount > oldTotalOrderValue){
-          const difference = new_total_order_amount - oldTotalOrderValue;
+        if(newActualTotalOrderValue == oldActualTotalOrderValue) return;
+        
+        if(newActualTotalOrderValue > oldActualTotalOrderValue){
+          const difference = newActualTotalOrderValue - oldActualTotalOrderValue;
           await tx.update(customer).set({
             total_order_value: sql`${customer.total_order_value} + ${sql.placeholder("difference")}`,
             balance: sql`${customer.balance} + ${sql.placeholder("difference")}`
@@ -1028,7 +1029,7 @@ const editOrderItems = async (req: Request, res: Response) => {
             difference: difference.toFixed(2)
           });
         } else {
-          const difference = oldTotalOrderValue - new_total_order_amount;
+          const difference = oldActualTotalOrderValue - newActualTotalOrderValue;
           await tx.update(customer).set({
             total_order_value: sql`${customer.total_order_value} - ${sql.placeholder("difference")}`,
             balance: sql`${customer.balance} - ${sql.placeholder("difference")}`
@@ -1039,9 +1040,9 @@ const editOrderItems = async (req: Request, res: Response) => {
       }
     })
 
-    return res.status(200).json({success: true, message: "Updated Order Status!!!"})
+    return res.status(200).json({success: true, message: "Updated Order Items!!!"})
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to create order", error: error.message ? error.message : error});  
+    return res.status(400).json({success: false, message: "Unable to update order items!", error: error.message ? error.message : error});  
   }
 }
 
@@ -1169,7 +1170,7 @@ const getAllOrders = async (req: Request, res: Response) => {
        return tOrders;
     })
 
-    return res.status(200).json({success: true, message: "Orders fetched successfully", data: fetchedOrders});
+    return res.status(200).json({success: true, message: "All Orders fetched", data: fetchedOrders});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch orders", error: error.message ? error.message : error});
   }
@@ -1272,7 +1273,7 @@ const getOrder = async (req: Request, res: Response) => {
       return tOrder;
     })
     
-    return res.status(200).json({success: true, message: "Order fetched successfully", data: fetchedOrder});
+    return res.status(200).json({success: true, message: "Order fetched", data: fetchedOrder});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch order", error: error.message ? error.message : error});
   }
@@ -1296,3 +1297,8 @@ export {
   getAllOrders,
   getOrder
 }
+
+/*
+- order.total_order_amount DOES NOT take discount into account, actual total value -> order.total_order_value - order.discount
+- customer.total_order_value DOES take discount into account 
+*/

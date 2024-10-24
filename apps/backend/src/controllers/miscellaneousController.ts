@@ -18,7 +18,7 @@ const createPhone = async (req: Request, res: Response) => {
 
   try {
 
-    const createdPhone = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       if(createPhoneTypeAnswer.data.isPrimary){
         await tx.update(phone_number).set({isPrimary: false}).where(
           createPhoneTypeAnswer.data.customer_id
@@ -80,11 +80,11 @@ const createPhone = async (req: Request, res: Response) => {
         }
       }
 
-      return await tx.insert(phone_number).values(createPhoneTypeAnswer.data).returning();
+      await tx.insert(phone_number).values(createPhoneTypeAnswer.data);
     })
     
     
-    return res.status(200).json({success: true, message: "Phone number added", data: createdPhone});
+    return res.status(200).json({success: true, message: "Phone number added"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to add phone number", error: error.message ? error.message : error});
   }
@@ -185,7 +185,7 @@ const createPutSignedURL = async (req: Request, res: Response) => {
       expiresIn: Config.STAGE == 'dev' ? 60 * 60 : 60 * 5, // 60 / 5 minutes
     });
 
-    return res.status(200).json({success: true, message: "PUT Signed URL created", data: url});
+    return res.status(200).json({success: true, message: "Signed URL created", data: url});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create signed URL", error: error.message ? error.message : error});
   }
@@ -199,7 +199,6 @@ const editResource = async (req: Request, res: Response) => {
   }
 
   try {
-
     await db.update(resource).set(editResourceTypeAnswer.data).where(eq(resource.id, editResourceTypeAnswer.data.resource_id));
 
     return res.status(200).json({success: true, message: "Resource updated"});
@@ -241,7 +240,7 @@ const deleteResource = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Unable to delete resource"});
     }
 
-    return res.status(200).json({success: true, message: "Resource deleted"});
+    return res.status(200).json({success: true, message: "Deletion in progress..."});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete resource", error: error.message ? error.message : error});
   }

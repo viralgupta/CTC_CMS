@@ -24,9 +24,9 @@ const AuthConfig = {
 
           if (!tUser) return null;
 
-          // await tx.update(UserSchema).set({
-          //   otp: null,
-          // }).where(eq(UserSchema.id, tUser.id));
+          await tx.update(UserSchema).set({
+            otp: null,
+          }).where(eq(UserSchema.id, tUser.id));
 
           return tUser;
         })

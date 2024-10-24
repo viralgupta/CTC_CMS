@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircleUserRound, Printer, Trash2 } from "lucide-react";
 import DivButton from "@/components/ui/div-button";
 import { useRecoilValue, useSetRecoilState } from "recoil";
