@@ -152,11 +152,11 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                 <MapPinIcon className="h-12 min-w-10 text-muted-foreground" />
                 <div>
                   <p className="font-semibold">Delivery Address</p>
-                  <div className="text-sm h-full hide-scroll">
+                  {order.delivery_address && <div className="text-sm h-full hide-scroll">
                     {order.delivery_address?.house_number},&nbsp;
                     {order.delivery_address?.address},&nbsp;
                     {order.delivery_address?.address_area.area}
-                  </div>
+                  </div>}
                 </div>
               </DivButton>
               <Separator orientation="vertical"/>

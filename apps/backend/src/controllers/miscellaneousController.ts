@@ -113,7 +113,7 @@ const deletePhone = async (req: Request, res: Response) => {
       })
 
       if(!foundPhone){
-        return new Error("Phone number not found")
+        throw new Error("Phone number not found");
       }
 
       if(foundPhone.isPrimary === true){

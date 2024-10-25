@@ -26,7 +26,7 @@ const SelectedItemTable = ({
     value: z.infer<typeof createOrderType>["order_items"][number]
   ) => void;
 }) => {
-  const { items: foundItems } = useAllItems();
+  const { items: allItems } = useAllItems();
   return (
     <div>
       <span className="text-2xl font-cubano">Added Items</span>
@@ -45,11 +45,11 @@ const SelectedItemTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item, index) => {
-            const foundItem = foundItems.find((i) => i.id === item.item_id);
+          {items.map((item) => {
+            const foundItem = allItems.find((i) => i.id === item.item_id);
 
             return (
-              <TableRow key={index}>
+              <TableRow key={item.item_id}>
                 <TableCell className="text-center">
                   {foundItem?.name ?? ""}
                 </TableCell>

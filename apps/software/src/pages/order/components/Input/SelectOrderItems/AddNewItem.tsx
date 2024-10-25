@@ -142,6 +142,32 @@ const AddNewItem = ({
     }
   }
 
+  React.useEffect(() => {
+    if (value) {
+      form.reset({
+        item_id: value.item_id ?? undefined,
+        quantity: value.quantity ?? 1,
+        rate: value.rate ?? undefined,
+        total_value: value.total_value ?? undefined,
+        architect_commision: calculateCommissionFromTotalCommission(
+          value.architect_commision,
+          value.architect_commision_type,
+          value.total_value,
+          value.quantity ?? 0
+        ).value.toString(),
+        architect_commision_type: value.architect_commision_type ?? undefined,
+        carpanter_commision: calculateCommissionFromTotalCommission(
+          value.carpanter_commision ?? "0.00",
+          value.carpanter_commision_type,
+          value.total_value ?? "0.00",
+          value.quantity ?? 0
+        ).value.toString(),
+        carpanter_commision_type: value.carpanter_commision_type ?? undefined,
+      });
+    }
+  }, [value]);
+
+
   const [
     item_id,
     quantity,
@@ -204,7 +230,6 @@ const AddNewItem = ({
     form.setValue("rate", foundItem?.sale_rate ?? 0);
     getItemRate(foundItem.id);
   }, [foundItem]);
-
 
   return (
     <Dialog

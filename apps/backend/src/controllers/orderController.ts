@@ -94,9 +94,9 @@ const createOrder = async (req: Request, res: Response) => {
         throw new Error("Amount Paid Cannot Exceed Total Order Amount!!!")
       }
 
-      // check if address belongs to a customer
+      // check if address belongs to a customer if address is given
       const customerId = createOrderTypeAnswer.data.customer_id;
-      if (customerId !== undefined && customerId !== null) {
+      if (customerId !== undefined && customerId !== null && createOrderTypeAnswer.data.delivery_address_id) {
         const customerAddressIds = await tx.query.customer.findFirst({
           where: (customer, { eq }) => eq(customer.id, customerId),
           columns: {
@@ -855,11 +855,11 @@ const editOrderItems = async (req: Request, res: Response) => {
 
         // check quantity, rate, totalValue of the item is same or not, update item, update order_item
         if(sameNewItem.quantity == sameOldItem.quantity && sameNewItem.rate == sameOldItem.rate && parseFloat(sameNewItem.total_value) == parseFloat(sameOldItem.total_value)){
-          return;
+          // do nothing
         } else {
           // update quantity of item
           if(sameNewItem.quantity == sameOldItem.quantity){
-            return;
+            // do nothing
           } else if(sameNewItem.quantity > sameOldItem.quantity){
             // quantity increased
             const updatedItem = await tx.update(item).set({
@@ -961,7 +961,7 @@ const editOrderItems = async (req: Request, res: Response) => {
       if(oldOrder.carpanter_id){
 
         if(newCarpanterCommision == oldCarpanterCommision) {
-          return;
+          // do nothing
         } else if (newCarpanterCommision > oldCarpanterCommision) {
           const carpanterCommisionDiff = newCarpanterCommision - oldCarpanterCommision;
           await tx.update(carpanter).set({
@@ -984,7 +984,7 @@ const editOrderItems = async (req: Request, res: Response) => {
       if(oldOrder.architect_id){
 
         if(newArchitectCommision == oldArchitectCommision){ 
-          return;
+          // do nothing
         } else if (newArchitectCommision > oldArchitectCommision) {
           const architectCommisionDiff = newArchitectCommision - oldArchitectCommision;
           await tx.update(architect).set({
@@ -1018,9 +1018,9 @@ const editOrderItems = async (req: Request, res: Response) => {
       const oldActualTotalOrderValue = parseFloat(oldOrder.total_order_amount) - parseFloat(oldOrder.discount ?? "0.00");
       const newActualTotalOrderValue = new_total_order_amount - parseFloat(oldOrder.discount ?? "0.00")
       if(oldOrder.customer_id){
-        if(newActualTotalOrderValue == oldActualTotalOrderValue) return;
-        
-        if(newActualTotalOrderValue > oldActualTotalOrderValue){
+        if(newActualTotalOrderValue == oldActualTotalOrderValue) {
+          // do nothing
+        } else if(newActualTotalOrderValue > oldActualTotalOrderValue){
           const difference = newActualTotalOrderValue - oldActualTotalOrderValue;
           await tx.update(customer).set({
             total_order_value: sql`${customer.total_order_value} + ${sql.placeholder("difference")}`,
