@@ -33,9 +33,9 @@ const ViewItemOrdersTable = ({ item }: { item: viewItemType | null }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {item.order_items.map((oi, i) => {
+        {item.order_items.map((oi) => {
           return (
-            <TableRow key={i}>
+            <TableRow key={oi.id}>
               <TableCell className="text-center">
                 {oi.order.customer?.name ?? "--"}
               </TableCell>

@@ -37,9 +37,9 @@ const OrderItemsTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {order_items.map((oi, i) => {
+        {order_items.map((oi) => {
           return (
-            <TableRow key={i}>
+            <TableRow key={oi.item_id}>
               <TableCell className="text-center">{oi.item?.name}</TableCell>
               <TableCell className="text-center">{oi.quantity}</TableCell>
               <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${oi.item?.rate_dimension}`}</TableCell>

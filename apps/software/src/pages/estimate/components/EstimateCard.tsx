@@ -70,7 +70,7 @@ const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
               </p>
               {estimate.customer && (
                 <p className="text-sm text-muted-foreground">
-                  {estimate.customer?.phone_numbers[0].country_code}{" "}
+                  {estimate.customer?.phone_numbers[0].country_code}&nbsp;
                   {estimate.customer?.phone_numbers[0].phone_number}
                 </p>
               )}

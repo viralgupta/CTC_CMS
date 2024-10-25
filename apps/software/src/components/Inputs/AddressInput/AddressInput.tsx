@@ -251,9 +251,9 @@ const AddressInput = ({
           </TableHeader>
           <TableBody>
             {!!values &&
-              values.map((v, index) => {
+              values.map((v) => {
                 return (
-                  <TableRow key={index}>
+                  <TableRow key={v.id}>
                     <TableCell className="font-medium text-center">
                       {v.house_number}
                     </TableCell>

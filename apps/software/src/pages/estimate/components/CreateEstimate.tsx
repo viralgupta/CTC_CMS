@@ -157,10 +157,10 @@ const CreateEstimateForm = () => {
               </TableRow>
             </TableHeader>
             <TableBody className="h-1/2 overflow-scroll">
-              {form.getValues("estimate_items").map((item, index) => {
+              {form.getValues("estimate_items").map((item) => {
                 const foundItem = allItems.find((i) => i.id === item.item_id);
                 return (
-                  <TableRow key={index} className="leading-3 p-0">
+                  <TableRow key={item.item_id} className="leading-3 p-0">
                     <TableCell className="text-center p-0 py-2">
                       {foundItem?.name ?? ""}
                     </TableCell>

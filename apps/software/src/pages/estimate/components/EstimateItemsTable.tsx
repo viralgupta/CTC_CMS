@@ -34,9 +34,9 @@ const EstimateItemTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {estimate_items.map((ei, i) => {
+        {estimate_items.map((ei) => {
           return (
-            <TableRow key={i}>
+            <TableRow key={ei.item_id}>
               <TableCell className="text-center">{ei.item.name}</TableCell>
               <TableCell className="text-center">{ei.quantity}</TableCell>
               <TableCell className="text-center">{`₹${ei.rate.toFixed(2)} per ${ei.item?.rate_dimension}`}</TableCell>

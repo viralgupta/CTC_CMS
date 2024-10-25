@@ -42,11 +42,11 @@ const SelectedItemTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item, index) => {
+          {items.map((item) => {
             const foundItem = foundItems.find((i) => i.id === item.item_id);
 
             return (
-              <TableRow key={index}>
+              <TableRow key={item.item_id}>
                 <TableCell className="text-center">
                   {foundItem?.name ?? ""}
                 </TableCell>

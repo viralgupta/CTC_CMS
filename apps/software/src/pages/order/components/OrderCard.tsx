@@ -36,7 +36,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
+      <CardContent className="p-4 pb-2">
         <div className="flex space-x-2">
           <div className="w-1/2 h-full space-y-1">
             <div className="text-2xl font-bold mb-2 flex justify-between">
@@ -182,9 +182,9 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
               </div>
             </div>
           </div>
-          <div className="w-1/2 h-full space-y-4">
-            <div className="flex items-center">
-              <DivButton onClick={() => {setViewCustomerID(order.customer_id ?? '')}} className="flex items-center space-x-4 w-1/2">
+          <div className="w-1/2 h-full space-y-2">
+            <div className="flex items-center h-16 gap-2">
+              <DivButton onClick={() => {setViewCustomerID(order.customer_id ?? '')}} className="flex items-center space-x-4 w-1/2 h-full">
                 <Avatar>
                   <AvatarImage src={order.customer?.profileUrl ?? undefined} />
                   <AvatarFallback>
@@ -197,7 +197,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                   </p>
                   {order.customer && (
                     <p className="text-sm text-muted-foreground">
-                      {order.customer?.phone_numbers[0].country_code}{" "}
+                      {order.customer?.phone_numbers[0].country_code}&nbsp;
                       {order.customer?.phone_numbers[0].phone_number}
                     </p>
                   )}
@@ -208,7 +208,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                   )}
                 </div>
               </DivButton>
-              <DivButton onClick={() => {setViewDriverID(order.driver_id ?? '')}} className="flex items-center space-x-4 w-1/2">
+              <DivButton onClick={() => {setViewDriverID(order.driver_id ?? '')}} className="flex items-center space-x-4 w-1/2 h-full">
                 <TruckIcon className="h-10 w-10 text-muted-foreground" />
                 <div>
                   <p className="font-semibold">
@@ -228,8 +228,8 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                 </div>
               </DivButton>
             </div>
-            <div className="flex items-center">
-              <DivButton onClick={() => {setViewArchitectID(order.architect_id ?? '')}} className="flex items-center space-x-4 w-1/2">
+            <div className="flex items-center h-16 gap-2">
+              <DivButton onClick={() => {setViewArchitectID(order.architect_id ?? '')}} className="flex items-center space-x-4 w-1/2 h-full">
                 <Avatar>
                   <AvatarImage src={order.architect?.profileUrl ?? undefined} />
                   <AvatarFallback>
@@ -248,7 +248,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                   )}
                 </div>
               </DivButton>
-              <DivButton onClick={() => {setViewCarpenterID(order.carpanter_id ?? '')}} className="flex items-center space-x-4 w-1/2">
+              <DivButton onClick={() => {setViewCarpenterID(order.carpanter_id ?? '')}} className="flex items-center space-x-4 w-1/2 h-full">
                 <Avatar>
                   <AvatarImage src={order.carpanter?.profileUrl ?? undefined} />
                   <AvatarFallback>

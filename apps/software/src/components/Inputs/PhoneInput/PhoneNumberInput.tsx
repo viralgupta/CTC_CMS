@@ -322,9 +322,9 @@ export const PhoneNumberTable = ({
       </TableHeader>
       <TableBody>
         {!!value &&
-          value.map((v, index) => {
+          value.map((v) => {
             return (
-              <TableRow key={index}>
+              <TableRow key={v.id}>
                 <TableCell className="font-medium text-center">
                   {v.country_code}
                 </TableCell>

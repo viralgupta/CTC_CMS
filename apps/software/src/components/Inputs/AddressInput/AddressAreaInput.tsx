@@ -127,9 +127,9 @@ const AddressAreaInput = ({ onChange, value, className }: AddressAreaInputProps)
             <div className="w-full max-h-96 overflow-y-auto hide-scroll space-y-1">
               {addressAreas.length > 0 ? (
                 inputAddressArea.length > 0 ? (
-                  fuse.search(inputAddressArea).map((area, index) => {
+                  fuse.search(inputAddressArea).map((area) => {
                     return (
-                      <div className="w-full flex space-x-1" key={index}>
+                      <div className="w-full flex space-x-1" key={area.item.id}>
                         <Button
                           variant={"ghost"}
                           className="w-full border border-border border-x-0 border-y"
@@ -157,9 +157,9 @@ const AddressAreaInput = ({ onChange, value, className }: AddressAreaInputProps)
                     );
                   })
                 ) : (
-                  addressAreas.map((area, index) => {
+                  addressAreas.map((area) => {
                     return (
-                      <div className="w-full flex space-x-1" key={index}>
+                      <div className="w-full flex space-x-1" key={area.id}>
                         <Button
                           variant={"ghost"}
                           className="w-full border border-border border-x-0 border-t-0 border-b"

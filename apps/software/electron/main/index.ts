@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, session, ipcMain } from "electron";
+import { app, BrowserWindow, shell, session, ipcMain, net } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -221,7 +221,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle("EMERGENCY", async () => {
     await clearAppData(true);
-    // lock the db
     shutdown.shutdown({
       force: true,
       quitapp: true,
@@ -260,7 +259,7 @@ app.whenReady().then(() => {
   });
 
 
-  createWindow();
+  // createWindow();
 });
 
 app.on("window-all-closed", () => {
@@ -350,7 +349,7 @@ function cancelPrint() {
   printWin = null;
 }
 
-async function clearAppData(deep = false) {
+async function clearAppData(deep = false, lockdb = false) {
   const promises = [];
   const clearStoragePromise = session.defaultSession.clearStorageData();
   promises.push(clearStoragePromise);
@@ -385,5 +384,20 @@ async function clearAppData(deep = false) {
     });
     promises.push(rmDirPromise);
   }
+  if (lockdb) {
+    promises.push(lockDb())
+  }
   await Promise.all(promises);
+}
+
+function lockDb() {
+  return new Promise(async (resolve) => {
+    const res = await net.fetch(import.meta.env.VITE_API_BASE_URL + "/api/lockDB")
+    if(res.status == 200){
+      resolve(true);
+    } else {
+      // send notification to lock manually;
+      resolve(false);
+    }
+  })
 }

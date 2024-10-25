@@ -24,6 +24,11 @@ app.get("/authcallbackoverride", (req, res) => {
   res.status(200).json({ url: req.query.callback ? req.query.callback : "/" })
 });
 
+// app.get("/api/lockDB", (_req, res) => {
+//   // const rds = AWS.
+//   res.status(200);
+// });
+
 if(process.env.SST_STAGE !== "dev"){
   app.use("/api/*", authenticatedUser);
 }
