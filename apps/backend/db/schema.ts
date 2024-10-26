@@ -10,6 +10,7 @@ import {
   varchar,
   real,
   doublePrecision,
+  index
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -188,7 +189,31 @@ export const item = pgTable("item", {
 
 export const item_relation = relations(item, ({ many }) => ({
   order_items: many(order_item),
+  item_orders: many(item_order),
   estimate_items: many(estimate_item),
+}));
+
+export const item_order = pgTable("item_order", {
+  id: uuid("item_order_id").primaryKey().defaultRandom().notNull(),
+  vendor_name: varchar("vendor_name", { length: 256 }).notNull(),
+  ordered_quantity: real("ordered_quantity"),
+  received_quantity: real("received_quantity"),
+  order_date: timestamp("item_order_date", { mode: "date" }),
+  receive_date: timestamp("item_receive_date", { mode: "date" }),
+  item_id: uuid("item_order_item_id")
+    .references(() => item.id)
+    .notNull(),
+}, (table) => {
+  return {
+    order_dateIdx: index("item_order_order_date_idx").on(table.order_date.desc())
+  }
+});
+
+export const item_order_relation = relations(item_order, ({ one }) => ({
+  item: one(item, {
+    fields: [item_order.item_id],
+    references: [item.id]
+  }),
 }));
 
 export const order = pgTable("order", {
@@ -241,6 +266,14 @@ export const order = pgTable("order", {
 
   created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date())
+}, (table) => {
+  return {
+    order_updated_statusIdx: index("order_updated_status_idx").on(table.updated_at.desc(), table.status),
+    order_updated_payment_statusIdx: index("order_updated_payment_status_idx").on(table.updated_at.desc(), table.payment_status),
+    order_updated_priorityIdx: index("order_updated_priority_idx").on(table.updated_at.desc(), table.priority),
+    order_updatedIdx: index("order_updated_idx").on(table.updated_at.desc()),
+    order_createdIdx: index("order_created_idx").on(table.created_at.desc())
+  }
 });
 
 export const order_relation = relations(order, ({ one, many }) => ({
@@ -301,6 +334,11 @@ export const order_item = pgTable("order_item", {
 
   created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date())
+}, (table) => {
+  return {
+    create_atIdx: index("order_created_at_idx").on(table.created_at.desc()),
+    updated_atIdx: index("order_updated_at_idx").on(table.updated_at.desc())
+  }
 });
 
 export const order_item_relation = relations(order_item, ({ one }) => ({
@@ -325,6 +363,10 @@ export const estimate = pgTable("estimate", {
 
   created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date())
+}, (table) => {
+  return {
+    updated_atIdx: index("estimate_updated_at_idx").on(table.updated_at.desc())
+  }
 });
 
 export const estimate_relation = relations(estimate, ({ one, many }) => ({
