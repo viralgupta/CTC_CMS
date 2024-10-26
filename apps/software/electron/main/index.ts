@@ -258,8 +258,7 @@ app.whenReady().then(() => {
     cancelPrint();
   });
 
-
-  // createWindow();
+  createWindow();
 });
 
 app.on("window-all-closed", () => {

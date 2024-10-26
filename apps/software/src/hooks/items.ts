@@ -27,6 +27,7 @@ const useAllItems = () => {
   }
   
   const refetchItems = () => {
+    if(loading) return;
     setItems([]);
     fetchAllItems();
   }

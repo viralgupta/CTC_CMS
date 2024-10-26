@@ -27,6 +27,7 @@ const useAllEstimates = () => {
   }
   
   const refetchEstimates = () => {
+    if(loading) return;
     setEstimates([]);
     fetchAllEstimates();
   }

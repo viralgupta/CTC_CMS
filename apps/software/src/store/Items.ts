@@ -24,6 +24,14 @@ export interface viewItemType extends itemType {
   multiplier: number;
   min_rate: number | null;
   order_items: viewItemOrderItems[];
+  item_orders: {
+    id: string;
+    vendor_name: string | null;
+    ordered_quantity: number | null;
+    order_date: Date;
+    received_quantity: number | null;
+    receive_date: Date | null;
+  }[];
 }
 
 export interface selectedItemRateType {

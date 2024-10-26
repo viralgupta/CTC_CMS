@@ -21,13 +21,6 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormField,
@@ -38,6 +31,7 @@ import {
 import {
   viewItemAtom,
   viewItemIDAtom,
+  viewItemType,
 } from "@/store/Items";
 import SelectCategory from "@/components/Inputs/SelectCategory";
 import RateDimension from "@/components/Inputs/RateDimension";
@@ -45,7 +39,6 @@ import { Button } from "@/components/ui/button";
 import Spinner from "@/components/ui/Spinner";
 import { Input } from "@/components/ui/input";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { editQuantityType } from "@type/api/item";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -53,28 +46,9 @@ import request from "@/lib/request";
 import React from "react";
 import { editItemType } from "@type/api/item";
 import { useAllItems } from "@/hooks/items";
+import ItemOrders from "./ItemOrders/ItemOrder";
 
-interface ItemType {
-  id: string;
-  name: string;
-  category:
-    | "Adhesives"
-    | "Plywood"
-    | "Laminate"
-    | "Veneer"
-    | "Decorative"
-    | "Moulding"
-    | "Miscellaneous"
-    | "Door";
-  quantity: number;
-  min_quantity: number;
-  sale_rate: number;
-  rate_dimension: "Rft" | "sq/ft" | "piece";
-  multiplier: number;
-  min_rate: number | null;
-}
-
-export default function ItemCard({ item }: { item: ItemType | null }) {
+export default function ItemCard({ item }: { item: viewItemType | null }) {
 
   if (!item) {
     return (
@@ -102,12 +76,12 @@ export default function ItemCard({ item }: { item: ItemType | null }) {
                   Edit Item
                 </Button>
               </EditItem>
-              <EditItemQuantity>
+              <ItemOrders item_id={item.id} item_orders={item.item_orders}>
                 <Button size="sm" variant="outline">
                   <BoxIcon className="h-4 w-4 mr-2" />
-                  Edit Quantity
+                  Item Orders
                 </Button>
-              </EditItemQuantity>
+              </ItemOrders>
               <DeleteItem itemId={item.id}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
@@ -371,130 +345,6 @@ const EditItem = ({ children }: { children: React.ReactNode }) => {
 };
 
 
-const EditItemQuantity = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false)
-  const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
-  const { refetchItems } = useAllItems();
-  const setViewItemID = useSetRecoilState(viewItemIDAtom);
-
-  const EditItemQuantityForm = () => {
-    const [totalValue, setTotalValue] = React.useState<number | null>(viewItem!.quantity);
-
-    const form = useForm<z.infer<typeof editQuantityType>>({
-      resolver: zodResolver(editQuantityType),
-      reValidateMode: "onChange",
-      defaultValues: {
-        item_id: viewItem!.id,
-        operation: "subtract",
-        quantity: 0,
-      },
-    });
-
-    async function onSubmit(values: z.infer<typeof editQuantityType>) {
-      const res = await request.post("/inventory/editQuantity", values);
-      if (res.status == 200) {
-        setOpen(false);
-        setViewItemID(null);
-        setViewItem(null);
-        refetchItems();
-      }
-    }
-
-    const [quantity, operation] = form.watch(["quantity", "operation"])
-
-    React.useEffect(() => {
-      if (!viewItem || (form.getValues("operation") !== "add" && form.getValues("operation") !== "subtract")){
-        setTotalValue(null);
-        return;
-      };
-      if (form.getValues("operation") == "add") {
-        setTotalValue(viewItem.quantity + form.getValues("quantity"));
-      } else {
-        setTotalValue(viewItem.quantity - form.getValues("quantity"));
-      };
-    }, [quantity, operation])
-    
-
-    return (
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
-            <FormField
-              control={form.control}
-              name="operation"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Operation</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Subtract" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="subtract">Subtract</SelectItem>
-                        <SelectItem value="add">Add</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number"                    
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? parseFloat(e.target.value) : ""
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="flex justify-between items-center">
-            <div>Total Quantity: {totalValue == null ? "null" : totalValue}</div>
-            <Button disabled={form.formState.isSubmitting} type="submit">
-              {form.formState.isSubmitting && <Spinner />}
-              {!form.formState.isSubmitting && "Edit Quantity"}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    );
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent size="2xl">
-        <DialogHeader>
-          <DialogTitle>Edit Item Quantity</DialogTitle>
-          <DialogDescription className="hidden"></DialogDescription>
-        </DialogHeader>
-        {viewItem && <EditItemQuantityForm />}
-        {!viewItem && (
-          <div className="w-full h-40 flex items-center justify-center">
-            Unable to find item to edit quantity!!!
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 
 const DeleteItem = ({

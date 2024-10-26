@@ -27,6 +27,7 @@ const useAllResources = () => {
   }
   
   const refetchResources = () => {
+    if(loading) return;
     setResources([]);
     fetchAllResources();
   }

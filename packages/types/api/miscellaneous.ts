@@ -33,7 +33,7 @@ export const addressType = z
   .object({
     house_number: z.string().max(15, "House number too long"),
     address_area_id: z.string(),
-    address: z.string().max(256, "Address too long"),
+    address: z.string().max(255, "Address too long"),
     city: z.string().max(30, "City too long"),
     state: z.string().max(20, "State too long"),
     isPrimary: z.boolean().optional(),

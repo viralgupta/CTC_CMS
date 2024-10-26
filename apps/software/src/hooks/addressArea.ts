@@ -27,6 +27,7 @@ const useAddressAreas = () => {
   }
   
   const refetchAddressAreas = () => {
+    if(loading) return;
     setAddressAreas([]);
     fetchAllItems();
   }

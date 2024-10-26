@@ -27,6 +27,7 @@ const useAllCarpenter = () => {
   }
   
   const refetchCarpenters = () => {
+    if(loading) return;
     setCarpenters([]);
     fetchAllCarpenters();
   }

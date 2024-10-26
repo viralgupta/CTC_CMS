@@ -27,6 +27,7 @@ const useAllAddresses = () => {
   }
   
   const refetchAddresses = () => {
+    if(loading) return;
     setAddresses([]);
     fetchAllAddresses();
   }

@@ -114,7 +114,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
                     <div className="text-sm font-medium text-gray-500">
                       Amount Paid
                     </div>
-                    <div className="text-lg font-semibold mt-2 flex items-center">
+                    <div className="text-lg font-semibold mt-2 flex items-center justify-center">
                       {order.amount_paid ? `₹${order.amount_paid}` : "--"}
                       <TooltipProvider>
                         <Tooltip>

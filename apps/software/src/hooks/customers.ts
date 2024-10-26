@@ -27,6 +27,7 @@ const useAllCustomer = () => {
   }
   
   const refetchCustomers = () => {
+    if(loading) return;
     setCustomer([]);
     fetchAllCustomer();
   }

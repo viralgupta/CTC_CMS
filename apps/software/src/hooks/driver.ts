@@ -27,6 +27,7 @@ const useAllDrivers = () => {
   }
   
   const refetchDrivers = () => {
+    if(loading) return;
     setDrivers([]);
     fetchAllDrivers();
   }

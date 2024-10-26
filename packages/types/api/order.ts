@@ -37,7 +37,9 @@ export const createOrderType = z.object({
   status: z.enum(["Pending", "Delivered"]),
   priority: z.enum(["High", "Medium", "Low"]),
   
-  delivery_date: z.date().optional(),
+  delivery_date: z.string()
+    .transform((dateString) => new Date(dateString)) // Transform string to Date
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
   delivery_address_id: z.string().uuid().optional(),
 
   labour_frate_cost: z.number().default(0),
@@ -97,7 +99,9 @@ export const editOrderPriorityType = z.object({
 
 export const editOrderDeliveryDateType = z.object({
   order_id: z.string(),
-  delivery_date: z.date()
+  delivery_date: z.string()
+    .transform((dateString) => new Date(dateString)) // Transform string to Date
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" })
 })
 
 export const editOrderDeliveryAddressIdType = z.object({
@@ -136,7 +140,9 @@ export const editOrderItemsType = z.object({
 
 
 export const getAllOrdersType = z.object({
-  cursor: z.date().optional(),
+  cursor: z.string()
+    .transform((dateString) => new Date(dateString)) // Transform string to Date
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
   filter: z
     .enum([
       "Status-Pending",

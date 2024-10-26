@@ -63,7 +63,7 @@ export const address = pgTable("address", {
   address_area_id: uuid("address_area_id")
     .references(() => address_area.id)
     .notNull(),
-  address: varchar("address", { length: 256 }).notNull(),
+  address: varchar("address", { length: 255 }).notNull(),
   city: varchar("address_city", { length: 30 }).notNull(),
   state: varchar("address_state", { length: 20 }).notNull(),
   isPrimary: boolean("address_isPrimary").default(false),
@@ -163,7 +163,7 @@ export const phone_number_relation = relations(phone_number, ({ one }) => ({
 
 export const item = pgTable("item", {
   id: uuid("item_id").primaryKey().defaultRandom().notNull(),
-  name: varchar("item_name", { length: 256 }).notNull(),
+  name: varchar("item_name", { length: 255 }).notNull(),
   multiplier: real("item_multiplier").notNull().default(1.00),
   category: varchar("item_category", {
     enum: [
@@ -195,10 +195,10 @@ export const item_relation = relations(item, ({ many }) => ({
 
 export const item_order = pgTable("item_order", {
   id: uuid("item_order_id").primaryKey().defaultRandom().notNull(),
-  vendor_name: varchar("vendor_name", { length: 256 }).notNull(),
+  vendor_name: varchar("vendor_name", { length: 255 }),
   ordered_quantity: real("ordered_quantity"),
+  order_date: timestamp("item_order_date", { mode: "date" }).notNull(),
   received_quantity: real("received_quantity"),
-  order_date: timestamp("item_order_date", { mode: "date" }),
   receive_date: timestamp("item_receive_date", { mode: "date" }),
   item_id: uuid("item_order_item_id")
     .references(() => item.id)

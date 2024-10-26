@@ -1,8 +1,8 @@
 import db from '@db/db';
-import { item } from '@db/schema';
-import { createItemType, deleteItemType, editQuantityType, editItemType, getItemType, getItemRatesType } from '@type/api/item';
+import { item, item_order } from '@db/schema';
+import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType } from '@type/api/item';
 import { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const createItem = async (req: Request, res: Response) => {
   const createItemTypeAnswer = createItemType.safeParse(req.body);
@@ -66,6 +66,13 @@ const getItem = async (req: Request, res: Response) => {
           },
           orderBy: (item, { desc }) => [desc(item.created_at)],
           limit: 20
+        },
+        item_orders: {
+          columns: {
+            item_id: false,
+          },
+          orderBy: (item_order, { desc }) => [desc(item_order.order_date)],
+          limit: 10
         }
       }
     })
@@ -148,41 +155,179 @@ const editItem = async (req: Request, res: Response) => {
   }
 }
 
-const editQuantity = async (req: Request, res: Response) => { 
-  const editQuantityTypeAnswer = editQuantityType.safeParse(req.body);
+const createItemOrder = async (req: Request, res: Response) => { 
+  const createItemOrderTypeAnswer = createItemOrderType.safeParse(req.body);
 
-  if (!editQuantityTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editQuantityTypeAnswer.error.flatten()})
+  if (!createItemOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createItemOrderTypeAnswer.error.flatten()})
   }
 
   try {
-    const foundItem = await db.query.item.findFirst({
-      where: (item, { eq }) => eq(item.id, editQuantityTypeAnswer.data.item_id),
-      columns: {
-        quantity: true
+    await db.transaction(async (tx) => {
+      const foundItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, createItemOrderTypeAnswer.data.item_id),
+        columns: {
+          quantity: true
+        }
+      })
+      
+      if(!foundItem){
+        throw new Error("Unable to find item");
+      }
+
+      if (createItemOrderTypeAnswer.data.received_quantity){
+        await tx.update(item).set({
+          quantity: foundItem.quantity + createItemOrderTypeAnswer.data.received_quantity
+        }).where(eq(item.id, createItemOrderTypeAnswer.data.item_id));
+      }
+
+      
+      if(createItemOrderTypeAnswer.data.received_quantity == 0){
+        createItemOrderTypeAnswer.data.receive_date = undefined;
+      }
+
+      await tx.insert(item_order).values({
+        item_id: createItemOrderTypeAnswer.data.item_id,
+        vendor_name: createItemOrderTypeAnswer.data.vendor_name,
+        ordered_quantity: createItemOrderTypeAnswer.data.ordered_quantity,
+        order_date: createItemOrderTypeAnswer.data.order_date,
+        received_quantity: createItemOrderTypeAnswer.data.received_quantity,
+        receive_date: createItemOrderTypeAnswer.data.receive_date
+      })
+    })
+
+    return res.status(200).json({success: true, message: "Item Order created"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create item order!", error: error.message ? error.message : error});
+  }
+
+}
+
+const editItemOrder = async (req: Request, res: Response) => { 
+  const editItemOrderTypeAnswer = editItemOrderType.safeParse(req.body);
+
+  if (!editItemOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editItemOrderTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundItemOrdertx = await tx.update(item_order).set({
+        vendor_name: editItemOrderTypeAnswer.data.vendor_name,
+        ordered_quantity: editItemOrderTypeAnswer.data.ordered_quantity,
+        order_date: editItemOrderTypeAnswer.data.order_date
+      }).where(eq(item_order.id, editItemOrderTypeAnswer.data.id)).returning({
+        id: item_order.id,
+      })
+
+      if(!foundItemOrdertx[0].id){
+        throw new Error("Unable to find item order!")
       }
     })
 
-    if(!foundItem){
-      return res.status(400).json({success: false, message: "Unable to find item"})
-    }
-
-    const newQuantity =
-      editQuantityTypeAnswer.data.operation === "add"
-      ? foundItem.quantity + editQuantityTypeAnswer.data.quantity
-      : foundItem.quantity - editQuantityTypeAnswer.data.quantity;
-
-    const updatedItem = await db.update(item).set({
-      quantity: newQuantity
-    }).where(eq(item.id, editQuantityTypeAnswer.data.item_id)).returning({ id: item.id })
-
-    if(!updatedItem[0].id){
-      return res.status(400).json({success: false, message: "Unable to edit item quantity"})
-    }
-
-    return res.status(200).json({success: true, message: "Item quantity edited successfully"});
+    return res.status(200).json({success: true, message: "Item Order updated"});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to edit item quantity", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to update item order!", error: error.message ? error.message : error});
+  }
+}
+
+const receiveItemOrder = async (req: Request, res: Response) => { 
+  const receiveItemOrderTypeAnswer = receiveItemOrderType.safeParse(req.body);
+
+  if (!receiveItemOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: receiveItemOrderTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundItemOrderTx = await tx.query.item_order.findFirst({
+        where: (item_order, { eq }) => eq(item_order.id, receiveItemOrderTypeAnswer.data.id),
+        columns: {
+          id: true,
+          item_id: true,
+          received_quantity: true
+        }
+      });
+
+      if(!foundItemOrderTx?.id){
+        throw new Error("Unable to find item order!")
+      }
+
+      if ((foundItemOrderTx.received_quantity ?? 0) === receiveItemOrderTypeAnswer.data.received_quantity) {
+        throw new Error("Unable to update, same quantity as before!");
+      }
+
+
+      if ((foundItemOrderTx.received_quantity ?? 0) > 0){
+        const diff = (foundItemOrderTx.received_quantity ?? 0) - receiveItemOrderTypeAnswer.data.received_quantity;
+        const operator = diff < 0 ? "add" : "subtract"
+        if(operator == "add"){
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} + ${sql.placeholder("difference")}`
+          }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
+            difference: (diff * -1)
+          });
+        } else {
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} - ${sql.placeholder("difference")}`
+          }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
+            difference: diff
+          });
+        }
+      } else {
+        await tx.update(item).set({
+          quantity: sql`${item.quantity} + ${sql.placeholder("quantity")}`
+        }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
+          quantity: receiveItemOrderTypeAnswer.data.received_quantity
+        });
+      }
+
+      if(receiveItemOrderTypeAnswer.data.received_quantity == 0){
+        receiveItemOrderTypeAnswer.data.receive_date = undefined;
+      }
+
+      await tx.update(item_order).set({
+        receive_date: receiveItemOrderTypeAnswer.data.receive_date,
+        received_quantity: receiveItemOrderTypeAnswer.data.received_quantity
+      }).where(eq(item_order.id, receiveItemOrderTypeAnswer.data.id));
+    })
+
+    return res.status(200).json({success: true, message: "Item Order updated, Quanity Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to update item order and quantity!", error: error.message ? error.message : error});
+  }
+}
+
+const deleteItemOrder = async (req: Request, res: Response) => { 
+  const deleteItemOrderTypeAnswer = deleteItemOrderType.safeParse(req.body);
+
+  if (!deleteItemOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteItemOrderTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundItemOrderTx = await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id)).returning({
+        id: item_order.id,
+        item_id: item_order.item_id,
+        received_quantity: item_order.received_quantity
+      });
+
+      if(!foundItemOrderTx[0]?.id){
+        throw new Error("Unable to find item order!")
+      }
+
+      if((foundItemOrderTx[0].received_quantity ?? 0) > 0){
+        // reduce the receive quantity
+        await tx.update(item).set({
+          quantity: sql`${item.quantity} - ${foundItemOrderTx[0].received_quantity}`
+        }).where(eq(item.id, foundItemOrderTx[0].item_id));
+      }
+    })
+
+    return res.status(200).json({success: true, message: "Item Order deleted, Quanity Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to delete item order!", error: error.message ? error.message : error});
   }
 }
 
@@ -254,6 +399,9 @@ export {
   getItem,
   getItemRates,
   editItem,
-  editQuantity,
+  createItemOrder,
+  editItemOrder,
+  receiveItemOrder,
+  deleteItemOrder,
   deleteItem
 }

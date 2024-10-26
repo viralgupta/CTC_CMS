@@ -27,6 +27,7 @@ const useAllArchitect = () => {
   }
   
   const refetchArchitects = () => {
+    if(loading) return;
     setArchitects([]);
     fetchAllArchitects();
   }

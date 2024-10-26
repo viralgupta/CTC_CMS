@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createItemType = z
   .object({
-    name: z.string().max(256, "Item name is too long"),
+    name: z.string().max(255, "Item name is too long"),
     multiplier: z
       .number()
       .positive("Multiplier Needs to be greater than 0"),
@@ -59,11 +59,39 @@ export const editItemType = createItemType
   })
   .strict("Too many fields in request body");
 
-export const editQuantityType = z.object({
+export const createItemOrderType = z.object({
   item_id: z.string().uuid("Invalid Item ID"),
-  operation: z.enum(["add", "subtract"]),
-  quantity: z.number().nonnegative("Quantity needs to be greater than equal to 0"),
-}).strict("Too many fields in request body");
+  vendor_name: z.string().max(255).optional(),
+  ordered_quantity: z.number().optional(),
+  order_date: z.string()
+  .transform((dateString) => new Date(dateString))
+  .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }),
+  received_quantity: z.number().optional(),
+  receive_date: z.string()
+    .transform((dateString) => new Date(dateString))
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional()
+});
+
+export const editItemOrderType = z.object({
+  id: z.string().uuid(),
+  vendor_name: z.string().max(255).optional(),
+  ordered_quantity: z.number().optional(),
+  order_date: z.string()
+    .transform((dateString) => new Date(dateString))
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" })
+});
+
+export const receiveItemOrderType = z.object({
+  id: z.string().uuid(),
+  received_quantity: z.number(),
+  receive_date: z.string()
+    .transform((dateString) => new Date(dateString))
+    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional()
+});
+
+export const deleteItemOrderType = z.object({
+  id: z.string().uuid(),
+});
 
 export const deleteItemType = z.object({
   item_id: z.string().uuid("Invalid Item ID"),
