@@ -309,7 +309,7 @@ async function printPreview(data: any, type: "estimate" | "orderMovement") {
       printWin = null;
     })
   } catch (error) {
-    console.log("error", error)
+    mainWin?.webContents.send("Error", error)
   }
 }
 
