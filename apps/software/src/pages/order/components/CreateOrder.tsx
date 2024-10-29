@@ -94,7 +94,7 @@ const CreateOrderForm = () => {
   const [final_amount, setFinal_amount] = React.useState(0);
   const [remaining_amount, setRemaining_amount] = React.useState(0);
 
-  const [order_items, lfc, discount, amount_paid, customer_id] = form.watch(["order_items", "labour_frate_cost", "discount", "amount_paid", "customer_id"]);
+  const [order_items, discount, amount_paid, customer_id] = form.watch(["order_items", "discount", "amount_paid", "customer_id"]);
 
 
   React.useEffect(() => {
@@ -104,8 +104,8 @@ const CreateOrderForm = () => {
   }, [order_items]);
 
   React.useEffect(() => {
-    setFinal_amount(total_order_value + (lfc ? lfc : 0) - parseFloat(discount ? discount : "0.00"));
-  }, [total_order_value, lfc, discount]);
+    setFinal_amount(total_order_value - parseFloat(discount ? discount : "0.00"));
+  }, [total_order_value, discount]);
 
   React.useEffect(() => {
     setRemaining_amount(final_amount - parseFloat(amount_paid ? amount_paid : "0.00"));
@@ -125,23 +125,6 @@ const CreateOrderForm = () => {
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Customer</FormLabel>
-                  <FormControl>
-                    <SearchCustomer
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="rounded-lg"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="driver_id"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Driver</FormLabel>
                   <FormControl>
                     <SearchCustomer
                       value={field.value}
@@ -174,7 +157,7 @@ const CreateOrderForm = () => {
             />
             <FormField
               control={form.control}
-              name="driver_id"
+              name="architect_id"
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Architect</FormLabel>
@@ -293,28 +276,6 @@ const CreateOrderForm = () => {
           <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
             <FormField
               control={form.control}
-              name="labour_frate_cost"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Labour And Frate Cost</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? parseFloat(e.target.value) : ""
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="discount"
               render={({ field }) => (
                 <FormItem className="w-full">
@@ -386,7 +347,7 @@ const CreateOrderForm = () => {
       </Form>
       <div className="w-1/2 h-full rounded-md border p-4">
         <span className="text-2xl font-cubano">Order Summary</span>
-        <div className="w-full h-3/5 mb-1 overflow-y-auto bg-gradient-to-t from-accent mt-2 rounded-sm hide-scroll">
+        <div className="w-full h-4/6 mb-1 overflow-y-auto bg-gradient-to-t from-accent mt-2 rounded-sm hide-scroll">
           <Table>
             <TableHeader>
               <TableRow>
@@ -429,15 +390,11 @@ const CreateOrderForm = () => {
             </TableBody>
           </Table>
         </div>
-        <Card className="w-full h-48">
+        <Card className="w-full h-40">
           <CardContent className="p-2 py-1">
             <div className="w-full text-2xl font-mono flex justify-between">
               Total Order Value
               <span>{total_order_value.toFixed(2)}</span>
-            </div>
-            <div className="w-full text-lg font-mono flex justify-between text-foreground/60">
-              + Labour And Frate
-              <span>{lfc ? lfc.toFixed(2) : "0.00"}</span>
             </div>
             <div className="w-full text-lg font-mono flex justify-between text-foreground/60">
               - Discount

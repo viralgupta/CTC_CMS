@@ -1,6 +1,7 @@
 import { atom } from "recoil";
 
 interface printEstimateType {
+  printType: "estimate";
   customerName: string;
   date: string;
   estimate_items: {
@@ -12,7 +13,22 @@ interface printEstimateType {
   totalEstimateCost: string;
 }
 
-const printInfoAtom = atom<printEstimateType | null>({
+interface printOrderMovementType {
+  printType: "orderMovement";
+  type: "Delivery" | "Return";
+  createdAt: string;
+  deliveredAt: string;
+  customer: {
+    name: string;
+    address: string;
+  };
+  order_movement_items: {
+    name: string;
+    quantity: string;
+  }[];
+}
+
+const printInfoAtom = atom<printEstimateType | printOrderMovementType | null>({
   key: "printInfoAtom",
   default: null,
   effects: [({onSet, setSelf}) => {
@@ -21,7 +37,7 @@ const printInfoAtom = atom<printEstimateType | null>({
         window.ipcRenderer.invoke("cancel-print");
         return;
       } else {
-        window.ipcRenderer.invoke("print-preview", info, "estimate")
+        window.ipcRenderer.invoke("print-preview", info, info.printType)
       }
     });
     window.ipcRenderer.on("print-cancelled", () => {

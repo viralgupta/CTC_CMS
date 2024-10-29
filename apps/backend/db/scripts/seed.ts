@@ -10,6 +10,8 @@ import {
   item,
   order,
   order_item,
+  order_movement,
+  order_movement_item,
   // estimate,
   // estimate_item,
   // resource,
@@ -65,8 +67,8 @@ async function main() {
     {
       name: "Customer 1",
       priority: "Low",
-      balance: "0.00",
-      total_order_value: "4500.00"
+      balance: "4500.00",
+      total_order_value: "10000.00"
     },
     {
       name: "Customer 2",
@@ -132,28 +134,28 @@ async function main() {
     {
       area: "Navug Market",
       name: "Architect 1",
-      balance: "0.00",
+      balance: "100.00",
     },
     {
       area: "Raj Nagar",
       name: "Architect 2",
-      balance: "10000.00",
+      balance: "0.00",
     }
   ]).returning({
     id: architect.id
   })
 
-  // insert architects
+  // insert carpenters
   const carpanterIds = await db.insert(carpanter).values([
     {
       area: "Navug Market",
       name: "Carpanter 1",
-      balance: "0.00",
+      balance: "100.00",
     },
     {
       area: "Raj Nagar",
       name: "Carpanter 2",
-      balance: "10000.00",
+      balance: "100.00",
     }
   ]).returning({
     id: carpanter.id
@@ -164,13 +166,13 @@ async function main() {
     {
       name: "Driver 1",
       size_of_vehicle: "rickshaw",
-      activeOrders: 1,
+      activeDeliveries: 1,
       vehicle_number: "UP 14 XX 00"
     },
     {
       name: "Driver 2",
       size_of_vehicle: "tata",
-      activeOrders: 0,
+      activeDeliveries: 0,
       vehicle_number: "UP 14 XX 01"
     }
   ]).returning({
@@ -247,7 +249,7 @@ async function main() {
       category: "Adhesives",
       name: "Mahacol 5kg",
       min_quantity: 2,
-      quantity: 10,
+      quantity: 8,
       rate_dimension: "piece",
       sale_rate: 5000.00,
       multiplier: 1.00,
@@ -256,7 +258,7 @@ async function main() {
     {
       category: "Miscellaneous",
       name: "Cutter 10 Inch",
-      min_quantity: 20,
+      min_quantity: 19,
       quantity: 10,
       rate_dimension: "piece",
       sale_rate: 130.00,
@@ -284,12 +286,10 @@ async function main() {
       customer_id: customerIds[0].id,
       architect_id: architectIds[0].id,
       carpanter_id: carpanterIds[0].id,
-      driver_id: driverIds[0].id,
       status: "Pending",
       priority: "Low",
       payment_status: "Partial",
       delivery_address_id: addressIds[0].id,
-      labour_frate_cost: 100.00,
       total_order_amount: "5100.00",
       discount: "100.00",
       amount_paid: "500.00",
@@ -300,12 +300,10 @@ async function main() {
       note: "This is a test note 2",
       customer_id: customerIds[0].id,
       carpanter_id: carpanterIds[1].id,
-      driver_id: driverIds[1].id,
       status: "Delivered",
       priority: "Low",
       payment_status: "Paid",
       delivery_address_id: addressIds[1].id,
-      labour_frate_cost: 100.00,
       total_order_amount: "5000.00",
       discount: "0.00",
       amount_paid: "5000.00",
@@ -321,6 +319,7 @@ async function main() {
       item_id: itemIds[0].id,
       order_id: orderIds[0].id,
       quantity: 1,
+      delivered_quantity: 0,
       rate: 5000.00,
       total_value: "5000.00",
       carpanter_commision: "100.00",
@@ -332,6 +331,7 @@ async function main() {
       item_id: itemIds[1].id,
       order_id: orderIds[0].id,
       quantity: 1,
+      delivered_quantity: 1,
       rate: 100.00,
       total_value: "100.00",
     },
@@ -339,6 +339,7 @@ async function main() {
       item_id: itemIds[0].id,
       order_id: orderIds[1].id,
       quantity: 1,
+      delivered_quantity: 1,
       rate: 5000.00,
       total_value: "5000.00",
       carpanter_commision: "100.00",
@@ -347,11 +348,62 @@ async function main() {
   ]).returning({
     id: order_item.id
   });
+  
+  // insert order_movements
+  const orderMovementsIds = await db.insert(order_movement).values([
+    {
+      order_id: orderIds[0].id,
+      labour_frate_cost: 100,
+      type: "DELIVERY",
+      driver_id: driverIds[0].id,
+      status: "Pending",
+      created_at: new Date(),
+    },
+    {
+      order_id: orderIds[0].id,
+      labour_frate_cost: 0,
+      type: "DELIVERY",
+      status: "Completed",
+      created_at: new Date(),
+      delivery_at: new Date(),
+    },
+    {
+      order_id: orderIds[1].id,
+      labour_frate_cost: 100,
+      type: "DELIVERY",
+      driver_id: driverIds[1].id,
+      status: "Completed",
+      created_at: new Date(),
+      delivery_at: new Date(),
+    },
+  ]).returning({
+    id: order_movement.id
+  });
 
+  // insert order_movement_items
+  const orderMovementItemsIds = await db.insert(order_movement_item).values([
+    {
+      order_movement_id: orderMovementsIds[0].id,
+      order_item_id: orderItemsIds[0].id,
+      quantity: 1,
+    },
+    {
+      order_movement_id: orderMovementsIds[1].id,
+      order_item_id: orderItemsIds[1].id,
+      quantity: 1,
+    },
+    {
+      order_movement_id: orderMovementsIds[2].id,
+      order_item_id: orderItemsIds[2].id,
+      quantity: 1,
+    },
+  ]).returning({
+    id: order_movement_item.id
+  });
+  
   // insert estimates
   // insert estimate_items
   // insert resources
-
 
   console.log("All Tables Seeded!!!");
   process.exit(0);

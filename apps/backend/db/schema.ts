@@ -122,12 +122,12 @@ export const driver = pgTable("driver", {
   size_of_vehicle: varchar("driver_size_of_vehicle", {
     enum: ["rickshaw", "tempo", "chota-hathi", "tata", "truck"],
   }).notNull(),
-  activeOrders: integer("driver_activeOrders").default(0),
+  activeDeliveries: integer("driver_activeDeliveries").default(0),
 });
 
 export const driver_relation = relations(driver, ({ many }) => ({
   phone_numbers: many(phone_number),
-  orders: many(order),
+  order_movements: many(order_movement),
 }));
 
 export const phone_number = pgTable("phone_number", {
@@ -224,7 +224,6 @@ export const order = pgTable("order", {
   customer_id: uuid("customer_id").references(() => customer.id),
   carpanter_id: uuid("carpanter_id").references(() => carpanter.id),
   architect_id: uuid("architect_id").references(() => architect.id),
-  driver_id: uuid("driver_id").references(() => driver.id),
 
   status: varchar("order_status", {
     enum: ["Pending", "Delivered"],
@@ -247,7 +246,6 @@ export const order = pgTable("order", {
     () => address.id
   ),
 
-  labour_frate_cost: real("order_labour_frate_cost").notNull(),
   total_order_amount: numeric("total_order_amount", {
     precision: 10,
     scale: 2,
@@ -272,7 +270,6 @@ export const order = pgTable("order", {
     order_updated_payment_statusIdx: index("order_updated_payment_status_idx").on(table.updated_at.desc(), table.payment_status),
     order_updated_priorityIdx: index("order_updated_priority_idx").on(table.updated_at.desc(), table.priority),
     order_updatedIdx: index("order_updated_idx").on(table.updated_at.desc()),
-    order_createdIdx: index("order_created_idx").on(table.created_at.desc())
   }
 });
 
@@ -289,15 +286,12 @@ export const order_relation = relations(order, ({ one, many }) => ({
     fields: [order.architect_id],
     references: [architect.id],
   }),
-  driver: one(driver, {
-    fields: [order.driver_id],
-    references: [driver.id],
-  }),
   delivery_address: one(address, {
     fields: [order.delivery_address_id],
     references: [address.id],
   }),
   order_items: many(order_item),
+  order_movements: many(order_movement),
 }));
 
 export const order_item = pgTable("order_item", {
@@ -311,6 +305,7 @@ export const order_item = pgTable("order_item", {
     .notNull(),
 
   quantity: real("order_item_quantity").notNull(),
+  delivered_quantity: real("order_item_delivered_quantity").notNull(),
   rate: real("order_item_rate").notNull(),
   total_value: numeric("order_item_total_value", {
     precision: 10,
@@ -334,11 +329,6 @@ export const order_item = pgTable("order_item", {
 
   created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date())
-}, (table) => {
-  return {
-    create_atIdx: index("order_created_at_idx").on(table.created_at.desc()),
-    updated_atIdx: index("order_updated_at_idx").on(table.updated_at.desc())
-  }
 });
 
 export const order_item_relation = relations(order_item, ({ one }) => ({
@@ -351,6 +341,60 @@ export const order_item_relation = relations(order_item, ({ one }) => ({
     references: [item.id],
   }),
 }));
+
+export const order_movement = pgTable("order_movement", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  order_id: uuid("order_movement_order_id")
+    .references(() => order.id)
+    .notNull(),
+  driver_id: uuid("order_movement_driver_id")
+    .references(() => driver.id),
+  type: varchar("order_movement_type", {
+    enum: ["DELIVERY", "RETURN"],
+  }).notNull(),
+  status: varchar("order_status", {
+    enum: ["Pending", "Completed"],
+  })
+    .notNull()
+    .default("Pending"),
+  labour_frate_cost: real("order_labour_frate_cost").notNull(),
+  created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  delivery_at: timestamp("delivery_at", { mode: "date" }),
+})
+
+export const order_movement_relation = relations(order_movement, ({ one, many }) => ({
+  order: one(order, {
+    fields: [order_movement.order_id],
+    references: [order.id],
+  }),
+  driver: one(driver, {
+    fields: [order_movement.driver_id],
+    references: [driver.id],
+  }),
+  order_movement_items: many(order_movement_item),
+}));
+
+export const order_movement_item = pgTable("order_movement_item", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  order_movement_id: uuid("order_movement_item_order_movement_id")
+    .references(() => order_movement.id, { onDelete: "cascade" })
+    .notNull(),
+  order_item_id: uuid("order_movement_item_order_item_id")
+    .references(() => order_item.id)
+    .notNull(),
+  quantity: real("order_movement_item_quantity").notNull(),
+})
+
+export const order_movement_item_relation = relations(order_movement_item, ({ one }) => ({
+  order_movement: one(order_movement, {
+    fields: [order_movement_item.order_movement_id],
+    references: [order_movement.id],
+  }),
+  order_item: one(order_item, {
+    fields: [order_movement_item.order_item_id],
+    references: [order_item.id],
+  }),
+}))
 
 export const estimate = pgTable("estimate", {
   id: uuid("estimate_id").primaryKey().defaultRandom().notNull(),

@@ -23,6 +23,7 @@ import ViewDriver from "./pages/driver/components/ViewDriver"
 import ViewResource from "./pages/resources/components/ViewResource"
 import ViewEstimate from "./pages/estimate/components/ViewEstimate"
 import ViewPrintOptions from "./components/ViewPrintOption"
+import ViewOrderMovement from "./pages/order/OrderMovement/OrderMovement"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -67,6 +68,7 @@ function App() {
       <ViewResource/>
       <ViewEstimate/>
       <ViewPrintOptions/>
+      <ViewOrderMovement/>
       <Body>
           {renderTabContent()}
       </Body>

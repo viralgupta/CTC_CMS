@@ -4,7 +4,7 @@ export interface DriverType {
   name: string;
   id: string;
   size_of_vehicle: "rickshaw" | "tempo" | "chota-hathi" | "tata" | "truck";
-  activeOrders: number | null;
+  activeDeliveries: number | null;
   phone_numbers: {
     phone_number: string;
   }[];
@@ -20,18 +20,24 @@ export interface ViewDriverType extends DriverType {
     whatsappChatId: string | null;
     isPrimary: boolean | null;
   }[];
-  orders: {
+  order_movements: {
+    type: "DELIVERY" | "RETURN";
+    status: "Pending" | "Completed";
     id: string;
-    status: "Pending" | "Delivered";
+    order_id: string;
     created_at: Date;
-    customer: {
-      name: string;
-    } | null;
-    delivery_address: {
-      address: string;
-      house_number: string;
-    } | null;
-  }[];
+    labour_frate_cost: number;
+    order: {
+        id: string;
+        customer: {
+            name: string;
+        } | null;
+        delivery_address: {
+            address: string;
+            house_number: string;
+        } | null;
+    };
+  }[]
 }
 
 export const allDriverAtom = atom<DriverType[]>({

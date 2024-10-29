@@ -80,12 +80,10 @@ export type ViewOrderType = {
   priority: "Low" | "High" | "Medium";
   architect_id: string | null;
   carpanter_id: string | null;
-  driver_id: string | null;
   note: string | null;
   payment_status: "UnPaid" | "Partial" | "Paid";
   delivery_date: Date | null;
   delivery_address_id: string | null;
-  labour_frate_cost: number;
   total_order_amount: string;
   discount: string | null;
   amount_paid: string | null;
@@ -117,32 +115,23 @@ export type ViewOrderType = {
       }
     | null
     | undefined;
-  driver:
-    | {
-        name: string;
-        vehicle_number: string | null;
-        phone_numbers: {
-          phone_number: string;
-          country_code: string | null;
-        }[];
-      }
-    | null
-    | undefined;
   delivery_address:
     | {
         address: string;
         house_number: string;
         address_area: {
           area: string;
-        }
+        };
       }
     | null
     | undefined;
   order_items:
     | {
+        id: string;
         carpanter_commision: string | null;
         architect_commision: string | null;
         quantity: number;
+        delivered_quantity: number;
         rate: number;
         total_value: string;
         carpanter_commision_type: "percentage" | "perPiece" | null;
@@ -156,6 +145,18 @@ export type ViewOrderType = {
           | undefined;
       }[]
     | undefined;
+  order_movements:
+    | {
+        id: string;
+        driver_id: string | null;
+        status: "Pending" | "Completed";
+        created_at: Date;
+        type: "DELIVERY" | "RETURN";
+        driver: {
+          name: string;
+        } | null;
+      }[]
+    | undefined;
 };
 
 export const viewOrderAtom = atom<null | ViewOrderType>({
@@ -165,5 +166,10 @@ export const viewOrderAtom = atom<null | ViewOrderType>({
 
 export const viewOrderIdAtom = atom<string | null>({
   key: "viewOrderIdAtom",
+  default: null,
+});
+
+export const viewOrderMovementIdAtom = atom<string | null>({
+  key: "viewOrderMovementIdAtom",
   default: null,
 });

@@ -47,13 +47,13 @@ function DriverTable({
       header: "Vehicle Type",
     },
     {
-      id: "activeOrders",
-      accessorKey: "activeOrders",
-      header: "Activer Orders",
+      id: "activeDeliveries",
+      accessorKey: "activeDeliveries",
+      header: "Active Deliveries",
       cell: ({ row }) => {
-        const activeOrders = row.original.activeOrders;
+        const activeDeliveries = row.original.activeDeliveries;
         return (
-          <span className={(activeOrders ?? 0) > 0 ? "text-green-500" :""}>{activeOrders}</span>
+          <span className={(activeDeliveries ?? 0) > 0 ? "text-green-500" :""}>{activeDeliveries}</span>
         );
       },
     },

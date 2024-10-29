@@ -29,6 +29,7 @@ const OrderItemsTable = ({
         <TableRow>
           <TableHead className="text-center">Name</TableHead>
           <TableHead className="text-center">Quantity</TableHead>
+          <TableHead className="text-center">Delivered Quanitity</TableHead>
           <TableHead className="text-center">Rate</TableHead>
           <TableHead className="text-center">Total Value</TableHead>
           <TableHead className="text-center">Architect Commission</TableHead>
@@ -42,6 +43,11 @@ const OrderItemsTable = ({
             <TableRow key={oi.item_id}>
               <TableCell className="text-center">{oi.item?.name}</TableCell>
               <TableCell className="text-center">{oi.quantity}</TableCell>
+              <TableCell className={`text-center ${oi.quantity > oi.delivered_quantity && "text-red-500"}`}>
+                <p className={`w-min mx-auto ${oi.quantity < oi.delivered_quantity && "bg-primary p-1 px-2 animate-pulse rounded-md text-white"}`}>
+                  {oi.delivered_quantity}
+                </p>
+              </TableCell>
               <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${oi.item?.rate_dimension}`}</TableCell>
               <TableCell className="text-center">{`₹${oi.total_value}`}</TableCell>
               <TableCell className="text-center">

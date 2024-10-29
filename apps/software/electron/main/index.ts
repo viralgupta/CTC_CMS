@@ -286,7 +286,7 @@ app.on("activate", () => {
   }
 });
 
-async function printPreview(data: any, type: "estimate" | "order_summary") {
+async function printPreview(data: any, type: "estimate" | "orderMovement") {
   if (printWin) return;
   printWin = new BrowserWindow({
     title: "Print Preview",

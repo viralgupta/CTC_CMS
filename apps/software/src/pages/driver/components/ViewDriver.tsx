@@ -9,7 +9,7 @@ import { useRecoilState } from "recoil";
 import request from "@/lib/request";
 import DriverCard from "./DriverCard/DriverCard";
 import React from "react";
-import DriverOrders from "./DriverOrders";
+import DriverOrderMovements from "./DriverOrderMovements";
 import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver";
 
 const ViewDriver = () => {
@@ -37,13 +37,13 @@ const ViewDriver = () => {
         }
       }}
     >
-      <DialogContent size="4xl">
+      <DialogContent size="6xl">
         <DialogHeader className="hidden">
           <DialogDescription></DialogDescription>
           <DialogTitle></DialogTitle>
         </DialogHeader>
           <DriverCard driver={viewDriver}/>
-          <DriverOrders />
+          <DriverOrderMovements />
       </DialogContent>
     </Dialog>
   );

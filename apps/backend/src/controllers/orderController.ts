@@ -1,22 +1,24 @@
 import db from '@db/db';
-import { architect, carpanter, customer, driver, item, order, order_item } from '@db/schema';
+import { architect, carpanter, customer, driver, item, order, order_item, order_movement, order_movement_item } from '@db/schema';
 import {
   createOrderType,
   editOrderNoteType,
   addOrderCustomerIdType,
   editOrderCarpanterIdType,
   editOrderArchitectIdType,
-  editOrderDriverIdType,
-  editOrderStatusType,
   editOrderPriorityType,
   editOrderDeliveryDateType,
   editOrderDeliveryAddressIdType,
-  editOrderLabourAndFrateCostType,
   editOrderDiscountType,
   settleBalanceType,
   editOrderItemsType,
   getAllOrdersType,
   getOrderType,
+  getOrderMovementType,
+  createOrderMovementType,
+  editOrderMovementType,
+  deleteOrderMovementType,
+  editOrderMovementStatusType,
 } from "@type/api/order";
 import { Request, Response } from "express";
 import { calculatePaymentStatus } from '@utils/order';
@@ -43,25 +45,26 @@ const createOrder = async (req: Request, res: Response) => {
         throw new Error("Multiple Order Items of same Kind!!!, Cannot Create Order!");
       }
 
-      // update all the quantities of the items and return the updated quantities
-      const quantities: {id: string, quantity: number}[] = [];
-      createOrderTypeAnswer.data.order_items.forEach(async (orderitem) => {
-        const foundTItem = await tx.update(item).set({
-          quantity: sql`${item.quantity} - ${sql.placeholder('orderQuantity')}`
-        })
-        .where(eq(item.id, orderitem.item_id))
-        .returning({
-          id: item.id,
-          quantity: item.quantity
-        })
-        .execute({ orderQuantity: orderitem.quantity });
+      // calculate if we can deliver the order
+      let canDeliver = true;
+      createOrderTypeAnswer.data.order_items.forEach(async (oi) => {
+        const foundItem = await tx.query.item.findFirst({
+          where: (item, { eq }) => eq(item.id, oi.item_id),
+          columns: {
+            quantity: true
+          }
+        });
 
-        if(!foundTItem[0]) {
-          throw new Error("Item not found")
-        }
+        if(!foundItem) return new Error("Unable to find the item");
 
-        quantities.push(foundTItem[0]);
-      })
+        if(foundItem.quantity < oi.quantity) {
+          canDeliver = false
+        };
+      });
+
+      if(createOrderTypeAnswer.data.status == "Delivered" && !canDeliver){
+        throw new Error("Cannot Deliver this order, Insuficent Quanity!")
+      };
 
       // calculate the total value of the order
       const totalValue = createOrderTypeAnswer.data.order_items.reduce((acc, orderitem, _index) => {
@@ -86,8 +89,6 @@ const createOrder = async (req: Request, res: Response) => {
         return acc + parseFloat(orderitem.architect_commision ?? "0.00");
       }, 0).toFixed(2);
 
-      // calculate order status
-      const orderStatus = quantities.some(quantity => quantity.quantity < 0) ? "Pending" : createOrderTypeAnswer.data.status;
 
       // check if amount paid is not more than total order value
       if(actualtotalValue < parseFloat(createOrderTypeAnswer.data.amount_paid ?? "0.00")){
@@ -122,17 +123,15 @@ const createOrder = async (req: Request, res: Response) => {
 
       // create order
       const tOrder = await tx.insert(order).values({
-        note: createOrderTypeAnswer.data.note,
+        note: createOrderTypeAnswer.data.note ?? "",
         customer_id: createOrderTypeAnswer.data.customer_id,
         carpanter_id: createOrderTypeAnswer.data.carpanter_id,
         architect_id: createOrderTypeAnswer.data.architect_id,
-        driver_id: createOrderTypeAnswer.data.driver_id,
-        status: orderStatus,
+        status: canDeliver ? createOrderTypeAnswer.data.status : "Pending",
         priority: createOrderTypeAnswer.data.priority,
         payment_status: calculatePaymentStatus(actualtotalValue, parseFloat(createOrderTypeAnswer.data.amount_paid ?? "0.00")),
-        delivery_date: createOrderTypeAnswer.data.status == "Delivered" ? createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date : null,
+        delivery_date: createOrderTypeAnswer.data.status == "Delivered" && canDeliver ? createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date : null,
         delivery_address_id: createOrderTypeAnswer.data.customer_id ? createOrderTypeAnswer.data.delivery_address_id : null,
-        labour_frate_cost: createOrderTypeAnswer.data.labour_frate_cost,
         discount: createOrderTypeAnswer.data.discount,
         amount_paid: createOrderTypeAnswer.data.amount_paid,
         total_order_amount: totalValue.toFixed(2),
@@ -141,12 +140,13 @@ const createOrder = async (req: Request, res: Response) => {
       }).returning({id: order.id})
 
       // create order items
-      await tx.insert(order_item).values(
+      const orderItems = await tx.insert(order_item).values(
         createOrderTypeAnswer.data.order_items.map((order_item) => {
           return {
             order_id: tOrder[0].id,
             item_id: order_item.item_id,
             quantity: order_item.quantity,
+            delivered_quantity: (createOrderTypeAnswer.data.status == "Delivered" && canDeliver) ? order_item.quantity : 0,
             rate: order_item.rate,
             total_value: order_item.total_value,
             carpanter_commision: calculateCarpanterCommision ? order_item.carpanter_commision : null,
@@ -155,7 +155,10 @@ const createOrder = async (req: Request, res: Response) => {
             architect_commision_type: calculateArchitectCommision ? order_item.architect_commision_type : null,
           }
         })
-      )
+      ).returning({
+        id: order_item.id,
+        quantity: order_item.quantity
+      })
 
       // update total order value and balance for customer
       if(createOrderTypeAnswer.data.customer_id) {
@@ -187,12 +190,41 @@ const createOrder = async (req: Request, res: Response) => {
         })
       }
 
-      // update activeOrders for driver
-      if(createOrderTypeAnswer.data.driver_id && createOrderTypeAnswer.data.status == "Pending"){
-        await tx.update(driver).set({
-          activeOrders: sql`${driver.activeOrders} + 1`
-        }).where(eq(driver.id, createOrderTypeAnswer.data.driver_id))
-      }
+      // create a order movement if the status is deliverd and can be delivered
+      if (createOrderTypeAnswer.data.status == "Delivered" && canDeliver) {
+        
+        // reduce quanitity of item
+        createOrderTypeAnswer.data.order_items.forEach(async (orderitem) => {
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} - ${sql.placeholder('orderQuantity')}`
+          })
+            .where(eq(item.id, orderitem.item_id))
+            .execute({ orderQuantity: orderitem.quantity });
+        });
+
+        // create order movement
+        const tOrderMovememt = await tx.insert(order_movement).values({
+          order_id: tOrder[0].id,
+          labour_frate_cost: 0,
+          type: "DELIVERY",
+          status: "Completed",
+          created_at: createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date,
+          delivery_at: createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date, 
+        }).returning({
+          id: order_movement.id
+        });
+
+        // create order movement items
+        await tx.insert(order_movement_item).values(
+          orderItems.map((oi) => {
+            return {
+              order_movement_id: tOrderMovememt[0].id,
+              order_item_id: oi.id,
+              quantity: oi.quantity
+            }
+          })
+        )
+      };
     })
 
     return res.status(200).json({success: true, message: "Order created successfully"});
@@ -386,121 +418,6 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
   }
 }
 
-const editOrderDriverId = async (req: Request, res: Response) => {
-  const editOrderDriverIdTypeAnswer = editOrderDriverIdType.safeParse(req.body);
-
-  if(!editOrderDriverIdTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editOrderDriverIdTypeAnswer.error.flatten()})
-  }
-
-  try {
-    await db.transaction(async(tx) => {
-      const oldOrder = await tx.query.order.findFirst({
-        where: (order, { eq }) => eq(order.id, editOrderDriverIdTypeAnswer.data.order_id),
-        columns: {
-          driver_id: true,
-          status: true
-        }
-      })
-
-      if(!oldOrder) {
-        throw new Error("Unable to find Order!!!")
-      }
-
-      if(oldOrder.driver_id == editOrderDriverIdTypeAnswer.data.driver_id){
-        throw new Error("Old and New Driver Ids cannot be same!!!");
-      }
-
-      // update no of active orders from old order
-      if(oldOrder.driver_id && oldOrder.status == "Pending"){
-        await tx.update(driver).set({
-          activeOrders: sql`${driver.id} - 1`
-        }).where(eq(driver.id, oldOrder.driver_id));
-      }
-
-      // update no of active orders in new Driver
-      if(oldOrder.status == "Pending"){
-        await tx.update(driver).set({
-          activeOrders: sql`${driver.activeOrders} + 1`
-        }).where(eq(driver.id, editOrderDriverIdTypeAnswer.data.driver_id));
-      }
-
-      // update new driver in order
-      await tx.update(order).set({
-        driver_id: editOrderDriverIdTypeAnswer.data.driver_id
-      }).where(eq(order.id, editOrderDriverIdTypeAnswer.data.order_id));
-    })
-
-    return res.status(200).json({success: true, message: "Updated Driver in Order"})    
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to update driver in order", error: error.message ? error.message : error});  
-  }
-}
-
-const editOrderStatus = async (req: Request, res: Response) => {
-  const editOrderStatusTypeAnswer = editOrderStatusType.safeParse(req.body);
-
-  if(!editOrderStatusTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editOrderStatusTypeAnswer.error.flatten()})
-  }
-
-  try {
-
-    await db.transaction(async (tx) => {
-      const oldOrder = await tx.query.order.findFirst({
-        where: (order, { eq }) => eq(order.id, editOrderStatusTypeAnswer.data.order_id),
-        columns: {
-          driver_id: true,
-          status: true
-        }
-      })
-      
-      if(!oldOrder) {
-        throw new Error("Unable to find Order!!!");
-      }
-      
-      if(oldOrder.status == editOrderStatusTypeAnswer.data.status) {
-        throw new Error("Unable to update status since they are same");
-      }
-
-      // Delivered -> Pending
-      if(oldOrder.status == "Delivered" && oldOrder.driver_id){
-        // update / increase active order
-        await tx.update(driver).set({
-          activeOrders: sql`${driver.activeOrders} + 1`
-        }).where(eq(driver.id, oldOrder.driver_id));
-      }
-
-      // Pending -> Delivered 
-      if(oldOrder.status == "Pending" && oldOrder.driver_id){
-        // update / reduce active order
-        await tx.update(driver).set({
-          activeOrders: sql`${driver.activeOrders} - 1`
-        }).where(eq(driver.id, oldOrder.driver_id));
-      }
-
-      const deliveryDate = new Date();
-
-      // update order status
-      if(editOrderStatusTypeAnswer.data.status == "Delivered") {
-        await tx.update(order).set({
-          status: editOrderStatusTypeAnswer.data.status,
-          delivery_date: deliveryDate
-        }).where(eq(order.id, editOrderStatusTypeAnswer.data.order_id));
-      } else {
-        await tx.update(order).set({
-          status: editOrderStatusTypeAnswer.data.status,
-          delivery_date: null
-        }).where(eq(order.id, editOrderStatusTypeAnswer.data.order_id));
-      }
-    })
-
-    return res.status(200).json({success: true, message: "Updated Order Status!!!"})    
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to update Order Status!!!", error: error.message ? error.message : error});  
-  }
-}
-
 const editOrderPriority = async (req: Request, res: Response) => { 
   const editOrderPriorityTypeAnswer = editOrderPriorityType.safeParse(req.body);
 
@@ -613,26 +530,6 @@ const editOrderDeliveryAddressId = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Updated Order Address!!!"})
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to Updated Order Address", error: error.message ? error.message : error});  
-  }
-}
-
-const editOrderLabourAndFrateCost = async (req: Request, res: Response) => {
-  const editOrderLabourAndFrateCostTypeAnswer = editOrderLabourAndFrateCostType.safeParse(req.body);
-
-  if(!editOrderLabourAndFrateCostTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editOrderLabourAndFrateCostTypeAnswer.error.flatten()})
-  }
-
-  try {
-    await db.transaction(async (tx) => {
-      await tx.update(order).set({
-        labour_frate_cost: editOrderLabourAndFrateCostTypeAnswer.data.labour_frate_cost
-      }).where(eq(order.id, editOrderLabourAndFrateCostTypeAnswer.data.order_id));
-    })
-
-    return res.status(200).json({success: true, message: "Updated Order Labour and Frate Cost!!!"})
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to Updated Order Labour and Frate Cost", error: error.message ? error.message : error});  
   }
 }
 
@@ -821,6 +718,7 @@ const editOrderItems = async (req: Request, res: Response) => {
               architect_commision: true,
               total_value: true,
               quantity: true,
+              delivered_quantity: true,
               rate: true,
             }
           }
@@ -853,49 +751,6 @@ const editOrderItems = async (req: Request, res: Response) => {
         newArchitectCommision += parseFloat(sameNewItem.architect_commision ?? "0.00");
         new_total_order_amount += parseFloat(sameNewItem.total_value ?? "0.00");
 
-        // check quantity, rate, totalValue of the item is same or not, update item, update order_item
-        if(sameNewItem.quantity == sameOldItem.quantity && sameNewItem.rate == sameOldItem.rate && parseFloat(sameNewItem.total_value) == parseFloat(sameOldItem.total_value)){
-          // do nothing
-        } else {
-          // update quantity of item
-          if(sameNewItem.quantity == sameOldItem.quantity){
-            // do nothing
-          } else if(sameNewItem.quantity > sameOldItem.quantity){
-            // quantity increased
-            const updatedItem = await tx.update(item).set({
-              quantity: sql`${item.quantity} - ${sql.placeholder("difference")}`
-            }).where(eq(item.id, sameOldItem.item_id)).returning({
-              id: item.id,
-              quantity: item.quantity
-            }).execute({
-              difference: sameNewItem.quantity - sameOldItem.quantity
-            });
-
-            if(!updatedItem) {
-              throw new Error("Unable to find Item to update!!!")
-            }
-
-            quantities.push(updatedItem[0])
-          } else {
-            // quantity decreased
-            const updatedItem = await tx.update(item).set({
-              quantity: sql`${item.quantity} + ${sql.placeholder("difference")}`
-            }).where(eq(item.id, sameOldItem.item_id)).returning({
-              id: item.id,
-              quantity: item.quantity
-            }).execute({
-              difference: sameOldItem.quantity - sameNewItem.quantity
-            });
-
-            
-            if(!updatedItem) {
-              throw new Error("Unable to find Item to update!!!")
-            }
-
-            quantities.push(updatedItem[0])
-          }
-        }
-
         // update order_item
         await tx.update(order_item).set({
           quantity: sameNewItem.quantity,
@@ -913,28 +768,12 @@ const editOrderItems = async (req: Request, res: Response) => {
         newArchitectCommision += parseFloat(addedItem.architect_commision ?? "0.00");
         new_total_order_amount += parseFloat(addedItem.total_value ?? "0.00");
 
-        // update quantity of item
-        const updatedItem = await tx.update(item).set({
-          quantity: sql`${item.quantity} - ${sql.placeholder("quantity")}`
-        }).where(eq(item.id, addedItem.item_id)).returning({
-          id: item.id,
-          quantity: item.quantity
-        }).execute({
-          quantity: addedItem.quantity
-        });
-
-        
-        if(!updatedItem) {
-          throw new Error("Unable to find Item to update!!!")
-        }
-
-        quantities.push(updatedItem[0])
-
         // add order_item
         await tx.insert(order_item).values({
           order_id: editOrderItemsTypeAnswer.data.order_id,
           item_id: addedItem.item_id,
           quantity: addedItem.quantity,
+          delivered_quantity: 0,
           rate: addedItem.rate,
           total_value: addedItem.total_value,
           carpanter_commision: oldOrder.carpanter_id ? addedItem.carpanter_commision : null,
@@ -945,15 +784,16 @@ const editOrderItems = async (req: Request, res: Response) => {
       })
       
       removedItems.forEach(async (removedOrderItem) => {
-        // update / add quantity of deleted items
-        await tx.update(item).set({
-          quantity: sql`${item.quantity} + ${sql.placeholder("quantity")}`
-        }).where(eq(item.id, removedOrderItem.item_id)).execute({
-          quantity: removedOrderItem.quantity
-        });
-
-        // delete order_item
-        await tx.delete(order_item).where(eq(order_item.id, removedOrderItem.id));
+        // update order_item
+        await tx.update(order_item).set({
+          quantity: 0,
+          rate: removedOrderItem.rate,
+          total_value: "0.00",
+          carpanter_commision: null,
+          carpanter_commision_type: null,
+          architect_commision: null,
+          architect_commision_type: null
+        }).where(eq(order_item.id, removedOrderItem.id));
       });
 
       // update carpanter commission
@@ -1218,20 +1058,20 @@ const getOrder = async (req: Request, res: Response) => {
               profileUrl: true
             }
           },
-          driver: {
+          order_movements: {
+            orderBy: (order_movement, { desc }) => desc(order_movement.created_at),
             columns: {
-              name: true,
-              vehicle_number: true
+              labour_frate_cost: false,
+              order_id: false,
+              delivery_at: false
             },
             with: {
-              phone_numbers: {
-                where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+              driver: {
                 columns: {
-                  country_code: true,
-                  phone_number: true
+                  name: true
                 }
               }
-            }
+            },
           },
           delivery_address: {
             columns: {
@@ -1249,7 +1089,9 @@ const getOrder = async (req: Request, res: Response) => {
           },
           order_items: {
             columns: {
+              id: true,
               quantity: true,
+              delivered_quantity: true,
               rate: true,
               total_value: true,
               architect_commision: true,
@@ -1277,6 +1119,590 @@ const getOrder = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch order", error: error.message ? error.message : error});
   }
+
+}
+
+const getMovement = async (req: Request, res: Response) => {
+  const getMovementTypeAnswer = getOrderMovementType.safeParse(req.query);
+
+  if(!getMovementTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getMovementTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const fetchedMovement = await db.transaction(async (tx) => {
+      const tMovement = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, getMovementTypeAnswer.data.id),
+        with: {
+          driver: {
+            columns: {
+              name: true,
+              profileUrl: true,
+              vehicle_number: true
+            },
+            with: {
+              phone_numbers: {
+                where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+                columns: {
+                  phone_number: true
+                }
+              }
+            }
+          },
+          order: {
+            columns: {
+              id: true
+            },
+            with: {
+              customer: {
+                columns: {
+                  id: true,
+                  name: true,
+                  profileUrl: true
+                }
+              },
+              delivery_address: {
+                columns: {
+                  id: true,
+                  house_number: true,
+                  address: true,
+                },
+                with: {
+                  address_area: {
+                    columns: {
+                      area: true
+                    }
+                  }
+                }
+              },
+            }
+          },
+          order_movement_items: {
+            columns: {
+              id: true,
+              quantity: true
+            },
+            with: {
+              order_item: {
+                columns: {
+                  quantity: true,
+                },
+                with: {
+                  item: {
+                    columns: {
+                      name: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+      });
+
+      return tMovement;
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement fetched", data: fetchedMovement});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch order movement!", error: error.message ? error.message : error});
+  }
+}
+
+const createMovement = async (req: Request, res: Response) => {
+  const createMovementTypeAnswer = createOrderMovementType.safeParse(req.body);
+
+  if(!createMovementTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createMovementTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const fetchedTxOrder = await tx.query.order.findFirst({
+        where: (order, { eq }) => eq(order.id, createMovementTypeAnswer.data.order_id),
+        columns: {
+          status: true
+        },
+        with: {
+          order_items: {
+            columns: {
+              id: true,
+              quantity: true,
+              delivered_quantity: true
+            },
+            with: {
+              item: {
+                columns: {
+                  id: true,
+                  name: true,
+                  quantity: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if(!fetchedTxOrder) throw new Error("Unable to find the order");
+
+      // create order movement
+      const order_movement_id = await tx.insert(order_movement).values({
+        order_id: createMovementTypeAnswer.data.order_id,
+        labour_frate_cost: createMovementTypeAnswer.data.labour_frate_cost ?? 0,
+        type: createMovementTypeAnswer.data.type,
+        created_at: createMovementTypeAnswer.data.created_at,
+        delivery_at: createMovementTypeAnswer.data.status == "Completed" ? createMovementTypeAnswer.data.delivery_at : null,
+        driver_id: createMovementTypeAnswer.data.driver_id,
+        status: createMovementTypeAnswer.data.status
+      }).returning({ id: order_movement.id });
+
+      // create order movement items
+      await tx.insert(order_movement_item).values(
+        createMovementTypeAnswer.data.order_movement_items.map((omi) => {
+          return {
+            order_movement_id: order_movement_id[0].id,
+            order_item_id: omi.order_item_id,
+            quantity: omi.quantity
+          }
+        })
+      );
+
+
+      if(createMovementTypeAnswer.data.type == "DELIVERY"){
+        if(fetchedTxOrder.status == "Delivered") throw new Error("Order is already Delivered, Cannot create movement of type Delivery!");
+        
+        if(createMovementTypeAnswer.data.status == "Completed"){
+
+          // check if enough quantity is there
+          let errorMessage = createMovementTypeAnswer.data.order_movement_items.reduce((acc, omi) => {
+            const foundOrderItem = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+            if(!foundOrderItem) throw new Error("Unable to find the order item!");
+            
+            if((foundOrderItem.item.quantity ?? 0) < omi.quantity){
+              return acc += `${foundOrderItem?.item.name} has ${foundOrderItem?.item.quantity} Quantity Available (Requested ${omi.quantity})! `
+            } else {
+              return acc;
+            }
+          }, "");
+
+          if(errorMessage !== "") throw new Error(errorMessage);
+
+          // reduce quantities from item
+          createMovementTypeAnswer.data.order_movement_items.forEach(async (omi) => {
+            const foundOrderItem = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+            if(!foundOrderItem) throw new Error("Unable to find the order item!");
+
+            await tx.update(item).set({
+              quantity: sql`${item.quantity} - ${sql.placeholder('orderQuantity')}`
+            })
+            .where(eq(item.id, foundOrderItem.item.id))
+            .execute({ orderQuantity: omi.quantity }); 
+          })
+
+          // increase delivered quantities in order_item
+          createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
+            await tx.update(order_item).set({
+              delivered_quantity: sql`${order_item.delivered_quantity} + ${sql.placeholder("deliveredQuantities")}`
+            })
+            .where(eq(order_item.id, omi.order_item_id))
+            .execute({
+              deliveredQuantities: omi.quantity
+            })
+          });
+
+        } else {
+          // update the activeDeliveries for driver if exists
+          if(createMovementTypeAnswer.data.driver_id){
+            await tx.update(driver).set({
+              activeDeliveries: sql`${driver.activeDeliveries} + 1`
+            }).where(eq(driver.id, createMovementTypeAnswer.data.driver_id));
+          }
+
+          return;
+        }
+      } else {
+        // RETURN Type Movement
+
+        // increase quantities from item
+        createMovementTypeAnswer.data.order_movement_items.forEach(async (omi) => {
+
+          const order_item = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+          if(!order_item) throw new Error("Unable to find the order item!");
+
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} + ${sql.placeholder('returnQuantity')}`
+          })
+          .where(eq(item.id, order_item.item.id))
+          .execute({ returnQuantity: omi.quantity });
+        })
+
+        // decrease delivered quantities in order_item
+        createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
+          await tx.update(order_item).set({
+            delivered_quantity: sql`${order_item.delivered_quantity} - ${sql.placeholder("returnedQuantities")}`
+          })
+          .where(eq(order_item.id, omi.order_item_id))
+          .execute({
+            returnedQuantities: omi.quantity
+          })
+        });
+      }
+
+      // check if all the items are delivered fully then update the order status
+      const updatedOrderItems = await tx.query.order_item.findMany({
+        where: (order_item, { eq }) => eq(order_item.order_id, createMovementTypeAnswer.data.order_id),
+        columns: {
+          delivered_quantity: true,
+          quantity: true
+        }
+      });
+
+      let orderDelivered = true;
+      updatedOrderItems.map((oi) => {
+        if(oi.quantity !== oi.delivered_quantity){
+          orderDelivered = false;
+        }
+      });
+
+      if(orderDelivered && fetchedTxOrder.status !== "Delivered"){ 
+        await tx.update(order).set({
+          status: "Delivered",
+          delivery_date: createMovementTypeAnswer.data.delivery_at ?? new Date()
+        }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
+      } else if(!orderDelivered && fetchedTxOrder.status == "Delivered"){
+        await tx.update(order).set({
+          status: "Pending",
+          delivery_date: null
+        }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
+      }
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement Created!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+  }
+}
+
+const editMovement = async (req: Request, res: Response) => {
+  const editMovementTypeAnswer = editOrderMovementType.safeParse(req.body);
+
+  if(!editMovementTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editMovementTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundMovementTx = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, editMovementTypeAnswer.data.id),
+        columns: {
+          status: true,
+          driver_id: true
+        }
+      });
+
+      if(!foundMovementTx) throw new Error("Unable to find order movement!");
+
+      await tx.update(order_movement).set({
+        created_at: editMovementTypeAnswer.data.created_at,
+        delivery_at: foundMovementTx.status == "Completed" ? editMovementTypeAnswer.data.delivery_at : null,
+        labour_frate_cost: editMovementTypeAnswer.data.labour_frate_cost,
+        driver_id: editMovementTypeAnswer.data.driver_id,
+      });
+      
+      if(editMovementTypeAnswer.data.driver_id == foundMovementTx.driver_id) return;
+
+      if(editMovementTypeAnswer.data.driver_id && foundMovementTx.status == "Pending"){
+        if(foundMovementTx.driver_id && foundMovementTx.driver_id !== editMovementTypeAnswer.data.driver_id){
+          await tx.update(driver).set({
+            activeDeliveries: sql`${driver.activeDeliveries} - 1`
+          }).where(eq(driver.id, foundMovementTx.driver_id));
+        }
+
+        await tx.update(driver).set({
+          activeDeliveries: sql`${driver.activeDeliveries} + 1`
+        }).where(eq(driver.id, editMovementTypeAnswer.data.driver_id));
+      }
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+  }
+}
+
+const editMovementStatus = async (req: Request, res: Response) => {
+  const editMovementStatusTypeAnswer = editOrderMovementStatusType.safeParse(req.body);
+
+  if(!editMovementStatusTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editMovementStatusTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundMovementTx = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, editMovementStatusTypeAnswer.data.id),
+        columns: {
+          order_id: true,
+          status: true,
+          driver_id: true,
+          type: true
+        },
+        with: {
+          order_movement_items: {
+            columns: {
+              quantity: true,
+              order_item_id: true
+            }
+          }
+        }
+      });
+
+      
+      if(!foundMovementTx) throw new Error("Unable to find order movement!");
+      if(foundMovementTx.type == "RETURN") throw new Error("Cannot change type for RETURN type order movement!");
+      
+      const foundOrder = await tx.query.order.findFirst({
+        where: (order, { eq }) => eq(order.id, foundMovementTx?.order_id),
+        columns: {
+          status: true
+        },
+        with: {
+          order_items: {
+            columns: {
+              id: true,
+            },
+            with: {
+              item: {
+                columns: {
+                  id: true,
+                  name: true,
+                  quantity: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if(!foundOrder) throw new Error("Unable to find order linked to movement!");
+
+      if(foundMovementTx.status == "Pending"){
+        // Pending -> Completed
+
+        // check if enough quanitity is there in inventory
+        let errorMessage = foundMovementTx.order_movement_items.reduce((acc, cur) => {
+          const foundItem = foundOrder.order_items.filter((oi) => oi.id == cur.order_item_id)[0];
+          if(!order_item) throw new Error("Unable to find the order item!");
+          
+          if((foundItem.item.quantity ?? 0) < cur.quantity){
+            return acc += `${foundItem?.item.name} has ${foundItem?.item.quantity} Quantity Available (Requested ${cur.quantity})! `
+          } else {
+            return acc;
+          }
+        }, "");
+
+        if(errorMessage !== "") throw new Error(errorMessage);
+
+        // increase delivered quanitites for order item and decrease item quantity
+        foundMovementTx.order_movement_items.forEach(async(omi) => {
+          await tx.update(order_item).set({
+            delivered_quantity: sql`${order_item.delivered_quantity} + ${omi.quantity}`
+          }).where(eq(order_item.id, omi.order_item_id));
+          
+          const foundItem = foundOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+          if(!foundItem) throw new Error("Unable to find order item in order linked to movement");
+          
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} - ${omi.quantity}`
+          }).where(eq(item.id, foundItem.item.id));
+        });
+
+        if(foundMovementTx.driver_id) {
+          await tx.update(driver).set({
+            activeDeliveries: sql`${driver.activeDeliveries} - 1`
+          }).where(eq(driver.id, foundMovementTx.driver_id));
+        }
+      } else {
+        // Completed -> Pending
+
+        // decrease delivered quanitites for order item and increase item quantity
+        foundMovementTx.order_movement_items.forEach(async(omi) => {
+          await tx.update(order_item).set({
+            delivered_quantity: sql`${order_item.delivered_quantity} - ${omi.quantity}`
+          }).where(eq(order_item.id, omi.order_item_id));
+          
+          const foundItem = foundOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+          if(!foundItem) throw new Error("Unable to find order item in order linked to movement");
+          
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} + ${omi.quantity}`
+          }).where(eq(item.id, foundItem.item.id));
+        });
+
+        
+        if(foundMovementTx.driver_id) {
+          await tx.update(driver).set({
+            activeDeliveries: sql`${driver.activeDeliveries} + 1`
+          }).where(eq(driver.id, foundMovementTx.driver_id));
+        }
+      }
+
+      // update status for the order_movement
+      await tx.update(order_movement).set({
+        status: foundMovementTx.status == "Completed" ? "Pending" : "Completed",
+        delivery_at: foundMovementTx.status == "Completed" ? null : new Date()
+      }).where(eq(order_movement.id, editMovementStatusTypeAnswer.data.id));
+      
+      // update the status based on delivered quanitites of the order
+      const updatedOrder = await tx.query.order.findFirst({
+        where: (order, { eq }) => eq(order.id, foundMovementTx.order_id),
+        columns: {
+          id: true,
+        },
+        with: {
+          order_items: {
+            columns: {
+              quantity: true,
+              delivered_quantity: true
+            }
+          }
+        }
+      });
+
+      let orderCompleted = true;
+      updatedOrder?.order_items.forEach((oi) => {
+        if(oi.delivered_quantity != oi.quantity){
+          orderCompleted = false; 
+        }
+      });
+      
+      await tx.update(order).set({
+        status: orderCompleted ? "Delivered" : "Pending",
+        delivery_date: orderCompleted ? new Date() : null
+      }).where(eq(order.id, foundMovementTx.order_id));
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+  }
+}
+
+const deleteMovement = async (req: Request, res: Response) => {
+  const deleteMovementTypeAnswer = deleteOrderMovementType.safeParse(req.body);
+
+  if(!deleteMovementTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteMovementTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const foundMovementTx = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, deleteMovementTypeAnswer.data.id),
+        columns: {
+          order_id: true,
+          type: true,
+          status: true,
+          driver_id: true
+        },
+        with: {
+          order_movement_items: {
+            columns: {
+              order_item_id: true,
+              quantity: true
+            }
+          }
+        }
+      });
+
+      if(!foundMovementTx) throw new Error("Unable to find the order movement");
+
+      const latestMovement = await tx.query.order_movement.findMany({
+        where: (order_movement, { eq }) => eq(order_movement.order_id, foundMovementTx.order_id),
+        orderBy: (order_movement, { desc }) => desc(order_movement.created_at),
+        limit: 1,
+        columns: {
+          id: true
+        }
+      });
+
+      if(latestMovement[0].id !== deleteMovementTypeAnswer.data.id) throw new Error("Can Only Delete Latest Order's Movement!");
+
+      if(foundMovementTx.type == "RETURN"){
+        // increase the deliverd quantites in order_item and decrease the quantity of item
+        foundMovementTx.order_movement_items.forEach(async (omi) => {
+          const oi = await tx.update(order_item).set({
+            delivered_quantity: sql`${order_item.delivered_quantity} + ${omi.quantity ?? 0}`
+          }).where(eq(order_item.id, omi.order_item_id)).returning({
+            item_id: order_item.item_id
+          })
+
+          await tx.update(item).set({
+            quantity: sql`${item.quantity} - ${sql.placeholder("quantity")}`
+          }).where(eq(item.id, oi[0].item_id)).execute({
+            quantity: omi.quantity
+          });
+        });
+      } else {
+        if(foundMovementTx.status == "Completed"){
+          // decrease the deliverd quantity in order_item and increase quanitity in item
+          foundMovementTx.order_movement_items.forEach(async (omi) => {
+            const oi = await tx.update(order_item).set({
+              delivered_quantity: sql`${order_item.delivered_quantity} - ${omi.quantity ?? 0}`
+            }).where(eq(order_item.id, omi.order_item_id)).returning({
+              item_id: order_item.item_id
+            })
+  
+            await tx.update(item).set({
+              quantity: sql`${item.quantity} + ${sql.placeholder("quantity")}`
+            }).where(eq(item.id, oi[0].item_id)).execute({
+              quantity: omi.quantity
+            });
+          });
+        } else {
+          if(foundMovementTx.driver_id){
+            // decrease active deliveries from driver
+            await tx.update(driver).set({
+              activeDeliveries: sql`${driver.activeDeliveries} - 1`
+            }).where(eq(driver.id, foundMovementTx.driver_id));
+          }
+        }
+      }
+
+      const updatedOrder = await tx.query.order.findFirst({
+        where: (order, { eq }) => eq(order.id, foundMovementTx.order_id),
+        columns: {
+          id: true,
+        },
+        with: {
+          order_items: {
+            columns: {
+              quantity: true,
+              delivered_quantity: true
+            }
+          }
+        }
+      });
+
+      let orderCompleted = true;
+      updatedOrder?.order_items.forEach((oi) => {
+        if(oi.delivered_quantity != oi.quantity){
+          orderCompleted = false; 
+        }
+      });
+
+      await tx.update(order).set({
+        status: orderCompleted ? "Delivered" : "Pending"
+      }).where(eq(order.id, foundMovementTx.order_id));
+
+      await tx.delete(order_movement).where(eq(order_movement.id, deleteMovementTypeAnswer.data.id));
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement Created!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+  }
 }
 
 export {
@@ -1285,17 +1711,19 @@ export {
   addOrderCustomerId,
   editOrderCarpanterId,
   editOrderArchitectId,
-  editOrderDriverId,
-  editOrderStatus,
   editOrderPriority,
   editOrderDeliveryDate,
   editOrderDeliveryAddressId,
-  editOrderLabourAndFrateCost,
   editOrderDiscount,
   settleBalance,
   editOrderItems,
   getAllOrders,
-  getOrder
+  getOrder,
+  createMovement,
+  editMovement,
+  editMovementStatus,
+  getMovement,
+  deleteMovement
 }
 
 /*

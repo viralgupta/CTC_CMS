@@ -17,11 +17,8 @@ import EditNote from "./Edit/EditNote";
 import AddCustomer from "./Edit/AddCustomer";
 import EditCarpenter from "./Edit/EditCarpenter";
 import EditArchitect from "./Edit/EditArchitect";
-import EditDriver from "./Edit/EditDriver";
 import EditPriority from "./Edit/EditPriority";
-import EditDeliveryStatus from "./Edit/EditDeliveryStatus";
 import EditDeliveryAddress from "./Edit/EditDeliveryAddress";
-import EditLabourAndFrate from "./Edit/EditLabourAndFrate";
 import EditDiscount from "./Edit/EditDiscount";
 import EditDeliveryDate from "./Edit/EditDeliveryDate";
 
@@ -60,23 +57,14 @@ const EditOrder = () => {
         <EditOrderDialogButton text="Edit Architect">
           <EditArchitect />
         </EditOrderDialogButton>
-        <EditOrderDialogButton text="Edit Driver">
-          <EditDriver />
-        </EditOrderDialogButton>
         <EditOrderDialogButton text="Edit Priority">
           <EditPriority />
-        </EditOrderDialogButton>
-        <EditOrderDialogButton text="Edit Delivery Status">
-          <EditDeliveryStatus />
         </EditOrderDialogButton>
         <EditOrderDialogButton text="Edit Delivery Date">
           <EditDeliveryDate />
         </EditOrderDialogButton>
         <EditOrderDialogButton text="Edit Delivery Address">
           <EditDeliveryAddress />
-        </EditOrderDialogButton>
-        <EditOrderDialogButton text="Edit Labour & Frate Cost">
-          <EditLabourAndFrate />
         </EditOrderDialogButton>
         <EditOrderDialogButton text="Edit Discount">
           <EditDiscount />

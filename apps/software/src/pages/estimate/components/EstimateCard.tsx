@@ -30,6 +30,7 @@ const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
       return;
     };
     setPrintInfo({
+      printType: "estimate",
       customerName: estimate.customer.name,
       date: parseDateToString(estimate.created_at),
       estimate_items: estimate.estimate_items.map((item) => {

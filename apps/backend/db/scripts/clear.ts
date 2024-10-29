@@ -10,6 +10,8 @@ import {
   item,
   order,
   order_item,
+  order_movement,
+  order_movement_item,
   estimate,
   estimate_item,
   resource,
@@ -30,6 +32,8 @@ const db = drizzle(seedClient, { schema });
 async function main() {
   try {
     // Deleting order-related tables sequentially (if needed to avoid foreign key issues)
+    await db.delete(order_movement_item);
+    await db.delete(order_movement);
     await db.delete(order_item);
     await db.delete(order);
 

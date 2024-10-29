@@ -32,7 +32,6 @@ export const createOrderType = z.object({
   customer_id: z.string().uuid().optional(),
   carpanter_id: z.string().uuid().optional(),
   architect_id: z.string().uuid().optional(),
-  driver_id: z.string().uuid().optional(),
   
   status: z.enum(["Pending", "Delivered"]),
   priority: z.enum(["High", "Medium", "Low"]),
@@ -41,8 +40,6 @@ export const createOrderType = z.object({
     .transform((dateString) => new Date(dateString)) // Transform string to Date
     .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
   delivery_address_id: z.string().uuid().optional(),
-
-  labour_frate_cost: z.number().default(0),
 
   discount: z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
@@ -82,16 +79,6 @@ export const editOrderArchitectIdType = z.object({
   architect_id: z.string().uuid()
 })
 
-export const editOrderDriverIdType = z.object({
-  order_id: z.string(),
-  driver_id: z.string().uuid()
-})
-
-export const editOrderStatusType = z.object({
-  order_id: z.string(),
-  status: z.enum(["Pending", "Delivered"])
-})
-
 export const editOrderPriorityType = z.object({
   order_id: z.string(),
   priority: z.enum(["High", "Medium", "Low"])
@@ -107,11 +94,6 @@ export const editOrderDeliveryDateType = z.object({
 export const editOrderDeliveryAddressIdType = z.object({
   order_id: z.string(),
   delivery_address_id: z.string().uuid()
-})
-
-export const editOrderLabourAndFrateCostType = z.object({
-  order_id: z.string(),
-  labour_frate_cost: z.number()
 })
 
 export const editOrderDiscountType = z.object({
@@ -159,4 +141,57 @@ export const getAllOrdersType = z.object({
 
 export const getOrderType = z.object({
   order_id: z.string().uuid()
+});
+
+export const getOrderMovementType = z.object({
+  id: z.string().uuid()
+});
+
+export const createOrderMovementType = z.object({
+  order_id: z.string().uuid(),
+  driver_id: z.string().uuid().optional(),
+  type: z.enum(["DELIVERY", "RETURN"]),
+  status: z.enum(["Pending", "Completed"]),
+  labour_frate_cost: z.number().default(0).optional(),
+  created_at: z
+    .string()
+    .transform((dateString) => new Date(dateString))
+    .refine((date) => !isNaN(date.getTime()), {
+      message: "Invalid date format",
+    }),
+  delivery_at: z
+    .string()
+    .transform((dateString) => new Date(dateString))
+    .refine((date) => !isNaN(date.getTime()), {
+      message: "Invalid date format",
+    })
+    .optional(),
+  order_movement_items: z
+    .array(
+      z.object({
+        order_item_id: z.string().uuid(),
+        quantity: z.number(),
+      })
+    )
+    .min(1),
+});
+
+export const editOrderMovementType = z.object({
+  id: z.string().uuid(),
+  driver_id: z.string().uuid().optional(),
+  labour_frate_cost: z.number().default(0).optional(),
+  created_at: z.string()
+  .transform((dateString) => new Date(dateString))
+  .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }),
+  delivery_at: z.string()
+  .transform((dateString) => new Date(dateString))
+  .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional()
+});
+
+export const editOrderMovementStatusType = z.object({
+  id: z.string().uuid()
+});
+
+export const deleteOrderMovementType = z.object({
+  id: z.string().uuid()
 });

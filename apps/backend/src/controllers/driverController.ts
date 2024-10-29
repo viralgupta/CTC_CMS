@@ -1,5 +1,5 @@
 import db from '@db/db';
-import { driver, phone_number } from '@db/schema';
+import { driver, order_movement, phone_number } from '@db/schema';
 import { createDriverType, deleteDriverType, editDriverType, getDriverType } from '@type/api/driver';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
@@ -96,7 +96,8 @@ const getDriver = async (req: Request, res: Response) => {
 
   try {
     const foundDriver = await db.query.driver.findFirst({
-      where: (driver, { eq }) => eq(driver.id, getDriverTypeAnswer.data.driver_id),
+      where: (driver, { eq }) =>
+        eq(driver.id, getDriverTypeAnswer.data.driver_id),
       with: {
         phone_numbers: {
           columns: {
@@ -104,32 +105,39 @@ const getDriver = async (req: Request, res: Response) => {
             phone_number: true,
             country_code: true,
             isPrimary: true,
-            whatsappChatId: true
-          }
+            whatsappChatId: true,
+          },
         },
-        orders: {
-          orderBy: (order, { desc }) => [desc(order.created_at)],
+        order_movements: {
+          orderBy: (order_movement, { desc }) => desc(order_movement.created_at),
+          limit: 15,
           columns: {
-            id: true,
-            status: true,
-            created_at: true
+            driver_id: false,
+            delivery_at: false
           },
           with: {
-            delivery_address: {
-               columns: {
-                 house_number: true,
-                 address: true,
-               }
-            },
-            customer: {
+            order: {
               columns: {
-                name: true
-              }
-            }
+                id: true,
+              },
+              with: {
+                delivery_address: {
+                  columns: {
+                    house_number: true,
+                    address: true,
+                  },
+                },
+                customer: {
+                  columns: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
-        }
-      }
-    })
+        },
+      },
+    });
 
     if(!foundDriver){
       return res.status(400).json({ success: false, message: "Driver not found" });
@@ -156,7 +164,7 @@ const deleteDriver = async (req: Request, res: Response) => {
             id: true,
           },
           with: {
-            orders: {
+            order_movements: {
               columns: {
                 id: true
               },
@@ -169,7 +177,7 @@ const deleteDriver = async (req: Request, res: Response) => {
           throw new Error("Unable to find the driver!");
         }
 
-        if(foundDrivertx.orders?.length > 0){
+        if(foundDrivertx.order_movements?.length > 0){
           throw new Error("Driver linked to order cannot delete!");
         }
 
