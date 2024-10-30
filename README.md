@@ -1,7 +1,6 @@
 
 # TODO
 
-- use spinner in all the edit components of order
 - Create Transaction Table and Create A Transaction On Each Call (Middleware)
 - convert all multiple DB queries in same request to DB Transaction
 - create triggers on total_order_value for customers, carpanters, architect to change their priority

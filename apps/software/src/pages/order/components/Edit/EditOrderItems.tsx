@@ -5,6 +5,7 @@ import React from "react";
 import request from "@/lib/request";
 import SelectOrderItems from "../Input/SelectOrderItems/SelectOrderItems";
 import { useAllOrders } from "@/hooks/orders";
+import Spinner from "@/components/ui/Spinner";
 
 const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
@@ -23,12 +24,15 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
       };
     })
   );
+  const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
+    setLoading(true);
     await request.put("/order/editOrderItems", {
       order_id: viewOrder?.id,
       order_items,
     });
+    setLoading(false);
     closeDialog && closeDialog();
     refetchOrders();
   };
@@ -56,8 +60,11 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
           );
         }}
       />
-      <Button onClick={onSubmit}>Edit Order Items</Button>
-    </div>
+      {loading ? (
+        <Button onClick={onSubmit}>Edit Order Items</Button>
+      ) : (
+        <Button disabled><Spinner/></Button>
+      )}    </div>
   );
 };
 

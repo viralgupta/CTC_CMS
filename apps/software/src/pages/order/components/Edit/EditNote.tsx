@@ -5,6 +5,7 @@
   import React from "react";
   import request from "@/lib/request";
   import { useAllOrders } from "@/hooks/orders";
+import Spinner from "@/components/ui/Spinner";
 
   const EditNote = ({
     closeDialog
@@ -14,14 +15,17 @@
     const viewOrder = useRecoilValue(viewOrderAtom);
   const { refetchOrders } = useAllOrders();
     const [note, setNote] = React.useState(viewOrder?.note ?? "");
+    const [loading, setLoading] = React.useState(false);
 
     const onSubmit = async () => {
+      setLoading(true);
       await request.put("/order/editOrderNote", {
         order_id: viewOrder?.id,
         note
       })
+      setLoading(false);
       closeDialog && closeDialog();
-    refetchOrders();
+      refetchOrders();
     }
 
     return (
@@ -31,8 +35,11 @@
           onChange={(e) => setNote(e.target.value)}
           className="resize-none overflow-y-scroll hide-scroll"
         />
+      {loading ? (
         <Button onClick={onSubmit}>Edit Note</Button>
-      </div>
+      ) : (
+        <Button disabled><Spinner/></Button>
+      )}      </div>
     );
   };
 

@@ -5,17 +5,21 @@ import React from "react";
 import request from "@/lib/request";
 import { SelectPriority } from "../SelectFilter";
 import { useAllOrders } from "@/hooks/orders";
+import Spinner from "@/components/ui/Spinner";
 
 const EditPriority = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
   const { refetchOrders } = useAllOrders();
   const [priority, setPriority] = React.useState(viewOrder?.priority);
+  const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
+    setLoading(true);
     await request.put("/order/editOrderPriority", {
       order_id: viewOrder?.id,
       priority,
     });
+    setLoading(false);
     closeDialog && closeDialog();
     refetchOrders();
   };
@@ -39,7 +43,11 @@ const EditPriority = ({ closeDialog }: { closeDialog?: () => void }) => {
           }
         }}
       />
-      <Button onClick={onSubmit}>Edit Priority</Button>
+      {loading ? (
+        <Button onClick={onSubmit}>Edit Priority</Button>
+      ) : (
+        <Button disabled><Spinner/></Button>
+      )}
     </div>
   );
 };

@@ -5,17 +5,21 @@ import React from "react";
 import request from "@/lib/request";
 import SearchCustomer from "@/pages/customer/components/SearchCustomer";
 import { useAllOrders } from "@/hooks/orders";
+import Spinner from "@/components/ui/Spinner";
 
 const AddCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
   const { refetchOrders } = useAllOrders();
   const [customer_id, setCustomer_id] = React.useState(viewOrder?.customer_id ?? "");
+  const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
+    setLoading(true);
     await request.put("/order/addOrderCustomerId", {
       order_id: viewOrder?.id,
       customer_id
     });
+    setLoading(false);
     closeDialog && closeDialog();
     refetchOrders();
   };
@@ -27,7 +31,11 @@ const AddCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
         onChange={setCustomer_id}
         className="rounded-lg"
       />
-      <Button onClick={onSubmit}>Add Customer</Button>
+      {loading ? (
+        <Button onClick={onSubmit}>Add Customer</Button>
+      ) : (
+        <Button disabled><Spinner/></Button>
+      )}
     </div>
   );
 };
