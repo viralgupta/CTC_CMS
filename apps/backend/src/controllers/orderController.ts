@@ -21,7 +21,7 @@ import {
   editOrderMovementStatusType,
 } from "@type/api/order";
 import { Request, Response } from "express";
-import { calculatePaymentStatus } from '@utils/order';
+import { calculatePaymentStatus } from '../utils/order';
 import { eq, sql } from "drizzle-orm"
 
 const createOrder = async (req: Request, res: Response) => {

@@ -6,7 +6,6 @@
     "paths": {
       "@db/*": ["./db/*"],
       "@auth/*": ["./auth/*"],
-      "@utils/*": ["./utils/*"],
       "@type/*": ["../../packages/types/*"],
     }
   }
