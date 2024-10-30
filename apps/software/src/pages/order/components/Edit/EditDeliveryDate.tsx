@@ -33,7 +33,7 @@ const EditDeliveryDate = ({ closeDialog }: { closeDialog?: () => void }) => {
         onChange={setDeliveryDate}
         className="w-full"
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Delivery Date</Button>
       ) : (
         <Button disabled><Spinner/></Button>

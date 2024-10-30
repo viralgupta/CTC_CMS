@@ -33,7 +33,7 @@ const EditDiscount = ({ closeDialog }: { closeDialog?: () => void }) => {
           setDiscount(e.target.value ? parseFloat(e.target.value) : 0)
         }
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Discount</Button>
       ) : (
         <Button disabled><Spinner/></Button>

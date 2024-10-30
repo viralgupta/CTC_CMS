@@ -31,7 +31,7 @@ const AddCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
         onChange={setCustomer_id}
         className="rounded-lg"
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Add Customer</Button>
       ) : (
         <Button disabled><Spinner/></Button>

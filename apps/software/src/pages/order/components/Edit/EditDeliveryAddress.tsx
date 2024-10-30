@@ -33,7 +33,7 @@ const EditDeliveryAddress = ({ closeDialog }: { closeDialog?: () => void }) => {
         value={delivery_address_id ?? undefined}
         onChange={setDeliveryAddressId}
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Delivery Address</Button>
       ) : (
         <Button disabled><Spinner/></Button>

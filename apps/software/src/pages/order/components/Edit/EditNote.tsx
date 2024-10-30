@@ -35,7 +35,7 @@ import Spinner from "@/components/ui/Spinner";
           onChange={(e) => setNote(e.target.value)}
           className="resize-none overflow-y-scroll hide-scroll"
         />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Note</Button>
       ) : (
         <Button disabled><Spinner/></Button>

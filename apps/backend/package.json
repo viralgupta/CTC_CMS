@@ -5,6 +5,7 @@
   "scripts": {
     "test": "sst bind vitest",
     "typecheck": "tsc -noEmit",
+    "db:generate": "cd db && drizzle-kit generate",
     "db:migrate": "cd db && drizzle-kit migrate",
     "db:push": "cd db && drizzle-kit push",
     "db:studio": "cd db && drizzle-kit studio",

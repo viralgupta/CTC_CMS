@@ -31,7 +31,7 @@ const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
         onChange={setArchitect_id}
         className="rounded-lg"
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Architect</Button>
       ) : (
         <Button disabled><Spinner/></Button>

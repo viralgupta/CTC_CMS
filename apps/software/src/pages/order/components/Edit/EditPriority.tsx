@@ -43,7 +43,7 @@ const EditPriority = ({ closeDialog }: { closeDialog?: () => void }) => {
           }
         }}
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Priority</Button>
       ) : (
         <Button disabled><Spinner/></Button>

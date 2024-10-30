@@ -31,7 +31,7 @@ const EditCarpenter = ({ closeDialog }: { closeDialog?: () => void }) => {
         onChange={setCarpenter_id}
         className="rounded-lg"
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Add Customer</Button>
       ) : (
         <Button disabled><Spinner/></Button>

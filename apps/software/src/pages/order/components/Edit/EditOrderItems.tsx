@@ -60,7 +60,7 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
           );
         }}
       />
-      {loading ? (
+      {!loading ? (
         <Button onClick={onSubmit}>Edit Order Items</Button>
       ) : (
         <Button disabled><Spinner/></Button>
