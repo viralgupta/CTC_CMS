@@ -4,7 +4,6 @@
 CREATE OR REPLACE FUNCTION calculate_priority()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- INSERT INTO trigger_log (log_message) VALUES ('Trigger fired for customer_id: ' || NEW.customer_id || ' with total order value: ' || NEW.customer_total_order_value || ' at ' || CURRENT_TIMESTAMP);
 	IF NEW.customer_total_order_value > 50000 AND NEW.customer_total_order_value <= 300000 THEN
 		NEW.customer_priority := 'Mid';
 	ELSIF NEW.customer_total_order_value > 300000 THEN
