@@ -64,22 +64,29 @@ const editArchitect = async (req: Request, res: Response) => {
 
   try {
 
-    const tArchitect = await db.query.architect.findFirst({
-      where: (architect, { eq }) => eq(architect.id, editArchitectTypeAnswer.data.architect_id),
-      columns: {
-        id: true
+    await db.transaction(async (tx) => {
+      const tArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) =>
+          eq(architect.id, editArchitectTypeAnswer.data.architect_id),
+        columns: {
+          id: true,
+        },
+      });
+
+      if (!tArchitect) {
+        throw new Error("Architect not found");
       }
-    })
 
-    if(!tArchitect){
-      return res.status(400).json({ success: false, message: "Architect not found" });
-    }
+      await tx
+        .update(architect)
+        .set({
+          name: editArchitectTypeAnswer.data.name,
+          profileUrl: editArchitectTypeAnswer.data.profileUrl,
+          area: editArchitectTypeAnswer.data.area,
+        })
+        .where(eq(architect.id, tArchitect.id));
+    });
 
-    await db.update(architect).set({
-      name: editArchitectTypeAnswer.data.name,
-      profileUrl: editArchitectTypeAnswer.data.profileUrl,
-      area: editArchitectTypeAnswer.data.area,
-    }).where(eq(architect.id, tArchitect.id))
 
     return res.status(200).json({success: true, message: "Architect Updated Successfully"});
   } catch (error: any) {
@@ -95,30 +102,32 @@ const settleBalance = async (req: Request, res: Response) => {
   }
 
   try {
-    const tArchitect = await db.query.architect.findFirst({
-      where: (architect, { eq }) => eq(architect.id, settleBalanceTypeAnswer.data.architect_id),
-      columns: {
-        id: true,
-        balance: true
+    await db.transaction(async (tx) => {
+      const tArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, settleBalanceTypeAnswer.data.architect_id),
+        columns: {
+          id: true,
+          balance: true
+        }
+      });
+
+      if(!tArchitect){
+        throw new Error("Architect not found");
       }
+
+      if(!tArchitect.balance){
+        tArchitect.balance = "0.00";
+      }
+
+      const newBalance = settleBalanceTypeAnswer.data.operation == "add" 
+      ? parseFloat(parseFloat(tArchitect.balance).toFixed(2)) + settleBalanceTypeAnswer.data.amount 
+      : parseFloat(parseFloat(tArchitect.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
+
+      
+      await tx.update(architect).set({
+        balance: newBalance.toFixed(2)
+      }).where(eq(architect.id, tArchitect.id));
     });
-
-    if(!tArchitect){
-      return res.status(400).json({ success: false, message: "Architect not found" });
-    }
-
-    if(!tArchitect.balance){
-      tArchitect.balance = "0.00";
-    }
-
-    const newBalance = settleBalanceTypeAnswer.data.operation == "add" 
-    ? parseFloat(parseFloat(tArchitect.balance).toFixed(2)) + settleBalanceTypeAnswer.data.amount 
-    : parseFloat(parseFloat(tArchitect.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
-
-    
-    await db.update(architect).set({
-      balance: newBalance.toFixed(2)
-    }).where(eq(architect.id, tArchitect.id));
 
     return res.status(200).json({success: true, message: "Architect balance updated"});
   } catch (error: any) {

@@ -894,121 +894,118 @@ const getAllOrders = async (req: Request, res: Response) => {
   }
 
   try {
-    const fetchedOrders = await db.transaction(async (tx) => {
-       const tOrders = await tx.query.order.findMany({
-         limit: 10,
-         where(order, { lt, eq, and }) {
-           switch (getAllOrdersTypeAnswer.data.filter) {
-             case "Status-Pending":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.status, "Pending")
-                 );
-               } else {
-                 return eq(order.status, "Pending");
-               }
-             case "Status-Delivered":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.status, "Delivered")
-                 );
-               } else {
-                 return eq(order.status, "Delivered");
-               }
-             case "Payment-UnPaid":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.payment_status, "UnPaid")
-                 );
-               } else {
-                 return eq(order.payment_status, "UnPaid");
-               }
-             case "Payment-Partial":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.payment_status, "Partial")
-                 );
-               } else {
-                 return eq(order.payment_status, "Partial");
-               }
-             case "Payment-Paid":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.payment_status, "Paid")
-                 );
-               } else {
-                 return eq(order.payment_status, "Paid");
-               }
-             case "Priority-Low":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.priority, "Low")
-                 );
-               } else {
-                 return eq(order.priority, "Low");
-               }
-             case "Priority-Medium":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.priority, "Medium")
-                 );
-               } else {
-                 return eq(order.priority, "Medium");
-               }
-             case "Priority-High":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return and(
-                   lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
-                   eq(order.priority, "High")
-                 );
-               } else {
-                 return eq(order.priority, "High");
-               }
-             case "All":
-               if (getAllOrdersTypeAnswer.data.cursor) {
-                 return lt(
-                   order.updated_at,
-                   getAllOrdersTypeAnswer.data.cursor
-                 );
-               } else {
-                 return undefined;
-               }
-             default:
-               undefined;
-               break;
-           }
-         },
-         orderBy: (order, { desc }) => [desc(order.updated_at)],
-         columns: {
-           id: true,
-           status: true,
-           payment_status: true,
-           priority: true,
-           updated_at: true,
-         },
-         with: {
-           delivery_address: {
-             columns: {
-               house_number: true,
-               address: true,
-             },
-           },
-           customer: {
-             columns: {
-               name: true,
-             },
-           },
-         },
-       });
-       return tOrders;
-    })
+      const fetchedOrders = await db.query.order.findMany({
+        limit: 10,
+        where(order, { lt, eq, and }) {
+          switch (getAllOrdersTypeAnswer.data.filter) {
+            case "Status-Pending":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.status, "Pending")
+                );
+              } else {
+                return eq(order.status, "Pending");
+              }
+            case "Status-Delivered":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.status, "Delivered")
+                );
+              } else {
+                return eq(order.status, "Delivered");
+              }
+            case "Payment-UnPaid":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.payment_status, "UnPaid")
+                );
+              } else {
+                return eq(order.payment_status, "UnPaid");
+              }
+            case "Payment-Partial":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.payment_status, "Partial")
+                );
+              } else {
+                return eq(order.payment_status, "Partial");
+              }
+            case "Payment-Paid":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.payment_status, "Paid")
+                );
+              } else {
+                return eq(order.payment_status, "Paid");
+              }
+            case "Priority-Low":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.priority, "Low")
+                );
+              } else {
+                return eq(order.priority, "Low");
+              }
+            case "Priority-Medium":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.priority, "Medium")
+                );
+              } else {
+                return eq(order.priority, "Medium");
+              }
+            case "Priority-High":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return and(
+                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  eq(order.priority, "High")
+                );
+              } else {
+                return eq(order.priority, "High");
+              }
+            case "All":
+              if (getAllOrdersTypeAnswer.data.cursor) {
+                return lt(
+                  order.updated_at,
+                  getAllOrdersTypeAnswer.data.cursor
+                );
+              } else {
+                return undefined;
+              }
+            default:
+              undefined;
+              break;
+          }
+        },
+        orderBy: (order, { desc }) => [desc(order.updated_at)],
+        columns: {
+          id: true,
+          status: true,
+          payment_status: true,
+          priority: true,
+          updated_at: true,
+        },
+        with: {
+          delivery_address: {
+            columns: {
+              house_number: true,
+              address: true,
+            },
+          },
+          customer: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+      });
 
     return res.status(200).json({success: true, message: "All Orders fetched", data: fetchedOrders});
   } catch (error: any) {

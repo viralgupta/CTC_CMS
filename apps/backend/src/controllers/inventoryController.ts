@@ -12,22 +12,24 @@ const createItem = async (req: Request, res: Response) => {
   }
 
   try {
-    const createdItem = await db.insert(item).values({
-      name: createItemTypeAnswer.data.name,
-      multiplier: createItemTypeAnswer.data.multiplier,
-      category: createItemTypeAnswer.data.category,
-      quantity: createItemTypeAnswer.data.quantity,
-      min_quantity: createItemTypeAnswer.data.min_quantity,
-      min_rate: createItemTypeAnswer.data.min_rate,
-      sale_rate: createItemTypeAnswer.data.sale_rate,
-      rate_dimension: createItemTypeAnswer.data.rate_dimension
-    }).returning({
-      id: item.id,
-    })
+    await db.transaction(async (tx) => {
+      const createdItem = await tx.insert(item).values({
+        name: createItemTypeAnswer.data.name,
+        multiplier: createItemTypeAnswer.data.multiplier,
+        category: createItemTypeAnswer.data.category,
+        quantity: createItemTypeAnswer.data.quantity,
+        min_quantity: createItemTypeAnswer.data.min_quantity,
+        min_rate: createItemTypeAnswer.data.min_rate,
+        sale_rate: createItemTypeAnswer.data.sale_rate,
+        rate_dimension: createItemTypeAnswer.data.rate_dimension
+      }).returning({
+        id: item.id,
+      })
 
-    if(!createdItem[0].id){
-      return res.status(400).json({success: false, message: "Unable to create item"})
-    }
+      if(!createdItem[0].id){
+        throw new Error("Unable to create item");
+      }
+    });
 
     return res.status(200).json({success: true, message: "Item created successfully"});
   } catch (error: any) {
@@ -135,19 +137,21 @@ const editItem = async (req: Request, res: Response) => {
   }
 
   try {
-    const updatedItem = await db.update(item).set({
-      name: editItemTypeAnswer.data.name,
-      multiplier: editItemTypeAnswer.data.multiplier,
-      category: editItemTypeAnswer.data.category,
-      min_quantity: editItemTypeAnswer.data.min_quantity,
-      min_rate: editItemTypeAnswer.data.min_rate,
-      sale_rate: editItemTypeAnswer.data.sale_rate,
-      rate_dimension: editItemTypeAnswer.data.rate_dimension
-    }).where(eq(item.id, editItemTypeAnswer.data.item_id)).returning({ id: item.id })
+    await db.transaction(async (tx) => {
+      const updatedItem = await tx.update(item).set({
+        name: editItemTypeAnswer.data.name,
+        multiplier: editItemTypeAnswer.data.multiplier,
+        category: editItemTypeAnswer.data.category,
+        min_quantity: editItemTypeAnswer.data.min_quantity,
+        min_rate: editItemTypeAnswer.data.min_rate,
+        sale_rate: editItemTypeAnswer.data.sale_rate,
+        rate_dimension: editItemTypeAnswer.data.rate_dimension
+      }).where(eq(item.id, editItemTypeAnswer.data.item_id)).returning({ id: item.id })
 
-    if(!updatedItem[0].id){
-      return res.status(400).json({success: false, message: "Unable to edit item"})
-    }
+      if(!updatedItem[0].id){
+        throw new Error("Unable to edit item")
+      }
+    });
 
     return res.status(200).json({success: true, message: "Item edited successfully"});
   } catch (error: any) {
@@ -339,34 +343,36 @@ const deleteItem = async (req: Request, res: Response) => {
   }
 
   try {
-    const foundItem = await db.query.item.findFirst({
-      where: (item, { eq }) => eq(item.id, deleteItemTypeAnswer.data.item_id),
-      with: {
-        order_items: {
-          limit: 1,
-          columns: {
-            id: true
+    await db.transaction(async (tx) => {
+      const foundItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, deleteItemTypeAnswer.data.item_id),
+        with: {
+          order_items: {
+            limit: 1,
+            columns: {
+              id: true
+            }
           }
+        },
+        columns: {
+          quantity: true
         }
-      },
-      columns: {
-        quantity: true
+      })
+
+      if(!foundItem){
+        throw new Error("Unable to find item");
       }
-    })
 
-    if(!foundItem){
-      return res.status(400).json({success: false, message: "Unable to find item"})
-    }
+      if(foundItem.order_items.length > 0){
+        throw new Error("Item is being used in orders, cannot delete!");
+      }
 
-    if(foundItem.order_items.length > 0){
-      return res.status(400).json({success: false, message: "Item is being used in orders, cannot delete!"})
-    }
+      if(foundItem.quantity !== 0){
+        throw new Error("Item quantity is not 0, cannot delete!");
+      }
 
-    if(foundItem.quantity !== 0){
-      return res.status(400).json({success: false, message: "Item quantity is not 0, cannot delete!"})
-    }
-
-    await db.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
+      await tx.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
+    });
 
     return res.status(200).json({success: true, message: "Item deleted successfully"});
   } catch (error: any) {

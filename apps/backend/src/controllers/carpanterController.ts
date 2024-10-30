@@ -63,23 +63,24 @@ const editCarpanter = async (req: Request, res: Response) => {
   }
 
   try {
+    await db.transaction(async (tx) => {
+      const tCarpanter = await tx.query.carpanter.findFirst({
+        where: (carpanter, { eq }) => eq(carpanter.id, editCarpanterTypeAnswer.data.carpanter_id),
+        columns: {
+          id: true
+        }
+      })
 
-    const tCarpanter = await db.query.carpanter.findFirst({
-      where: (carpanter, { eq }) => eq(carpanter.id, editCarpanterTypeAnswer.data.carpanter_id),
-      columns: {
-        id: true
+      if(!tCarpanter){
+        throw new Error("Carpanter not found");
       }
-    })
 
-    if(!tCarpanter){
-      return res.status(400).json({ success: false, message: "Carpanter not found" });
-    }
-
-    await db.update(carpanter).set({
-      name: editCarpanterTypeAnswer.data.name,
-      profileUrl: editCarpanterTypeAnswer.data.profileUrl,
-      area: editCarpanterTypeAnswer.data.area,
-    }).where(eq(carpanter.id, tCarpanter.id))
+      await tx.update(carpanter).set({
+        name: editCarpanterTypeAnswer.data.name,
+        profileUrl: editCarpanterTypeAnswer.data.profileUrl,
+        area: editCarpanterTypeAnswer.data.area,
+      }).where(eq(carpanter.id, tCarpanter.id))
+    });
 
     return res.status(200).json({success: true, message: "Carpanter Update Successfully"});
   } catch (error: any) {
@@ -95,30 +96,32 @@ const settleBalance = async (req: Request, res: Response) => {
   }
 
   try {
-    const tCarpanter = await db.query.carpanter.findFirst({
-      where: (carpanter, { eq }) => eq(carpanter.id, settleBalanceTypeAnswer.data.carpanter_id),
-      columns: {
-        id: true,
-        balance: true
+    await db.transaction(async (tx) => {
+      const tCarpanter = await tx.query.carpanter.findFirst({
+        where: (carpanter, { eq }) => eq(carpanter.id, settleBalanceTypeAnswer.data.carpanter_id),
+        columns: {
+          id: true,
+          balance: true
+        }
+      });
+
+      if(!tCarpanter){
+        throw new Error("Carpanter not found");
       }
+
+      if(!tCarpanter.balance){
+        tCarpanter.balance = "0.00";
+      }
+
+      const newBalance = settleBalanceTypeAnswer.data.operation == "add" 
+      ? parseFloat(parseFloat(tCarpanter.balance).toFixed(2)) + settleBalanceTypeAnswer.data.amount 
+      : parseFloat(parseFloat(tCarpanter.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
+
+      
+      await tx.update(carpanter).set({
+        balance: newBalance.toFixed(2)
+      }).where(eq(carpanter.id, tCarpanter.id));
     });
-
-    if(!tCarpanter){
-      return res.status(400).json({ success: false, message: "Carpanter not found" });
-    }
-
-    if(!tCarpanter.balance){
-      tCarpanter.balance = "0.00";
-    }
-
-    const newBalance = settleBalanceTypeAnswer.data.operation == "add" 
-    ? parseFloat(parseFloat(tCarpanter.balance).toFixed(2)) + settleBalanceTypeAnswer.data.amount 
-    : parseFloat(parseFloat(tCarpanter.balance).toFixed(2)) - settleBalanceTypeAnswer.data.amount;
-
-    
-    await db.update(carpanter).set({
-      balance: newBalance.toFixed(2)
-    }).where(eq(carpanter.id, tCarpanter.id));
 
     return res.status(200).json({success: true, message: "Carpanter balance updated"});
   } catch (error: any) {

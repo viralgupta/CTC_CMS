@@ -199,7 +199,9 @@ const editResource = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.update(resource).set(editResourceTypeAnswer.data).where(eq(resource.id, editResourceTypeAnswer.data.resource_id));
+    await db.transaction(async (tx) => {
+      await tx.update(resource).set(editResourceTypeAnswer.data).where(eq(resource.id, editResourceTypeAnswer.data.resource_id));
+    });
 
     return res.status(200).json({success: true, message: "Resource updated"});
   } catch (error: any) {

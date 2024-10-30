@@ -238,7 +238,9 @@ const deleteEstimate = async (req: Request, res: Response ) => {
   }
 
   try {
-    await db.delete(estimate).where(eq(estimate.id, deleteEstimateTypeAnswer.data.estimate_id));
+    await db.transaction(async (tx) => {
+      await tx.delete(estimate).where(eq(estimate.id, deleteEstimateTypeAnswer.data.estimate_id));
+    });
 
     return res.status(200).json({success: true, message: "Estimate Deleted Successfully!"});
   } catch (error: any) {

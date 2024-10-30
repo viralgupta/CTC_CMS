@@ -96,21 +96,22 @@ const addAddressArea = async (req: Request, res: Response) => {
   }
 
   try {
+    await db.transaction(async (tx) => {
+      const allAreas = await tx.query.address_area.findMany({
+        columns: {
+          area: true
+        }
+      });
 
-    const allAreas = await db.query.address_area.findMany({
-      columns: {
-        area: true
+      const areaExists = allAreas.find((area) => (area.area).toLowerCase() === (addAddressAreaTypeAnswer.data.area).toLowerCase());
+
+      if(areaExists){
+        throw new Error("Area already exists");
       }
-    });
 
-    const areaExists = allAreas.find((area) => (area.area).toLowerCase() === (addAddressAreaTypeAnswer.data.area).toLowerCase());
-
-    if(areaExists){
-      return res.status(400).json({success: false, message: "Area already exists"});
-    }
-
-    await db.insert(address_area).values({
-      area: addAddressAreaTypeAnswer.data.area
+      await tx.insert(address_area).values({
+        area: addAddressAreaTypeAnswer.data.area
+      });
     });
 
     return res.status(200).json({success: true, message: "Address Area added successfully"});
@@ -127,25 +128,26 @@ const deleteAddressArea = async (req: Request, res: Response) => {
   }
 
   try {
-
-    const oldArea = await db.query.address_area.findFirst({
-      where: (address_area, { eq }) => eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id),
-      with: {
-        addresses: {
-          limit: 1
+    await db.transaction(async (tx) => {
+      const oldArea = await tx.query.address_area.findFirst({
+        where: (address_area, { eq }) => eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id),
+        with: {
+          addresses: {
+            limit: 1
+          }
         }
+      })
+
+      if(!oldArea){
+        throw new Error("Area not found");
       }
-    })
 
-    if(!oldArea){
-      return res.status(400).json({success: false, message: "Area not found"});
-    }
+      if(oldArea.addresses.length > 0){
+        throw new Error("Area is linked to Address, Cannot Delete!");
+      }
 
-    if(oldArea.addresses.length > 0){
-      return res.status(400).json({success: false, message: "Area is linked to Address, Cannot Delete!"});
-    }
-
-    await db.delete(address_area).where(eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id));
+      await tx.delete(address_area).where(eq(address_area.id, deleteAddressAreaTypeAnswer.data.address_area_id));
+    });
 
     return res.status(200).json({success: true, message: "Address Area deleted successfully"});
   } catch (error: any) {
@@ -283,7 +285,6 @@ const addAddress = async (req: Request, res: Response) => {
           );
       } else {
         // check if there is any primary address, if not then make this one primary
-
         const foundPrimaryAddress = await tx.query.address.findFirst({
           where: (address, { eq, and }) => and(eq(address.customer_id, addAddressTypeAnswer.data.customer_id), eq(address.isPrimary, true)),
           columns: {
@@ -306,7 +307,7 @@ const addAddress = async (req: Request, res: Response) => {
         isPrimary: addAddressTypeAnswer.data.isPrimary,
         latitude: addAddressTypeAnswer.data.cordinates?.latitude,
         longitude: addAddressTypeAnswer.data.cordinates?.longitude
-      });;      
+      });
     })
 
 
@@ -338,7 +339,6 @@ const editAddress = async (req: Request, res: Response) => {
           );
       } else if (editAddressTypeAnswer.data.isPrimary == false){
         // check if address to be updated is primary, if yes then throw error
-        
         const foundAddress = await tx.query.address.findFirst({
           where: (address, { eq }) => eq(address.id, editAddressTypeAnswer.data.address_id),
           columns: {
@@ -517,7 +517,7 @@ const getCustomer = async (req: Request, res: Response) => {
           customer_id: true
         }
       })
-      if(!phone_number_customer?.customer_id) return res.status(400).json({success: false, message: "Customer not found with this phone number"})
+      if(!phone_number_customer?.customer_id) return res.status(400).json({success: false, message: "Customer not found with this phone number"});
       customer_id = phone_number_customer.customer_id;
     }
     
@@ -569,8 +569,8 @@ const getCustomer = async (req: Request, res: Response) => {
       columns: {
         total_order_value: false
       }
-    })
-    getCustomer?.addresses
+    });
+
     if(!getCustomer){
       return res.status(400).json({success: false, message: "Customer not found"});
     }
@@ -615,7 +615,7 @@ const deleteCustomer = async (req: Request, res: Response) => {
         throw new Error("Customer not found");
       }
       
-      if(tCustomer.balance && parseFloat(parseFloat(tCustomer.balance).toFixed(2)) !== 0.00){
+      if(tCustomer.balance && parseFloat(tCustomer.balance) !== 0){
         throw new Error("Customer has balance pending, Settle Balance first!")
       }
 

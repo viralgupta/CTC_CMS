@@ -1,5 +1,5 @@
 import db from '@db/db';
-import { driver, order_movement, phone_number } from '@db/schema';
+import { driver, phone_number } from '@db/schema';
 import { createDriverType, deleteDriverType, editDriverType, getDriverType } from '@type/api/driver';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
@@ -67,18 +67,19 @@ const editDriver = async (req: Request, res: Response) => {
   }
 
   try {
+    await db.transaction(async (tx) => {
+      const tDriver = await tx.select({id: driver.id}).from(driver).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
+      if(tDriver.length === 0){
+        throw new Error("Driver not found");
+      }
 
-    const tDriver = await db.select({id: driver.id}).from(driver).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
-    if(tDriver.length === 0){
-      return res.status(400).json({ success: false, message: "Driver not found" });
-    }
-
-    await db.update(driver).set({
-      name: editDriverTypeAnswer.data.name,
-      profileUrl: editDriverTypeAnswer.data.profileUrl,
-      vehicle_number: editDriverTypeAnswer.data.vehicle_number,
-      size_of_vehicle: editDriverTypeAnswer.data.size_of_vehicle
-    }).where(eq(driver.id, editDriverTypeAnswer.data.driver_id))
+      await tx.update(driver).set({
+        name: editDriverTypeAnswer.data.name,
+        profileUrl: editDriverTypeAnswer.data.profileUrl,
+        vehicle_number: editDriverTypeAnswer.data.vehicle_number,
+        size_of_vehicle: editDriverTypeAnswer.data.size_of_vehicle
+      }).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
+    });
 
     return res.status(200).json({success: true, message: "Driver Edited Successfully"});
   } catch (error: any) {
