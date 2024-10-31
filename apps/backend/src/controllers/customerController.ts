@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import db from "@db/db";
-import { address, address_area, customer, phone_number } from "@db/schema";
+import { address, address_area, customer, log, phone_number } from "@db/schema";
 import { addAddressAreaType, addAddressType, createCustomerType, deleteAddressAreaType, deleteAddressType, deleteCustomerType, editAddressType, editCustomerType, getAddressType, getCustomerType, settleBalanceType } from "@type/api/customer";
 import { eq, and } from "drizzle-orm";
+import { omit } from "../lib/utils";
 
 const createCustomer = async (req: Request, res: Response) => {
 
@@ -20,6 +21,14 @@ const createCustomer = async (req: Request, res: Response) => {
         balance: createCustomerTypeAnswer.data.balance,
         profileUrl: createCustomerTypeAnswer.data.profileUrl
       }).returning({ id: customer.id });
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        customer_id: tCustomer[0].id,
+        linked_to: "CUSTOMER",
+        type: "CREATE",
+        message: JSON.stringify(createCustomerTypeAnswer.data, null, 2)
+      });
 
       const numberswithPrimary = createCustomerTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -454,6 +463,13 @@ const editCustomer = async (req: Request, res: Response) => {
         profileUrl: editCustomerTypeAnswer.data.profileUrl
       }).where(eq(customer.id, tCustomer[0].id));
 
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        customer_id: tCustomer[0].id,
+        linked_to: "CUSTOMER",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editCustomerTypeAnswer.data, "customer_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Customer updated successfully"});
@@ -489,6 +505,18 @@ const settleBalance = async (req: Request, res: Response) => {
       await tx.update(customer).set({
         balance: newBalance.toFixed(2)
       }).where(eq(customer.id, tCustomer[0].id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        customer_id: tCustomer[0].id,
+        linked_to: "CUSTOMER",
+        type: "UPDATE",
+        heading: "Customer Balance Updated",
+        message: `
+          Old balance: ${tCustomer[0].balance}
+          New balance: ${newBalance}
+        `
+      });
     })
 
     return res.status(200).json({success: true, message: "Balance updated successfully"});
@@ -595,20 +623,12 @@ const deleteCustomer = async (req: Request, res: Response) => {
         where: (customer, { eq }) => eq(customer.id, deleteCustomerTypeAnswer.data.customer_id),
         with: {
           orders: {
-            where: (order, { or, isNotNull }) => or(
-              isNotNull(order.architect_id),
-              isNotNull(order.carpanter_id)
-            ),
             limit: 1,
             columns: {
               id: true
             }
           }
         },
-        columns: {
-          id: true,
-          balance: true
-        }
       })
       
       if(!tCustomer){
@@ -620,10 +640,17 @@ const deleteCustomer = async (req: Request, res: Response) => {
       }
 
       if(tCustomer.orders.length > 0){
-        throw new Error("Customer has orders which are linked to Architect or Carpanters, cannot delete Customer!")
+        throw new Error("Customer is linked to orders, cannot delete Customer!")
       }
       
       await tx.delete(customer).where(eq(customer.id, tCustomer.id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        linked_to: "CUSTOMER",
+        type: "DELETE",
+        message: `Customer Deleted: ${JSON.stringify(omit(tCustomer, "orders"), null, 2)}`
+      });
     });
 
     return res.status(200).json({success: true, message: "Customer deleted successfully"});

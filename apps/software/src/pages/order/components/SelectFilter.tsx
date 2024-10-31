@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import RefetchButton from "@/components/RefetchButton";
 import { allOrdersType } from "@/store/order";
+import LogButton from "@/components/log/logButton";
 
 const SelectFilter = () => {
   const { filter, setFilter, refetchOrders } = useAllOrders();
@@ -57,11 +58,14 @@ const SelectFilter = () => {
             {filterToName()}
           </span>
         </div>
-        <RefetchButton
-          className="w-8"
-          description="Refresh Orders"
-          refetchFunction={refetchOrders}
-        />
+        <div className="flex gap-2">
+          <RefetchButton
+            className="w-8"
+            description="Refresh Orders"
+            refetchFunction={refetchOrders}
+            />
+            <LogButton value={{linked_to: "ORDER"}}/>
+        </div>
       </div>
     </div>
   );

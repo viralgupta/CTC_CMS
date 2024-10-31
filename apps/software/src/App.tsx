@@ -24,6 +24,7 @@ import ViewResource from "./pages/resources/components/ViewResource"
 import ViewEstimate from "./pages/estimate/components/ViewEstimate"
 import ViewPrintOptions from "./components/ViewPrintOption"
 import ViewOrderMovement from "./pages/order/OrderMovement/OrderMovement"
+import ViewAllLogs from "./components/log/ViewAllLogs"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -69,6 +70,7 @@ function App() {
       <ViewEstimate/>
       <ViewPrintOptions/>
       <ViewOrderMovement/>
+      <ViewAllLogs/>
       <Body>
           {renderTabContent()}
       </Body>

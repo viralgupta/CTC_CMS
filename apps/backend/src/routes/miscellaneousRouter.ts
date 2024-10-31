@@ -1,5 +1,6 @@
 import express from "express"
-import { createPhone, deletePhone, createPutSignedURL, createGetSignedURL, editResource, deleteResource, getAllResources } from "../controllers/miscellaneousController"
+import { createPhone, deletePhone, createPutSignedURL, createGetSignedURL, editResource, deleteResource, getAllResources, getLog } from "../controllers/miscellaneousController"
+import { adminUser } from "../middlewear/adminUser"
 
 const miscellaneousRouter = express.Router()
 
@@ -10,5 +11,6 @@ miscellaneousRouter.route('/editResource').put(editResource)
 miscellaneousRouter.route('/deleteResource').delete(deleteResource)
 miscellaneousRouter.route('/getAllResources').get(getAllResources)
 miscellaneousRouter.route('/createGetSignedURL').get(createGetSignedURL)
+miscellaneousRouter.route('/getLog').get(adminUser, getLog)
 
 export default miscellaneousRouter;

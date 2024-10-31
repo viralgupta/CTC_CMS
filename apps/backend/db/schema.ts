@@ -10,7 +10,8 @@ import {
   varchar,
   real,
   doublePrecision,
-  index
+  index,
+  serial,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -457,3 +458,62 @@ export const resource = pgTable("resource", {
   name: varchar("resource_name", { length: 100 }).notNull(),
   description: text("resource_description"),
 })
+
+export const log = pgTable("log", {
+  id: serial("log_id").primaryKey(),
+  user_id: uuid("log_user_id")
+  .references(() => user.id)
+  .notNull(),
+  linked_to: varchar("log_linked_to", {
+    enum: ["ARCHITECT", "CARPANTER", "CUSTOMER", "DRIVER", "ITEM", "ITEM_ORDER", "ORDER", "ORDER_MOVEMENT"],
+  }).notNull(),
+  type: varchar("log_type", {
+    enum: ["CREATE", "UPDATE", "DELETE"],
+  }).notNull(),
+  customer_id: uuid("log_customer_id")
+  .references(() => customer.id),
+  architect_id: uuid("log_architect_id")
+  .references(() => architect.id),
+  carpanter_id: uuid("log_carpanter_id")
+  .references(() => carpanter.id),
+  driver_id: uuid("log_driver_id")
+    .references(() => driver.id),
+  item_id: uuid("log_item_id")
+    .references(() => item.id),
+  order_id: uuid("log_order_id")
+  .references(() => order.id),
+  heading: varchar("log_heading", { length: 50 }),
+  message: text("log_message").notNull(),
+  created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const log_relation = relations(log, ({ one }) => ({
+  user: one(user, {
+    fields: [log.user_id],
+    references: [user.id],
+  }),
+  customer: one(customer, {
+    fields: [log.customer_id],
+    references: [customer.id],
+  }),
+  architect: one(architect, {
+    fields: [log.architect_id],
+    references: [architect.id],
+  }),
+  carpanter: one(carpanter, {
+    fields: [log.carpanter_id],
+    references: [carpanter.id],
+  }),
+  driver: one(driver, {
+    fields: [log.driver_id],
+    references: [driver.id],
+  }),
+  item: one(item, {
+    fields: [log.item_id],
+    references: [item.id],
+  }),
+  order: one(order, {
+    fields: [log.order_id],
+    references: [order.id],
+  }),
+}));

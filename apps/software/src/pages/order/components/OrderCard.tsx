@@ -40,6 +40,7 @@ import EditOrder from "./EditOrder";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import CreateOrderMovement from "../OrderMovement/CreateMovement";
+import LogButton from "@/components/log/logButton";
 
 const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
   if (!order) return <Skeleton className="w-full h-96" />;
@@ -55,7 +56,10 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
           <div className="w-1/2 h-full space-y-1">
             <div className="text-2xl font-bold mb-2 flex justify-between">
               Order Details
-              <EditOrder />
+              <span className="space-x-2 flex items-center">
+                <EditOrder />
+                <LogButton value={{type: {"order_id": order.id}}} className="translate-y-0"/>
+              </span>
             </div>
             <div className="w-full h-24 border border-border rounded-md p-1">
               <div className="flex items-center justify-around space-x-2 pb-1">

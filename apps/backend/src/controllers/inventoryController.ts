@@ -1,8 +1,9 @@
 import db from '@db/db';
-import { item, item_order } from '@db/schema';
+import { item, item_order, log } from '@db/schema';
 import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType } from '@type/api/item';
 import { Request, Response } from "express";
 import { eq, sql } from "drizzle-orm";
+import { omit } from '../lib/utils';
 
 const createItem = async (req: Request, res: Response) => {
   const createItemTypeAnswer = createItemType.safeParse(req.body);
@@ -29,6 +30,14 @@ const createItem = async (req: Request, res: Response) => {
       if(!createdItem[0].id){
         throw new Error("Unable to create item");
       }
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: createdItem[0].id,
+        linked_to: "ITEM",
+        type: "CREATE",
+        message: JSON.stringify(createItemTypeAnswer.data, null, 2)
+      });
     });
 
     return res.status(200).json({success: true, message: "Item created successfully"});
@@ -151,6 +160,14 @@ const editItem = async (req: Request, res: Response) => {
       if(!updatedItem[0].id){
         throw new Error("Unable to edit item")
       }
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: updatedItem[0].id,
+        linked_to: "ITEM",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editItemTypeAnswer.data, "item_id"), null, 2)
+      });
     });
 
     return res.status(200).json({success: true, message: "Item edited successfully"});
@@ -198,6 +215,14 @@ const createItemOrder = async (req: Request, res: Response) => {
         received_quantity: createItemOrderTypeAnswer.data.received_quantity,
         receive_date: createItemOrderTypeAnswer.data.receive_date
       })
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: createItemOrderTypeAnswer.data.item_id,
+        linked_to: "ITEM_ORDER",
+        type: "CREATE",
+        message: JSON.stringify(omit(createItemOrderTypeAnswer.data, "item_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Item Order created"});
@@ -222,11 +247,20 @@ const editItemOrder = async (req: Request, res: Response) => {
         order_date: editItemOrderTypeAnswer.data.order_date
       }).where(eq(item_order.id, editItemOrderTypeAnswer.data.id)).returning({
         id: item_order.id,
+        item_id: item_order.item_id,
       })
 
       if(!foundItemOrdertx[0].id){
         throw new Error("Unable to find item order!")
       }
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: foundItemOrdertx[0].item_id,
+        linked_to: "ITEM_ORDER",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editItemOrderTypeAnswer.data, "id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Item Order updated"});
@@ -294,6 +328,15 @@ const receiveItemOrder = async (req: Request, res: Response) => {
         receive_date: receiveItemOrderTypeAnswer.data.receive_date,
         received_quantity: receiveItemOrderTypeAnswer.data.received_quantity
       }).where(eq(item_order.id, receiveItemOrderTypeAnswer.data.id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: foundItemOrderTx.item_id,
+        linked_to: "ITEM_ORDER",
+        type: "UPDATE",
+        heading: "Item Quanitity Updated, Item Order was Updated",
+        message: JSON.stringify(omit(receiveItemOrderTypeAnswer.data, "id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Item Order updated, Quanity Updated!"});
@@ -311,11 +354,7 @@ const deleteItemOrder = async (req: Request, res: Response) => {
 
   try {
     await db.transaction(async (tx) => {
-      const foundItemOrderTx = await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id)).returning({
-        id: item_order.id,
-        item_id: item_order.item_id,
-        received_quantity: item_order.received_quantity
-      });
+      const foundItemOrderTx = await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id)).returning();
 
       if(!foundItemOrderTx[0]?.id){
         throw new Error("Unable to find item order!")
@@ -327,6 +366,15 @@ const deleteItemOrder = async (req: Request, res: Response) => {
           quantity: sql`${item.quantity} - ${foundItemOrderTx[0].received_quantity}`
         }).where(eq(item.id, foundItemOrderTx[0].item_id));
       }
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        item_id: foundItemOrderTx[0].item_id,
+        linked_to: "ITEM_ORDER",
+        type: "DELETE",
+        heading: "Item Quanitity Updated, Item Order was Deleted",
+        message: JSON.stringify(omit(foundItemOrderTx[0], ["id", "item_id"]), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Item Order deleted, Quanity Updated!"});
@@ -354,9 +402,6 @@ const deleteItem = async (req: Request, res: Response) => {
             }
           }
         },
-        columns: {
-          quantity: true
-        }
       })
 
       if(!foundItem){
@@ -372,6 +417,13 @@ const deleteItem = async (req: Request, res: Response) => {
       }
 
       await tx.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        linked_to: "ITEM",
+        type: "DELETE",
+        message: JSON.stringify(omit(foundItem, ["id", "order_items"]), null, 2)
+      });
     });
 
     return res.status(200).json({success: true, message: "Item deleted successfully"});

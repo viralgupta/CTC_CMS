@@ -1,6 +1,6 @@
 import db from "@db/db";
 import { phone_number, resource } from "@db/schema";
-import { createGetSignedURLType, createPhoneType, createPutSignedURLType, deletePhoneType, deleteResourceType, editPhoneType, editResourceType } from "@type/api/miscellaneous";
+import { createGetSignedURLType, createPhoneType, createPutSignedURLType, deletePhoneType, deleteResourceType, editResourceType, getLogType } from "@type/api/miscellaneous";
 import { Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
 import * as S3 from "@aws-sdk/client-s3"
@@ -338,6 +338,77 @@ const getAllResources = async (_req: Request, res: Response) => {
   }
 }
 
+const getLog = async (req: Request, res: Response) => {
+  const getLogTypeAnswer = getLogType.safeParse(req.query);
+
+  if (!getLogTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getLogTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const logId = getLogTypeAnswer.data.id;
+    if(logId) {
+      const foundLog = await db.query.log.findFirst({
+        where: (log, { eq }) => eq(log.id, logId),
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          }
+        }
+      });
+
+      return res.status(200).json({success: true, message: "Logs Fetched", data: foundLog});
+    } else {
+      const key = Object.keys(getLogTypeAnswer.data).length > 0 ? Object.keys(getLogTypeAnswer.data)[0] as "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id" : undefined;
+      const value = key ? getLogTypeAnswer.data[key] : undefined;
+      const foundLog = await db.query.log.findMany({
+        where: (log, { eq, and, lt }) => {
+          if(!key || !value){
+            if(getLogTypeAnswer.data.linked_to){
+              if (getLogTypeAnswer.data.cursor){
+                return and(eq(log.linked_to, getLogTypeAnswer.data.linked_to), lt(log.created_at, getLogTypeAnswer.data.cursor));
+              } else {
+                return eq(log.linked_to, getLogTypeAnswer.data.linked_to);
+              }
+            } else if(getLogTypeAnswer.data.cursor){
+              return lt(log.created_at, getLogTypeAnswer.data.cursor);
+            } else {
+              return undefined;
+            }
+          } else if(getLogTypeAnswer.data.cursor){
+            return and(eq(log[key], value), lt(log.created_at, getLogTypeAnswer.data.cursor));
+          } else {
+            return eq(log[key], value);
+          }
+        },
+        columns: {
+          id: true,
+          heading: true,
+          type: true,
+          linked_to: true,
+          created_at: true
+        },
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          }
+        },
+        orderBy: (log, { desc }) => desc(log.created_at),
+        limit: 20
+      });
+
+      return res.status(200).json({success: true, message: "Logs Fetched", data: foundLog});
+    }
+
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch log", error: error.message ? error.message : error});
+  }
+}
+
 export {
   createPhone,
   deletePhone,
@@ -345,5 +416,6 @@ export {
   editResource,
   createGetSignedURL,
   deleteResource,
-  getAllResources
+  getAllResources,
+  getLog
 }

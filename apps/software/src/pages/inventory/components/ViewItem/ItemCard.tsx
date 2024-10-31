@@ -47,6 +47,7 @@ import React from "react";
 import { editItemType } from "@type/api/item";
 import { useAllItems } from "@/hooks/items";
 import ItemOrders from "./ItemOrders/ItemOrder";
+import LogButton from "@/components/log/logButton";
 
 export default function ItemCard({ item }: { item: viewItemType | null }) {
 
@@ -63,7 +64,9 @@ export default function ItemCard({ item }: { item: viewItemType | null }) {
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="mb-4 md:mb-0">
-            <h2 className="text-2xl font-bold mb-2">{item.name}</h2>
+            <h2 className="text-2xl font-bold mb-2 flex justify-between items-center">{item.name}
+            <LogButton value={{type: {"item_id": item.id}}}/>
+            </h2>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">
                 ID: {item.id}

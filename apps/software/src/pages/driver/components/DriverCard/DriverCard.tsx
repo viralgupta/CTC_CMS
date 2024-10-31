@@ -13,6 +13,7 @@ import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
 import { useAllDrivers } from "@/hooks/driver";
+import LogButton from "@/components/log/logButton";
 
 export default function DriverCard({
   driver,
@@ -37,7 +38,7 @@ export default function DriverCard({
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="mb-4 md:mb-0">
-            <h2 className="text-2xl font-bold mb-2 flex items-center space-x-2">
+            <h2 className="text-2xl font-bold mb-2 flex items-center space-x-2 relative">
               <Avatar>
                 <AvatarImage src={driver.profileUrl ?? ""} />
                 <AvatarFallback>
@@ -45,6 +46,9 @@ export default function DriverCard({
                 </AvatarFallback>
               </Avatar>
               <span>{driver.name}</span>
+              <span className="absolute right-0">
+                <LogButton value={{type: {"driver_id": driver.id}}}/>
+              </span>
             </h2>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">

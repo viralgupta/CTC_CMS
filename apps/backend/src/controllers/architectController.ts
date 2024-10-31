@@ -1,8 +1,9 @@
 import db from '@db/db';
-import { architect, phone_number } from '@db/schema';
+import { architect, log, phone_number } from '@db/schema';
 import { createArchitectType, deleteArchitectType, editArchitectType, getArchitectType, settleBalanceType } from '@type/api/architect';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
+import { omit } from '../lib/utils';
 
 const createArchitect = async (req: Request, res: Response) => {
   const createArchitectTypeAnswer = createArchitectType.safeParse(req.body);
@@ -20,6 +21,14 @@ const createArchitect = async (req: Request, res: Response) => {
         area: createArchitectTypeAnswer.data.area,
         balance: createArchitectTypeAnswer.data.balance
       }).returning({ id: architect.id });
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        architect_id: tArchitect[0].id,
+        linked_to: "ARCHITECT",
+        type: "CREATE",
+        message: JSON.stringify(createArchitectTypeAnswer.data)
+      });
 
       const numberswithPrimary = createArchitectTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -85,6 +94,14 @@ const editArchitect = async (req: Request, res: Response) => {
           area: editArchitectTypeAnswer.data.area,
         })
         .where(eq(architect.id, tArchitect.id));
+
+        await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        architect_id: tArchitect.id,
+        linked_to: "ARCHITECT",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editArchitectTypeAnswer.data, "architect_id"))
+      });
     });
 
 
@@ -127,6 +144,18 @@ const settleBalance = async (req: Request, res: Response) => {
       await tx.update(architect).set({
         balance: newBalance.toFixed(2)
       }).where(eq(architect.id, tArchitect.id));
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        architect_id: tArchitect.id,
+        linked_to: "ARCHITECT",
+        type: "UPDATE",
+        heading: "Architect Balance was updated",
+        message: `
+        Old Balance:${tArchitect.balance}
+        New Balance:${newBalance}
+        `
+      });
     });
 
     return res.status(200).json({success: true, message: "Architect balance updated"});
@@ -204,17 +233,12 @@ const deleteArchitect = async (req: Request, res: Response) => {
         where: (architect, { eq }) => eq(architect.id, deleteArchitectTypeAnswer.data.architect_id),
         with: {
           orders: {
-            where: (order, {  isNotNull }) => isNotNull(order.architect_commision),
             limit: 1,
             columns: {
               id: true
             }
           }
         },
-        columns: {
-          id: true,
-          balance: true
-        }
       })
       
       if(!tArchitect){
@@ -230,6 +254,13 @@ const deleteArchitect = async (req: Request, res: Response) => {
       }
       
       await tx.delete(architect).where(eq(architect.id, deleteArchitectTypeAnswer.data.architect_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        linked_to: "ARCHITECT",
+        type: "DELETE",
+        message: `Architect deleted: ${JSON.stringify(omit(tArchitect, "orders"), null, 2)}`
+      });
     });
 
     return res.status(200).json({success: true, message: "Architect deleted successfully"});

@@ -1,8 +1,9 @@
 import db from '@db/db';
-import { carpanter, phone_number } from '@db/schema';
+import { carpanter, log, phone_number } from '@db/schema';
 import { createCarpanterType, deleteCarpanterType, editCarpanterType, getCarpanterType, settleBalanceType } from '@type/api/carpanter';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
+import { omit } from '../lib/utils';
 
 const createCarpanter = async (req: Request, res: Response) => {
   const createCarpanterTypeAnswer = createCarpanterType.safeParse(req.body);
@@ -20,6 +21,14 @@ const createCarpanter = async (req: Request, res: Response) => {
         area: createCarpanterTypeAnswer.data.area,
         balance: createCarpanterTypeAnswer.data.balance
       }).returning({id: carpanter.id});
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        carpanter_id: tCarpanter[0].id,
+        linked_to: "CARPANTER",
+        type: "CREATE",
+        message: JSON.stringify(createCarpanterTypeAnswer.data)
+      });
       
       const numberswithPrimary = createCarpanterTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -79,7 +88,15 @@ const editCarpanter = async (req: Request, res: Response) => {
         name: editCarpanterTypeAnswer.data.name,
         profileUrl: editCarpanterTypeAnswer.data.profileUrl,
         area: editCarpanterTypeAnswer.data.area,
-      }).where(eq(carpanter.id, tCarpanter.id))
+      }).where(eq(carpanter.id, tCarpanter.id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        carpanter_id: tCarpanter.id,
+        linked_to: "CARPANTER",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editCarpanterTypeAnswer.data, "carpanter_id"))
+      });
     });
 
     return res.status(200).json({success: true, message: "Carpanter Update Successfully"});
@@ -121,6 +138,18 @@ const settleBalance = async (req: Request, res: Response) => {
       await tx.update(carpanter).set({
         balance: newBalance.toFixed(2)
       }).where(eq(carpanter.id, tCarpanter.id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        carpanter_id: tCarpanter.id,
+        linked_to: "CARPANTER",
+        type: "UPDATE",
+        heading: "Carpanter Balance Updated",
+        message: `
+          Old Balance:${tCarpanter.balance}
+          New Balance:${newBalance}
+        `
+      });
     });
 
     return res.status(200).json({success: true, message: "Carpanter balance updated"});
@@ -198,7 +227,6 @@ const deleteCarpanter = async (req: Request, res: Response) => {
         where: (carpanter, { eq }) => eq(carpanter.id, deleteCarpanterTypeAnswer.data.carpanter_id),
         with: {
           orders: {
-            where: (order, {  isNotNull }) => isNotNull(order.carpanter_commision),
             limit: 1,
             columns: {
               id: true
@@ -224,6 +252,13 @@ const deleteCarpanter = async (req: Request, res: Response) => {
       }
       
       await tx.delete(carpanter).where(eq(carpanter.id, deleteCarpanterTypeAnswer.data.carpanter_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        linked_to: "CARPANTER",
+        type: "DELETE",
+        message: `Carpenter deleted: ${JSON.stringify(omit(tCarpanter, "orders"), null, 2)}`
+      });
     });
 
     return res.status(200).json({success: true, message: "Carpanter deleted successfully"});

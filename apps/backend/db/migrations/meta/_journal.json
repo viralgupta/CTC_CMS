@@ -15,6 +15,13 @@
       "when": 1730289749478,
       "tag": "0001_customer-priority-trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730377458152,
+      "tag": "0002_added-log-table",
+      "breakpoints": true
     }
   ]
 }

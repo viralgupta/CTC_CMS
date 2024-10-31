@@ -1,3 +1,4 @@
+import { viewAllLogType } from "@/store/log";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -117,3 +118,13 @@ export const getImageUrlFromExtension = (theme: "dark" | "light" | "system", ext
       return `/stock/default-${theme ?? "dark"}.png`;
   }
 };
+
+export function convertTypeToHeading(
+  type: viewAllLogType["type"],
+  linked_to: viewAllLogType["linked_to"]
+) {
+  function firstLetterUpperCase(val: string) {
+    return val[0].toUpperCase() + val.slice(1).toLowerCase();
+  }
+  return `${firstLetterUpperCase(linked_to)} Was ${firstLetterUpperCase(type)}`;
+}

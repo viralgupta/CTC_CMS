@@ -1,5 +1,5 @@
 import db from '@db/db';
-import { architect, carpanter, customer, driver, item, order, order_item, order_movement, order_movement_item } from '@db/schema';
+import { architect, carpanter, customer, driver, item, log, order, order_item, order_movement, order_movement_item } from '@db/schema';
 import {
   createOrderType,
   editOrderNoteType,
@@ -21,7 +21,7 @@ import {
   editOrderMovementStatusType,
 } from "@type/api/order";
 import { Request, Response } from "express";
-import { calculatePaymentStatus } from '../utils/order';
+import { calculatePaymentStatus, omit } from '../lib/utils';
 import { eq, sql } from "drizzle-orm"
 
 const createOrder = async (req: Request, res: Response) => {
@@ -137,7 +137,18 @@ const createOrder = async (req: Request, res: Response) => {
         total_order_amount: totalValue.toFixed(2),
         carpanter_commision: calculateCarpanterCommision ? carpanterCommision : null,
         architect_commision: calculateArchitectCommision ? architectCommision : null,
-      }).returning({id: order.id})
+      }).returning({id: order.id});
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: tOrder[0].id,
+        customer_id: createOrderTypeAnswer.data.customer_id,
+        architect_id: createOrderTypeAnswer.data.architect_id,
+        carpanter_id: createOrderTypeAnswer.data.carpanter_id,
+        linked_to: "ORDER",
+        type: "CREATE",
+        message: JSON.stringify(createOrderTypeAnswer.data, null, 2)
+      });
 
       // create order items
       const orderItems = await tx.insert(order_item).values(
@@ -247,6 +258,15 @@ const editOrderNote = async (req: Request, res: Response) => {
       await tx.update(order).set({
         note: editOrderNoteTypeAnswer.data.note
       }).where(eq(order.id, editOrderNoteTypeAnswer.data.order_id))
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderNoteTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Note Updated",
+        message: JSON.stringify(omit(editOrderNoteTypeAnswer.data, "order_id"), null, 2)
+      });
     })
     
     return res.status(200).json({success: true, message: "Edited Order Note"})    
@@ -298,6 +318,16 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
         customer_id: addOrderCustomerIdTypeAnswer.data.customer_id,
         delivery_address_id: null
       }).where(eq(order.id, addOrderCustomerIdTypeAnswer.data.order_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: addOrderCustomerIdTypeAnswer.data.order_id,
+        customer_id: addOrderCustomerIdTypeAnswer.data.customer_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Customer Updated for Order",
+        message: JSON.stringify(omit(addOrderCustomerIdTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Updated Order's Customer!!!"})
@@ -354,6 +384,16 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
       }).where(eq(order.id, editOrderCarpanterIdTypeAnswer.data.order_id)).returning({
         carpanter_id: order.carpanter_id
       })
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderCarpanterIdTypeAnswer.data.order_id,
+        carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Carpanter Updated for Order",
+        message: JSON.stringify(omit(editOrderCarpanterIdTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Updated Carpanter in Order"})    
@@ -409,7 +449,17 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
         architect_id: editOrderArchitectIdTypeAnswer.data.architect_id
       }).where(eq(order.id, editOrderArchitectIdTypeAnswer.data.order_id)).returning({
         architect_id: order.architect_id
-      })
+      });
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderArchitectIdTypeAnswer.data.order_id,
+        architect_id: editOrderArchitectIdTypeAnswer.data.architect_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Architect Updated for Order",
+        message: JSON.stringify(omit(editOrderArchitectIdTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Updated Architect in Order"})    
@@ -430,6 +480,15 @@ const editOrderPriority = async (req: Request, res: Response) => {
       await tx.update(order).set({
         priority: editOrderPriorityTypeAnswer.data.priority
       }).where(eq(order.id, editOrderPriorityTypeAnswer.data.order_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderPriorityTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Priority Updated",
+        message: JSON.stringify(omit(editOrderPriorityTypeAnswer.data, "order_id"), null, 2)
+      });
     })
     
     return res.status(200).json({success: true, message: "Updated Order Priority!!!"})
@@ -466,6 +525,15 @@ const editOrderDeliveryDate = async (req: Request, res: Response) => {
       await tx.update(order).set({
         delivery_date: editOrderDeliveryDateTypeAnswer.data.delivery_date
       }).where(eq(order.id, editOrderDeliveryDateTypeAnswer.data.order_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderDeliveryDateTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Delivery Date Updated",
+        message: JSON.stringify(omit(editOrderDeliveryDateTypeAnswer.data, "order_id"), null,2)
+      });
     })
     
     return res.status(200).json({success: true, message: "Updated Order Delivery Date!!!"})
@@ -525,6 +593,15 @@ const editOrderDeliveryAddressId = async (req: Request, res: Response) => {
       await tx.update(order).set({
         delivery_address_id: editOrderDeliveryAddressIdTypeAnswer.data.delivery_address_id
       }).where(eq(order.id, editOrderDeliveryAddressIdTypeAnswer.data.order_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderDeliveryAddressIdTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Address Updated",
+        message: JSON.stringify(omit(editOrderDeliveryAddressIdTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Updated Order Address!!!"})
@@ -603,7 +680,16 @@ const editOrderDiscount = async (req: Request, res: Response) => {
       await tx.update(order).set({
         discount: editOrderDiscountTypeAnswer.data.discount,
         payment_status: calculatePaymentStatus(parseFloat(oldOrder.total_order_amount) - parseFloat(editOrderDiscountTypeAnswer.data.discount), parseFloat(oldOrder.amount_paid ?? "0.00"))
-      })
+      });
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderDiscountTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Discount Updated",
+        message: JSON.stringify(omit(editOrderDiscountTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Updated Order discount!!!"})
@@ -671,6 +757,16 @@ const settleBalance = async (req: Request, res: Response) => {
           })
         }
       }
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: settleBalanceTypeAnswer.data.order_id,
+        customer_id: updatedOrder[0].customer_id ?? undefined,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Payment Updated",
+        message: JSON.stringify(omit(settleBalanceTypeAnswer.data, "order_id"), null, 2)
+      });
     })
 
     return res.status(200).json({success: true, message: "Settled Order Payment!!!"})
@@ -794,6 +890,15 @@ const editOrderItems = async (req: Request, res: Response) => {
           architect_commision: null,
           architect_commision_type: null
         }).where(eq(order_item.id, removedOrderItem.id));
+      });
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: editOrderItemsTypeAnswer.data.order_id,
+        linked_to: "ORDER",
+        type: "UPDATE",
+        heading: "Order Items Updated",
+        message: JSON.stringify(omit(editOrderItemsTypeAnswer.data, "order_id"), null, 2)
       });
 
       // update carpanter commission
@@ -1119,94 +1224,6 @@ const getOrder = async (req: Request, res: Response) => {
 
 }
 
-const getMovement = async (req: Request, res: Response) => {
-  const getMovementTypeAnswer = getOrderMovementType.safeParse(req.query);
-
-  if(!getMovementTypeAnswer.success) {
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: getMovementTypeAnswer.error.flatten()})
-  }
-
-  try {
-    const fetchedMovement = await db.transaction(async (tx) => {
-      const tMovement = await tx.query.order_movement.findFirst({
-        where: (order_movement, { eq }) => eq(order_movement.id, getMovementTypeAnswer.data.id),
-        with: {
-          driver: {
-            columns: {
-              name: true,
-              profileUrl: true,
-              vehicle_number: true
-            },
-            with: {
-              phone_numbers: {
-                where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
-                columns: {
-                  phone_number: true
-                }
-              }
-            }
-          },
-          order: {
-            columns: {
-              id: true
-            },
-            with: {
-              customer: {
-                columns: {
-                  id: true,
-                  name: true,
-                  profileUrl: true
-                }
-              },
-              delivery_address: {
-                columns: {
-                  id: true,
-                  house_number: true,
-                  address: true,
-                },
-                with: {
-                  address_area: {
-                    columns: {
-                      area: true
-                    }
-                  }
-                }
-              },
-            }
-          },
-          order_movement_items: {
-            columns: {
-              id: true,
-              quantity: true
-            },
-            with: {
-              order_item: {
-                columns: {
-                  quantity: true,
-                },
-                with: {
-                  item: {
-                    columns: {
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-
-      });
-
-      return tMovement;
-    })
-    
-    return res.status(200).json({success: true, message: "Order Movement fetched", data: fetchedMovement});
-  } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to fetch order movement!", error: error.message ? error.message : error});
-  }
-}
-
 const createMovement = async (req: Request, res: Response) => {
   const createMovementTypeAnswer = createOrderMovementType.safeParse(req.body);
 
@@ -1264,6 +1281,15 @@ const createMovement = async (req: Request, res: Response) => {
           }
         })
       );
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: createMovementTypeAnswer.data.order_id,
+        driver_id: createMovementTypeAnswer.data.driver_id ?? undefined,
+        linked_to: "ORDER_MOVEMENT",
+        type: "CREATE",
+        message: JSON.stringify(omit(createMovementTypeAnswer.data, ["order_id", "driver_id"]), null, 2)
+      });
 
 
       if(createMovementTypeAnswer.data.type == "DELIVERY"){
@@ -1394,7 +1420,8 @@ const editMovement = async (req: Request, res: Response) => {
         where: (order_movement, { eq }) => eq(order_movement.id, editMovementTypeAnswer.data.id),
         columns: {
           status: true,
-          driver_id: true
+          driver_id: true,
+          order_id: true
         }
       });
 
@@ -1406,7 +1433,16 @@ const editMovement = async (req: Request, res: Response) => {
         labour_frate_cost: editMovementTypeAnswer.data.labour_frate_cost,
         driver_id: editMovementTypeAnswer.data.driver_id,
       });
-      
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: foundMovementTx.order_id,
+        driver_id: editMovementTypeAnswer.data.driver_id,
+        linked_to: "ORDER_MOVEMENT",
+        type: "UPDATE",
+        message: JSON.stringify(omit(editMovementTypeAnswer.data, "id"), null, 2)
+      });
+
       if(editMovementTypeAnswer.data.driver_id == foundMovementTx.driver_id) return;
 
       if(editMovementTypeAnswer.data.driver_id && foundMovementTx.status == "Pending"){
@@ -1578,6 +1614,16 @@ const editMovementStatus = async (req: Request, res: Response) => {
         status: orderCompleted ? "Delivered" : "Pending",
         delivery_date: orderCompleted ? new Date() : null
       }).where(eq(order.id, foundMovementTx.order_id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: foundMovementTx.order_id,
+        driver_id: foundMovementTx.driver_id,
+        linked_to: "ORDER_MOVEMENT",
+        type: "UPDATE",
+        heading: "Order Movement Status Updated",
+        message: `${foundMovementTx.status == "Completed" ? "Completed" : "Pending"} -> ${foundMovementTx.status == "Completed" ? "Pending" : "Completed"}`
+      });
     })
     
     return res.status(200).json({success: true, message: "Order Movement Updated!"});
@@ -1597,12 +1643,6 @@ const deleteMovement = async (req: Request, res: Response) => {
     await db.transaction(async (tx) => {
       const foundMovementTx = await tx.query.order_movement.findFirst({
         where: (order_movement, { eq }) => eq(order_movement.id, deleteMovementTypeAnswer.data.id),
-        columns: {
-          order_id: true,
-          type: true,
-          status: true,
-          driver_id: true
-        },
         with: {
           order_movement_items: {
             columns: {
@@ -1694,11 +1734,108 @@ const deleteMovement = async (req: Request, res: Response) => {
       }).where(eq(order.id, foundMovementTx.order_id));
 
       await tx.delete(order_movement).where(eq(order_movement.id, deleteMovementTypeAnswer.data.id));
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        order_id: foundMovementTx.order_id,
+        driver_id: foundMovementTx.driver_id,
+        linked_to: "ORDER_MOVEMENT",
+        type: "DELETE",
+        message: `Deleted Order Movement: ${JSON.stringify(omit(foundMovementTx, ["id", "order_id", "driver_id"]), null, 2)}`
+      });
     })
     
     return res.status(200).json({success: true, message: "Order Movement Created!"});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+  }
+}
+
+const getMovement = async (req: Request, res: Response) => {
+  const getMovementTypeAnswer = getOrderMovementType.safeParse(req.query);
+
+  if(!getMovementTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getMovementTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const fetchedMovement = await db.transaction(async (tx) => {
+      const tMovement = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, getMovementTypeAnswer.data.id),
+        with: {
+          driver: {
+            columns: {
+              name: true,
+              profileUrl: true,
+              vehicle_number: true
+            },
+            with: {
+              phone_numbers: {
+                where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+                columns: {
+                  phone_number: true
+                }
+              }
+            }
+          },
+          order: {
+            columns: {
+              id: true
+            },
+            with: {
+              customer: {
+                columns: {
+                  id: true,
+                  name: true,
+                  profileUrl: true
+                }
+              },
+              delivery_address: {
+                columns: {
+                  id: true,
+                  house_number: true,
+                  address: true,
+                },
+                with: {
+                  address_area: {
+                    columns: {
+                      area: true
+                    }
+                  }
+                }
+              },
+            }
+          },
+          order_movement_items: {
+            columns: {
+              id: true,
+              quantity: true
+            },
+            with: {
+              order_item: {
+                columns: {
+                  quantity: true,
+                },
+                with: {
+                  item: {
+                    columns: {
+                      name: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+      });
+
+      return tMovement;
+    })
+    
+    return res.status(200).json({success: true, message: "Order Movement fetched", data: fetchedMovement});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch order movement!", error: error.message ? error.message : error});
   }
 }
 
