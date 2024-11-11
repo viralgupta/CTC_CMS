@@ -20,7 +20,7 @@ export interface ViewArchitectType extends ArchitectType {
     isPrimary: boolean | null;
   }[];
   orders: {
-    id: string;
+    id: number;
     status: "Pending" | "Delivered";
     architect_commision: string | null;
     created_at: Date;

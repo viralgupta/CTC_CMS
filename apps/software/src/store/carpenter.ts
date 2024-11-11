@@ -20,7 +20,7 @@ export interface ViewCarpenterType extends CarpenterType {
     isPrimary: boolean | null;
   }[];
   orders: {
-    id: string;
+    id: number;
     status: "Pending" | "Delivered";
     carpenter_commision: string | null;
     created_at: Date;

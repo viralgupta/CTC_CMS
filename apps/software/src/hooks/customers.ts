@@ -1,5 +1,5 @@
 import { useRecoilState } from "recoil";
-import allCustomerAtom, { CustomerType } from "@/store/Customer";
+import allCustomerAtom, { CustomerType } from "@/store/customer";
 import request from "@/lib/request";
 
 let loading = false;

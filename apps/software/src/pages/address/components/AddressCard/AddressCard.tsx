@@ -9,7 +9,7 @@ import { AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 import { Edit2Icon, MapPin, Trash2Icon, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSetRecoilState } from "recoil";
-import { viewCustomerIDAtom } from "@/store/Customer";
+import { viewCustomerIDAtom } from "@/store/customer";
 import DeleteAddress from "./DeleteAddress";
 import EditAddress from "./EditAddress";
 

@@ -43,7 +43,7 @@ import { WhatsappConnectedAtom } from "@/store/whatsapp";
 import { toast } from "sonner";
 import React from "react";
 import { FakeButton } from "@/components/ui/fake-button";
-import { viewCustomerType } from "@/store/Customer";
+import { viewCustomerType } from "@/store/customer";
 
 const PhoneNumberArray = z.array(phone_numberType.extend({
   id: z.string().optional()

@@ -34,7 +34,7 @@ export interface ViewAddressType {
     area: string;
   };
   orders: {
-    id: string;
+    id: number;
     status: "Pending" | "Delivered";
     payment_status: "UnPaid" | "Partial" | "Paid";
     delivery_date: Date | null;

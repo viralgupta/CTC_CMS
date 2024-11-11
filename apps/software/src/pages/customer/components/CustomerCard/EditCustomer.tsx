@@ -4,7 +4,7 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 import {
   viewCustomerAtom,
   viewCustomerIDAtom,
-} from "@/store/Customer";
+} from "@/store/customer";
 import React from "react";
 import { z } from "zod";
 import {

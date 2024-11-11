@@ -1,4 +1,4 @@
-import { viewCustomerAtom, viewCustomerType } from "@/store/Customer";
+import { viewCustomerAtom, viewCustomerType } from "@/store/customer";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import {
   Table,

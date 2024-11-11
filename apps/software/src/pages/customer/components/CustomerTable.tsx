@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
-import { CustomerType, viewCustomerIDAtom } from "@/store/Customer";
+import { CustomerType, viewCustomerIDAtom } from "@/store/customer";
 import { parseBalanceToFloat } from "@/lib/utils";
 import DataTable from "../../../components/DataTable";
 

@@ -42,7 +42,7 @@ export interface viewCustomerType extends CustomerType {
     isPrimary?: boolean | undefined;
   }[];
   orders: {
-    id: string;
+    id: number;
     priority: "Low" | "High" | "Medium";
     status: "Pending" | "Delivered";
     payment_status: "UnPaid" | "Partial" | "Paid";

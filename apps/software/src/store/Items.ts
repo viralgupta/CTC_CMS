@@ -25,7 +25,7 @@ export interface viewItemType extends itemType {
   min_rate: number | null;
   order_items: viewItemOrderItems[];
   item_orders: {
-    id: string;
+    id: number;
     vendor_name: string | null;
     ordered_quantity: number | null;
     order_date: Date;

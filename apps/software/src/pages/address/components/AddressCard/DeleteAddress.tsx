@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import request from "@/lib/request";
 import { allAddressAtom } from "@/store/address";
-import { viewCustomerAtom, viewCustomerIDAtom } from "@/store/Customer";
+import { viewCustomerAtom, viewCustomerIDAtom } from "@/store/customer";
 import React from "react";
 import { useSetRecoilState } from "recoil";
 

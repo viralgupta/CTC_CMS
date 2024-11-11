@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircleUserRound, Printer, Trash2 } from "lucide-react";
 import DivButton from "@/components/ui/div-button";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { viewCustomerIDAtom } from "@/store/Customer";
+import { viewCustomerIDAtom } from "@/store/customer";
 import EditEstimate from "./EditEstimate";
 import {
   viewEstimateAtom,

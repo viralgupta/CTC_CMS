@@ -7,7 +7,7 @@ import { useSetRecoilState } from "recoil";
 import DataTable from "../../../components/DataTable";
 import { AddressType, viewAddressIdAtom } from "@/store/address";
 import { Check, X } from "lucide-react";
-import { viewCustomerIDAtom } from "@/store/Customer";
+import { viewCustomerIDAtom } from "@/store/customer";
 
 interface DataTableProps {
   CompKey: string;
