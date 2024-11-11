@@ -218,7 +218,7 @@ export const item_order_relation = relations(item_order, ({ one }) => ({
 }));
 
 export const order = pgTable("order", {
-  id: uuid("order_id").primaryKey().defaultRandom().notNull(),
+  id: serial("order_id").primaryKey().notNull(),
 
   note: text("order_note"),
 
@@ -267,10 +267,10 @@ export const order = pgTable("order", {
   updated_at: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date())
 }, (table) => {
   return {
-    order_updated_statusIdx: index("order_updated_status_idx").on(table.updated_at.desc(), table.status),
-    order_updated_payment_statusIdx: index("order_updated_payment_status_idx").on(table.updated_at.desc(), table.payment_status),
-    order_updated_priorityIdx: index("order_updated_priority_idx").on(table.updated_at.desc(), table.priority),
-    order_updatedIdx: index("order_updated_idx").on(table.updated_at.desc()),
+    order_idIdx: index("order_id_idx").on(table.id.desc()),
+    order_updated_statusIdx: index("order_id_status_idx").on(table.id.desc(), table.status),
+    order_updated_payment_statusIdx: index("order_id_payment_status_idx").on(table.id.desc(), table.payment_status),
+    order_updated_priorityIdx: index("order_id_priority_idx").on(table.id.desc(), table.priority),
   }
 });
 
@@ -298,7 +298,7 @@ export const order_relation = relations(order, ({ one, many }) => ({
 export const order_item = pgTable("order_item", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
 
-  order_id: uuid("order_item_order_id")
+  order_id: integer("order_item_order_id")
     .references(() => order.id)
     .notNull(),
   item_id: uuid("order_item_item_id")
@@ -345,7 +345,7 @@ export const order_item_relation = relations(order_item, ({ one }) => ({
 
 export const order_movement = pgTable("order_movement", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
-  order_id: uuid("order_movement_order_id")
+  order_id: integer("order_movement_order_id")
     .references(() => order.id)
     .notNull(),
   driver_id: uuid("order_movement_driver_id")
@@ -470,21 +470,19 @@ export const log = pgTable("log", {
   type: varchar("log_type", {
     enum: ["CREATE", "UPDATE", "DELETE"],
   }).notNull(),
-  customer_id: uuid("log_customer_id")
-  .references(() => customer.id),
-  architect_id: uuid("log_architect_id")
-  .references(() => architect.id),
-  carpanter_id: uuid("log_carpanter_id")
-  .references(() => carpanter.id),
-  driver_id: uuid("log_driver_id")
-    .references(() => driver.id),
-  item_id: uuid("log_item_id")
-    .references(() => item.id),
-  order_id: uuid("log_order_id")
-  .references(() => order.id),
+  customer_id: uuid("log_customer_id"),
+  architect_id: uuid("log_architect_id"),
+  carpanter_id: uuid("log_carpanter_id"),
+  driver_id: uuid("log_driver_id"),
+  item_id: uuid("log_item_id"),
+  order_id: integer("log_order_id"),
   heading: varchar("log_heading", { length: 50 }),
   message: text("log_message").notNull(),
   created_at: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+}, (table) => {
+  return {
+    log_idIdx: index("log_id_idx").on(table.id.desc()),
+  }
 });
 
 export const log_relation = relations(log, ({ one }) => ({

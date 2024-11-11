@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1730289149541,
+      "when": 1731350993303,
       "tag": "0000_init",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1730289749478,
-      "tag": "0001_customer-priority-trigger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1730377458152,
-      "tag": "0002_added-log-table",
+      "when": 1731351000858,
+      "tag": "0001_create-customer-priority-trigger",
       "breakpoints": true
     }
   ]

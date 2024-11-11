@@ -24,11 +24,11 @@ export interface ViewDriverType extends DriverType {
     type: "DELIVERY" | "RETURN";
     status: "Pending" | "Completed";
     id: string;
-    order_id: string;
+    order_id: number;
     created_at: Date;
     labour_frate_cost: number;
     order: {
-        id: string;
+        id: number;
         customer: {
             name: string;
         } | null;

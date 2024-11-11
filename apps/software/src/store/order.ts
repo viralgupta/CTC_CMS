@@ -7,7 +7,7 @@ export enum CommissionType {
 
 export interface OrderItem {
   id: string;
-  order_id: string;
+  order_id: number;
   item_id: string;
 
   quantity: number;
@@ -25,7 +25,7 @@ export interface OrderItem {
 }
 
 export interface OrderRow {
-  id: string;
+  id: number;
   priority: "Low" | "High" | "Medium";
   status: "Pending" | "Delivered";
   payment_status: "UnPaid" | "Partial" | "Paid";
@@ -74,8 +74,8 @@ export const currentFilterAtom = atom<keyof allOrdersType>({
 });
 
 export type ViewOrderType = {
+  id: number;
   status: "Pending" | "Delivered";
-  id: string;
   customer_id: string | null;
   priority: "Low" | "High" | "Medium";
   architect_id: string | null;
@@ -164,7 +164,7 @@ export const viewOrderAtom = atom<null | ViewOrderType>({
   default: null,
 });
 
-export const viewOrderIdAtom = atom<string | null>({
+export const viewOrderIdAtom = atom<number | null>({
   key: "viewOrderIdAtom",
   default: null,
 });

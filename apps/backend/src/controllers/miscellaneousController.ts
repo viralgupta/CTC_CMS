@@ -368,17 +368,17 @@ const getLog = async (req: Request, res: Response) => {
           if(!key || !value){
             if(getLogTypeAnswer.data.linked_to){
               if (getLogTypeAnswer.data.cursor){
-                return and(eq(log.linked_to, getLogTypeAnswer.data.linked_to), lt(log.created_at, getLogTypeAnswer.data.cursor));
+                return and(eq(log.linked_to, getLogTypeAnswer.data.linked_to), lt(log.id, getLogTypeAnswer.data.cursor));
               } else {
                 return eq(log.linked_to, getLogTypeAnswer.data.linked_to);
               }
             } else if(getLogTypeAnswer.data.cursor){
-              return lt(log.created_at, getLogTypeAnswer.data.cursor);
+              return lt(log.id, getLogTypeAnswer.data.cursor);
             } else {
               return undefined;
             }
           } else if(getLogTypeAnswer.data.cursor){
-            return and(eq(log[key], value), lt(log.created_at, getLogTypeAnswer.data.cursor));
+            return and(eq(log[key], value), lt(log.id, getLogTypeAnswer.data.cursor));
           } else {
             return eq(log[key], value);
           }

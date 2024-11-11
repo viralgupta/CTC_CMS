@@ -92,16 +92,14 @@ export const deleteResourceType = z.object({
 })
 
 export const getLogType = z.object({
-  id:z.string().refine((val) => !isNaN(Number(val))).transform((val) => Number(val)).optional(),
+  id:z.number().optional(),
   user_id: z.string().optional(),
   customer_id: z.string().optional(),
   architect_id: z.string().optional(),
   carpanter_id: z.string().optional(),
   driver_id: z.string().optional(),
   item_id: z.string().optional(),
-  order_id: z.string().optional(),
+  order_id: z.number().optional(),
   linked_to: z.enum(["ARCHITECT", "CARPANTER", "CUSTOMER", "DRIVER", "ITEM", "ORDER"]).optional(),
-  cursor: z.string()
-  .transform((dateString) => new Date(dateString))
-  .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
+  cursor: z.number().optional(),
 })

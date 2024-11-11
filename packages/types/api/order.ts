@@ -60,44 +60,44 @@ export const createOrderType = z.object({
 .strict("Too many fields in the body")
 
 export const editOrderNoteType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   note: z.string()
 })
 
 export const addOrderCustomerIdType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   customer_id: z.string().uuid()
 })
 
 export const editOrderCarpanterIdType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   carpanter_id: z.string().uuid()
 })
 
 export const editOrderArchitectIdType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   architect_id: z.string().uuid()
 })
 
 export const editOrderPriorityType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   priority: z.enum(["High", "Medium", "Low"])
 })
 
 export const editOrderDeliveryDateType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   delivery_date: z.string()
     .transform((dateString) => new Date(dateString)) // Transform string to Date
     .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" })
 })
 
 export const editOrderDeliveryAddressIdType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   delivery_address_id: z.string().uuid()
 })
 
 export const editOrderDiscountType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   discount: z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
     message: "The number must be greater than or equal to 0.00",
@@ -106,7 +106,7 @@ export const editOrderDiscountType = z.object({
 })
 
 export const settleBalanceType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   amount: z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
     message: "The number must be greater than or equal to 0.00",
@@ -116,15 +116,13 @@ export const settleBalanceType = z.object({
 })
 
 export const editOrderItemsType = z.object({
-  order_id: z.string(),
+  order_id: z.number(),
   order_items: z.array(orderItem).min(1, "At least one item is required")
 })
 
 
 export const getAllOrdersType = z.object({
-  cursor: z.string()
-    .transform((dateString) => new Date(dateString)) // Transform string to Date
-    .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
+  cursor: z.number().optional(),
   filter: z
     .enum([
       "Status-Pending",
@@ -140,7 +138,7 @@ export const getAllOrdersType = z.object({
 });
 
 export const getOrderType = z.object({
-  order_id: z.string().uuid()
+  order_id: z.string().transform((val) => Number(val))
 });
 
 export const getOrderMovementType = z.object({
@@ -148,7 +146,7 @@ export const getOrderMovementType = z.object({
 });
 
 export const createOrderMovementType = z.object({
-  order_id: z.string().uuid(),
+  order_id: z.number(),
   driver_id: z.string().uuid().optional(),
   type: z.enum(["DELIVERY", "RETURN"]),
   status: z.enum(["Pending", "Completed"]),

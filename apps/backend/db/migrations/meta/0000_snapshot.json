@@ -1,5 +1,5 @@
 {
-  "id": "52c0e19a-dbf3-4660-a1b3-54fe788bf3c1",
+  "id": "53ed4b4f-e7be-4664-ae61-0cf1918d0ea3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -604,16 +604,134 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.log": {
+      "name": "log",
+      "schema": "",
+      "columns": {
+        "log_id": {
+          "name": "log_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "log_user_id": {
+          "name": "log_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_linked_to": {
+          "name": "log_linked_to",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_type": {
+          "name": "log_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_customer_id": {
+          "name": "log_customer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_architect_id": {
+          "name": "log_architect_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_carpanter_id": {
+          "name": "log_carpanter_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_driver_id": {
+          "name": "log_driver_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_item_id": {
+          "name": "log_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_order_id": {
+          "name": "log_order_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_heading": {
+          "name": "log_heading",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "log_message": {
+          "name": "log_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "log_id_idx": {
+          "name": "log_id_idx",
+          "columns": [
+            {
+              "expression": "log_id",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "log_log_user_id_user_user_id_fk": {
+          "name": "log_log_user_id_user_user_id_fk",
+          "tableFrom": "log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "log_user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.order": {
       "name": "order",
       "schema": "",
       "columns": {
         "order_id": {
           "name": "order_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "order_note": {
           "name": "order_note",
@@ -720,11 +838,26 @@
         }
       },
       "indexes": {
-        "order_updated_status_idx": {
-          "name": "order_updated_status_idx",
+        "order_id_idx": {
+          "name": "order_id_idx",
           "columns": [
             {
-              "expression": "updated_at",
+              "expression": "order_id",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "order_id_status_idx": {
+          "name": "order_id_status_idx",
+          "columns": [
+            {
+              "expression": "order_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -741,11 +874,11 @@
           "method": "btree",
           "with": {}
         },
-        "order_updated_payment_status_idx": {
-          "name": "order_updated_payment_status_idx",
+        "order_id_payment_status_idx": {
+          "name": "order_id_payment_status_idx",
           "columns": [
             {
-              "expression": "updated_at",
+              "expression": "order_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -762,11 +895,11 @@
           "method": "btree",
           "with": {}
         },
-        "order_updated_priority_idx": {
-          "name": "order_updated_priority_idx",
+        "order_id_priority_idx": {
+          "name": "order_id_priority_idx",
           "columns": [
             {
-              "expression": "updated_at",
+              "expression": "order_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -775,21 +908,6 @@
               "expression": "order_priority",
               "isExpression": false,
               "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "order_updated_idx": {
-          "name": "order_updated_idx",
-          "columns": [
-            {
-              "expression": "updated_at",
-              "isExpression": false,
-              "asc": false,
               "nulls": "last"
             }
           ],
@@ -869,7 +987,7 @@
         },
         "order_item_order_id": {
           "name": "order_item_order_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -987,7 +1105,7 @@
         },
         "order_movement_order_id": {
           "name": "order_movement_order_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

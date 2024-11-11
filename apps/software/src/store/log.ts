@@ -9,7 +9,7 @@ export interface viewLogButtonType {
     | "ITEM"
     | "ORDER";
   type?: {
-    [key in "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id"]?: string;
+    [key in "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id"]?: string | number;
   };
 }
 
@@ -41,6 +41,6 @@ export interface viewLogType extends viewAllLogType {
   carpanter_id: string | null;
   driver_id: string | null;
   item_id: string | null;
-  order_id: string | null;
+  order_id: number | null;
   message: string;
 }

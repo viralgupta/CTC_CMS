@@ -36,7 +36,7 @@ const ViewAllLogs = () => {
       if (viewLogButton.type) {
         Object.entries(viewLogButton.type).forEach(([key, value]) => {
           if (value) {
-            queryParams.append(key, value);
+            queryParams.append(key, value.toString());
           }
         });
       } else {

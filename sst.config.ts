@@ -1,5 +1,5 @@
 import { SSTConfig } from "sst";
-import { API } from "./stacks/MyStack";
+import { BackendStack } from "./stacks/Backend";
 
 export default {
   config(_input) {
@@ -9,7 +9,7 @@ export default {
     };
   },
   stacks(app) {
-    app.stack(API);
+    app.stack(BackendStack);
     if (app.stage === "dev"){
       app.setDefaultRemovalPolicy("destroy");
     }

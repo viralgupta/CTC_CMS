@@ -89,8 +89,24 @@ CREATE TABLE IF NOT EXISTS "item_order" (
 	"item_order_item_id" uuid NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "log" (
+	"log_id" serial PRIMARY KEY NOT NULL,
+	"log_user_id" uuid NOT NULL,
+	"log_linked_to" varchar NOT NULL,
+	"log_type" varchar NOT NULL,
+	"log_customer_id" uuid,
+	"log_architect_id" uuid,
+	"log_carpanter_id" uuid,
+	"log_driver_id" uuid,
+	"log_item_id" uuid,
+	"log_order_id" integer,
+	"log_heading" varchar(50),
+	"log_message" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "order" (
-	"order_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"order_id" serial PRIMARY KEY NOT NULL,
 	"order_note" text,
 	"customer_id" uuid,
 	"carpanter_id" uuid,
@@ -111,7 +127,7 @@ CREATE TABLE IF NOT EXISTS "order" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "order_item" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"order_item_order_id" uuid NOT NULL,
+	"order_item_order_id" integer NOT NULL,
 	"order_item_item_id" uuid NOT NULL,
 	"order_item_quantity" real NOT NULL,
 	"order_item_delivered_quantity" real NOT NULL,
@@ -127,7 +143,7 @@ CREATE TABLE IF NOT EXISTS "order_item" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "order_movement" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"order_movement_order_id" uuid NOT NULL,
+	"order_movement_order_id" integer NOT NULL,
 	"order_movement_driver_id" uuid,
 	"order_movement_type" varchar NOT NULL,
 	"order_status" varchar DEFAULT 'Pending' NOT NULL,
@@ -207,6 +223,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "item_order" ADD CONSTRAINT "item_order_item_order_item_id_item_item_id_fk" FOREIGN KEY ("item_order_item_id") REFERENCES "public"."item"("item_id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "log" ADD CONSTRAINT "log_log_user_id_user_user_id_fk" FOREIGN KEY ("log_user_id") REFERENCES "public"."user"("user_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -297,7 +319,8 @@ END $$;
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "estimate_updated_at_idx" ON "estimate" USING btree ("updated_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "item_order_order_date_idx" ON "item_order" USING btree ("item_order_date" DESC NULLS LAST);--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "order_updated_status_idx" ON "order" USING btree ("updated_at" DESC NULLS LAST,"order_status");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "order_updated_payment_status_idx" ON "order" USING btree ("updated_at" DESC NULLS LAST,"order_payment_status");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "order_updated_priority_idx" ON "order" USING btree ("updated_at" DESC NULLS LAST,"order_priority");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "order_updated_idx" ON "order" USING btree ("updated_at" DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "log_id_idx" ON "log" USING btree ("log_id" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "order_id_idx" ON "order" USING btree ("order_id" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "order_id_status_idx" ON "order" USING btree ("order_id" DESC NULLS LAST,"order_status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "order_id_payment_status_idx" ON "order" USING btree ("order_id" DESC NULLS LAST,"order_payment_status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "order_id_priority_idx" ON "order" USING btree ("order_id" DESC NULLS LAST,"order_priority");

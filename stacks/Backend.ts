@@ -2,7 +2,7 @@ import { StackContext, Api, Config, Bucket } from "sst/constructs";
 import { LayerVersion } from "aws-cdk-lib/aws-lambda";
 import { Size } from "aws-cdk-lib/core";
 
-export function API({ stack }: StackContext) {
+export function BackendStack({ stack }: StackContext) {
 
   const AUTH_SECRET = new Config.Secret(stack, "AUTH_SECRET");
   const DB_URL = new Config.Secret(stack, "DB_URL");

@@ -18,7 +18,7 @@ export interface viewMovementType {
   type: "DELIVERY" | "RETURN";
   status: "Pending" | "Completed";
   driver_id: string | null;
-  order_id: string;
+  order_id: number;
   created_at: Date;
   delivery_at: Date | null;
   labour_frate_cost: number;

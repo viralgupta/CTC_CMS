@@ -1006,7 +1006,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Status-Pending":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.status, "Pending")
                 );
               } else {
@@ -1015,7 +1015,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Status-Delivered":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.status, "Delivered")
                 );
               } else {
@@ -1024,7 +1024,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Payment-UnPaid":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.payment_status, "UnPaid")
                 );
               } else {
@@ -1033,7 +1033,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Payment-Partial":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.payment_status, "Partial")
                 );
               } else {
@@ -1042,7 +1042,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Payment-Paid":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.payment_status, "Paid")
                 );
               } else {
@@ -1051,7 +1051,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Priority-Low":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.priority, "Low")
                 );
               } else {
@@ -1060,7 +1060,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Priority-Medium":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.priority, "Medium")
                 );
               } else {
@@ -1069,7 +1069,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "Priority-High":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return and(
-                  lt(order.updated_at, getAllOrdersTypeAnswer.data.cursor),
+                  lt(order.id, getAllOrdersTypeAnswer.data.cursor),
                   eq(order.priority, "High")
                 );
               } else {
@@ -1078,7 +1078,7 @@ const getAllOrders = async (req: Request, res: Response) => {
             case "All":
               if (getAllOrdersTypeAnswer.data.cursor) {
                 return lt(
-                  order.updated_at,
+                  order.id,
                   getAllOrdersTypeAnswer.data.cursor
                 );
               } else {
