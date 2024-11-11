@@ -15,6 +15,8 @@ import {
   estimate,
   estimate_item,
   resource,
+  item_order,
+  log
 } from "../schema";
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -32,6 +34,8 @@ const db = drizzle(seedClient, { schema });
 async function main() {
   try {
     // Deleting order-related tables sequentially (if needed to avoid foreign key issues)
+    await db.delete(log);
+    await db.delete(item_order);
     await db.delete(order_movement_item);
     await db.delete(order_movement);
     await db.delete(order_item);
