@@ -29,13 +29,11 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
-import { useAllCustomer } from "@/hooks/customers";
 
 const EditCustomer = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewCustomer, setViewCustomer] = useRecoilState(viewCustomerAtom);
   const setViewCustomerID = useSetRecoilState(viewCustomerIDAtom);
-  const { refetchCustomers } = useAllCustomer();
 
   const EditItemForm = () => {
     const form = useForm<z.infer<typeof editCustomerType>>({
@@ -53,7 +51,6 @@ const EditCustomer = ({ children }: { children: React.ReactNode }) => {
       if (res.status == 200) setOpen(false);
       setViewCustomerID(null);
       setViewCustomer(null);
-      refetchCustomers();
     }
 
     return (

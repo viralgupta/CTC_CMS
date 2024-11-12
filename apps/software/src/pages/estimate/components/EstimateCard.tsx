@@ -14,7 +14,6 @@ import {
 import { parseDateToString } from "@/lib/utils";
 import DeleteAlert from "@/components/DeleteAlert";
 import { Button } from "@/components/ui/button";
-import { useAllEstimates } from "@/hooks/estimate";
 import printInfoAtom from "@/store/print";
 import { toast } from "sonner";
 
@@ -22,7 +21,6 @@ const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
   const setViewCustomerID = useSetRecoilState(viewCustomerIDAtom);
   const setPrintInfo = useSetRecoilState(printInfoAtom);
   const viewEstimate = useRecoilValue(viewEstimateAtom);
-  const { refetchEstimates } = useAllEstimates();
 
   const setPrintEstimateInfo = (estimate: ViewEstimateType | null) => {
     if(!estimate) {
@@ -97,7 +95,6 @@ const EstimateCard = ({ estimate }: { estimate: ViewEstimateType | null }) => {
         <div className="gap-2 flex w-full">
           <EditEstimate />
           <DeleteAlert
-            refetchFunction={refetchEstimates}
             type="estimate"
             viewObjectAtom={viewEstimateAtom}
             viewObjectIdAtom={viewEstimateIdAtom}

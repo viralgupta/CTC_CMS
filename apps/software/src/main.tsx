@@ -6,6 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { SessionProvider } from 'next-auth/react'
 import { Toaster } from "@/components/ui/sonner"
 import { APIProvider } from '@vis.gl/react-google-maps'
+import RecoilNexus from 'recoil-nexus'
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <SessionProvider
@@ -19,6 +20,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <ThemeProvider>
         <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API}>
           <Toaster richColors theme="light" toastOptions={{}} />
+          <RecoilNexus/>
           <App />
         </APIProvider>
       </ThemeProvider>

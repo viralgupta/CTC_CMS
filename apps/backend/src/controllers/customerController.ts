@@ -14,7 +14,7 @@ const createCustomer = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdCustomer = await db.transaction(async (tx) => {
 
       const tCustomer = await tx.insert(customer).values({
         name: createCustomerTypeAnswer.data.name,
@@ -89,9 +89,43 @@ const createCustomer = async (req: Request, res: Response) => {
           })
         )
       }
+
+      const txCreatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, tCustomer[0].id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return txCreatedCustomer;
     })
     
-    return res.status(200).json({success: true, message: "Customer created successfully"});
+    return res.status(200).json({success: true, message: "Customer created successfully", update: [{ type: "customer", data: createdCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create customer", error: error.message ? error.message : error});
   }
@@ -280,7 +314,7 @@ const addAddress = async (req: Request, res: Response) => {
 
   try {
 
-    await db.transaction(async (tx) => {
+    const updatedCustomer = await db.transaction(async (tx) => {
 
       if(addAddressTypeAnswer.data.isPrimary == true){
         await tx
@@ -317,10 +351,44 @@ const addAddress = async (req: Request, res: Response) => {
         latitude: addAddressTypeAnswer.data.cordinates?.latitude,
         longitude: addAddressTypeAnswer.data.cordinates?.longitude
       });
+
+      const txUpdatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, addAddressTypeAnswer.data.customer_id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return txUpdatedCustomer;
     })
 
 
-    return res.status(200).json({success: true, message: "Address added successfully"});
+    return res.status(200).json({success: true, message: "Address added successfully", update: [{ type: "customer", data: updatedCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to add address", error: error.message ? error.message : error});
   }
@@ -335,7 +403,7 @@ const editAddress = async (req: Request, res: Response) => {
 
   try {
     
-    await db.transaction(async (tx) => {
+    const updatedCustomer = await db.transaction(async (tx) => {
       if(editAddressTypeAnswer.data.isPrimary == true){
         await tx
           .update(address)
@@ -375,9 +443,43 @@ const editAddress = async (req: Request, res: Response) => {
         latitude: editAddressTypeAnswer.data.cordinates?.latitude,
         longitude: editAddressTypeAnswer.data.cordinates?.longitude
       }).where(eq(address.id, editAddressTypeAnswer.data.address_id));
+
+      const txUpdatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, editAddressTypeAnswer.data.customer_id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return txUpdatedCustomer;
     })
 
-    return res.status(200).json({success: true, message: "Address updated successfully"});
+    return res.status(200).json({success: true, message: "Address updated successfully", update: [{ type: "customer", data: updatedCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update address", error: error.message ? error.message : error});
   }
@@ -391,7 +493,7 @@ const deleteAddress = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedCustomer = await db.transaction(async (tx) => {
       const foundAddress = await tx.query.address.findFirst({
         where: (address, { eq }) => eq(address.id, deleteAddressTypeAnswer.data.address_id),
         columns: {
@@ -434,9 +536,43 @@ const deleteAddress = async (req: Request, res: Response) => {
       }
 
       await tx.delete(address).where(eq(address.id, deleteAddressTypeAnswer.data.address_id));
+
+      const txUpdatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, foundAddress.customer_id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return txUpdatedCustomer;
     });
 
-    return res.status(200).json({success: true, message: "Address deleted successfully"});
+    return res.status(200).json({success: true, message: "Address deleted successfully", update: [{ type: "customer", data: updatedCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete address", error: error.message ? error.message : error});
   }
@@ -451,7 +587,7 @@ const editCustomer = async (req: Request, res: Response) => {
 
   try {
     
-    await db.transaction(async (tx) => {
+    const updatedCustomer = await db.transaction(async (tx) => {
       const tCustomer = await tx.select({id: customer.id}).from(customer).where(eq(customer.id, editCustomerTypeAnswer.data.customer_id));
 
       if(tCustomer.length === 0){
@@ -470,9 +606,43 @@ const editCustomer = async (req: Request, res: Response) => {
         type: "UPDATE",
         message: JSON.stringify(omit(editCustomerTypeAnswer.data, "customer_id"), null, 2)
       });
+
+      const txUpdatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, editCustomerTypeAnswer.data.customer_id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return txUpdatedCustomer;
     })
 
-    return res.status(200).json({success: true, message: "Customer updated successfully"});
+    return res.status(200).json({success: true, message: "Customer updated successfully", update: [{ type: "customer", data: updatedCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update customer", error: error.message ? error.message : error});
   }
@@ -487,7 +657,7 @@ const settleBalance = async (req: Request, res: Response) => {
 
   try {
     
-    await db.transaction(async (tx) => {
+    const updatedCustomer = await db.transaction(async (tx) => {
       const tCustomer = await tx.select({id: customer.id, balance: customer.balance}).from(customer).where(eq(customer.id, settleBalanceTypeAnswer.data.customer_id));
 
       if(tCustomer.length === 0){
@@ -517,9 +687,43 @@ const settleBalance = async (req: Request, res: Response) => {
           New balance: ${newBalance}
         `
       });
+
+      const txUpdatedCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, settleBalanceTypeAnswer.data.customer_id),
+        columns: {
+          id: true,
+          name: true,
+          balance: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+          addresses: {
+            where: (address, { eq }) => eq(address.isPrimary, true),
+            columns: {
+              house_number: true,
+            },
+            limit: 1,
+            with: {
+              address_area: {
+                columns: {
+                  area: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return txUpdatedCustomer;
     })
 
-    return res.status(200).json({success: true, message: "Balance updated successfully"});
+    return res.status(200).json({success: true, message: "Balance updated successfully", update: [{ type: "customer", data: updatedCustomer }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update balance", error: error.message ? error.message : error});
   }
@@ -653,7 +857,7 @@ const deleteCustomer = async (req: Request, res: Response) => {
       });
     });
 
-    return res.status(200).json({success: true, message: "Customer deleted successfully"});
+    return res.status(200).json({success: true, message: "Customer deleted successfully", update: [{ type: "customer", data: { id: deleteCustomerTypeAnswer.data.customer_id, _: true } }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete customer", error: error.message ? error.message : error});
   }

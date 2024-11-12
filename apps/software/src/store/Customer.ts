@@ -58,7 +58,7 @@ export interface viewCustomerType extends CustomerType {
   }[];
 }
 
-const allCustomerAtom = atom<CustomerType[]>({
+export const allCustomerAtom = atom<CustomerType[]>({
   key: "allCustomerAtom",
   default: [],
 });
@@ -72,5 +72,3 @@ export const viewCustomerIDAtom = atom<string | null>({
   key: "viewCustomerIDAtom",
   default: null,
 });
-
-export default allCustomerAtom;

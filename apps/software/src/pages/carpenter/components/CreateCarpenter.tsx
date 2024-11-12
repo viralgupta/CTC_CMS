@@ -25,10 +25,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import request from "@/lib/request";
-import { useAllCarpenter } from "@/hooks/carpenter";
 
 const CreateCarpenterForm = () => {
-  const { refetchCarpenters } = useAllCarpenter();
 
   const form = useForm<z.infer<typeof createCarpanterType>>({
     resolver: zodResolver(createCarpanterType),
@@ -96,7 +94,6 @@ const CreateCarpenterForm = () => {
       const res = await request.post("/carpenter/createCarpanter", values);
       if (res.status == 200) {
         form.reset();
-        refetchCarpenters();
       }
     } catch (error) {
       console.log(error);

@@ -1,3 +1,4 @@
+import { updateAllElements } from "@/lib/updateAllElements";
 import axios from "axios"
 import { toast } from "sonner";
 
@@ -9,6 +10,9 @@ const request = axios.create({
 request.interceptors.response.use(function (response) {
   if(response.data.message){
     toast.success(response.data.message);
+  }
+  if(response.data.update){
+    updateAllElements(response.data.update);
   }
   return response;
 }, function (error) {

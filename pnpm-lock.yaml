@@ -192,6 +192,9 @@ importers:
       recoil:
         specifier: ^0.7.7
         version: 0.7.7(react-dom@18.3.1)(react@18.3.1)
+      recoil-nexus:
+        specifier: ^0.5.1
+        version: 0.5.1(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)(recoil@0.7.7)(typescript@5.6.2)
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1)(react@18.3.1)
@@ -12437,6 +12440,22 @@ packages:
       resolve: 1.22.8
     dev: true
 
+  /recoil-nexus@0.5.1(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)(recoil@0.7.7)(typescript@5.6.2):
+    resolution: {integrity: sha512-gjBOW1v2BYXkLpU3eHo5SzUjmkfX5NwnvziYqgSSWc56UNeYuFfVyAKDOPjJh9u9BA6383tgZN6TC/4zm96ffQ==}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+      recoil: '>=0.2.0'
+      typescript: '>=4.1.0'
+    dependencies:
+      '@types/react': 18.3.6
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      recoil: 0.7.7(react-dom@18.3.1)(react@18.3.1)
+      typescript: 5.6.2
+    dev: false
+
   /recoil@0.7.7(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-8Og5KPQW9LwC577Vc7Ug2P0vQshkv1y3zG3tSSkWMqkWSwHmE+by06L8JtnGocjW6gcCvfwB3YtrJG6/tWivNQ==}
     peerDependencies:
@@ -13665,7 +13684,6 @@ packages:
     resolution: {integrity: sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /ufo@1.5.4:
     resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}

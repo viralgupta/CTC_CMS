@@ -25,10 +25,8 @@ import SelectCategory from "@/components/Inputs/SelectCategory";
 import RateDimension from "@/components/Inputs/RateDimension";
 import { createItemType } from "@type/api/item";
 import request from "@/lib/request";
-import { useAllItems } from "@/hooks/items";
 
 const CreateItemForm = () => {
-  const { refetchItems } = useAllItems();
   
   const form = useForm<z.infer<typeof createItemType>>({
     resolver: zodResolver(createItemType),
@@ -45,7 +43,6 @@ const CreateItemForm = () => {
       const res = await request.post("/inventory/createItem", values);
       if(res.status == 200){
         form.reset();
-        refetchItems();
       }
     } catch (error) {
       console.log(error);

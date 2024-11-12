@@ -32,7 +32,6 @@ import {
 import ViewAllAddresses from "./ViewAllAddresses";
 import EditCustomer from "./EditCustomer";
 import ViewCustomerEstimates from "./ViewCustomerEstimates";
-import { useAllCustomer } from "@/hooks/customers";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
 import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
@@ -43,7 +42,6 @@ export default function CustomerCard({
 }: {
   customer: viewCustomerType | null;
 }) {
-  const { refetchCustomers } = useAllCustomer()
   if (!customer) {
     return (
       <Card className="w-full p-6">
@@ -88,7 +86,7 @@ export default function CustomerCard({
                   Edit Customer
                 </Button>
               </EditCustomer>
-              <DeleteAlert type="customer" refetchFunction={refetchCustomers} viewObjectAtom={viewCustomerAtom} viewObjectIdAtom={viewCustomerIDAtom}>
+              <DeleteAlert type="customer" viewObjectAtom={viewCustomerAtom} viewObjectIdAtom={viewCustomerIDAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Customer
@@ -175,7 +173,6 @@ const SettleBalance = ({
   children: React.ReactNode;
 }) => {
   const [open, setOpen] = React.useState(false);
-  const { refetchCustomers } = useAllCustomer();
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const [viewCustomer, setViewCustomer] = useRecoilState(viewCustomerAtom);
 
@@ -186,7 +183,6 @@ const SettleBalance = ({
     });
     if (res.status == 200) {
       setOpen(false);
-      refetchCustomers();
       setViewCustomer(null);
       setViewCustomerId(null);
     }

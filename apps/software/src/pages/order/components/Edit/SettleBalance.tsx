@@ -5,9 +5,11 @@ import { z } from "zod";
 import { settleBalanceType } from "@type/api/order";
 import { useAllOrders } from "@/hooks/orders";
 import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SettleBalance = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
+  if(!viewOrder) return <Skeleton className="w-full h-48"/>
   const { refetchOrders } = useAllOrders();
 
   const onSubmit = async (value: z.infer<typeof settleBalanceType>) => {
@@ -27,7 +29,7 @@ const SettleBalance = ({ closeDialog }: { closeDialog?: () => void }) => {
           onSubmit({
             amount,
             operator: operation,
-            order_id: viewOrder?.id ?? "",
+            order_id: viewOrder.id,
           });
         }}
       />

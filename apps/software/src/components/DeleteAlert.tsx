@@ -16,12 +16,10 @@ import React from "react";
 const DeleteAlert = ({
   children,
   type,
-  refetchFunction,
   viewObjectAtom,
   viewObjectIdAtom
 }: {
   children: React.ReactNode;
-  refetchFunction?: () => void
   type: "customer" | "architect" | "carpanter" | "driver" | "resource" | "estimate"
   viewObjectAtom: RecoilState<any | null>
   viewObjectIdAtom: RecoilState<string | null>
@@ -37,7 +35,6 @@ const DeleteAlert = ({
       },
     });
     if (res.status == 200) {
-      refetchFunction && refetchFunction();
       setViewX(null);
       setViewXId(null);
     }

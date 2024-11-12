@@ -92,14 +92,14 @@ export const deleteResourceType = z.object({
 })
 
 export const getLogType = z.object({
-  id:z.number().optional(),
+  id:z.string().transform((val) => Number(val)).optional(),
   user_id: z.string().optional(),
   customer_id: z.string().optional(),
   architect_id: z.string().optional(),
   carpanter_id: z.string().optional(),
   driver_id: z.string().optional(),
   item_id: z.string().optional(),
-  order_id: z.number().optional(),
+  order_id: z.string().transform((val) => Number(val)).optional(),
   linked_to: z.enum(["ARCHITECT", "CARPANTER", "CUSTOMER", "DRIVER", "ITEM", "ORDER"]).optional(),
-  cursor: z.number().optional(),
+  cursor: z.string().transform((val) => Number(val)).optional(),
 })

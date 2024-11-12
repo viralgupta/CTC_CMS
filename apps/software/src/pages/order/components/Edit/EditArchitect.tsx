@@ -3,13 +3,11 @@ import { useRecoilValue } from "recoil";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import request from "@/lib/request";
-import { useAllOrders } from "@/hooks/orders";
 import SearchArchitect from "@/pages/architect/components/SearchArchitect";
 import Spinner from "@/components/ui/Spinner";
 
 const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
-  const { refetchOrders } = useAllOrders();
   const [architect_id, setArchitect_id] = React.useState(viewOrder?.architect_id ?? "");
   const [loading, setLoading] = React.useState(false);
 
@@ -21,7 +19,6 @@ const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
     });
     setLoading(false);
     closeDialog && closeDialog();
-    refetchOrders();
   };
 
   return (

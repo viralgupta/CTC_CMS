@@ -13,7 +13,7 @@ const createDriver = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdDriver = await db.transaction(async (tx) => {
 
       const tDriver = await tx.insert(driver).values({
         name: createDriverTypeAnswer.data.name,
@@ -60,9 +60,30 @@ const createDriver = async (req: Request, res: Response) => {
           };
         })
       );
+
+      const txCreatedDriver = await tx.query.driver.findFirst({
+        where: (driver, { eq }) => eq(driver.id, tDriver[0].id),
+        columns: {
+          id: true,
+          name: true,
+          size_of_vehicle: true,
+          activeDeliveries: true
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          },
+        }
+      });
+
+      return txCreatedDriver;
     })
     
-    return res.status(200).json({success: true, message: "Driver created successfully"});
+    return res.status(200).json({success: true, message: "Driver created successfully", update: [{ type: "driver", data: createdDriver }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create driver", error: error.message ? error.message : error});
   }
@@ -76,7 +97,7 @@ const editDriver = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedDriver = await db.transaction(async (tx) => {
       const tDriver = await tx.select({id: driver.id}).from(driver).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
       if(tDriver.length === 0){
         throw new Error("Driver not found");
@@ -96,9 +117,29 @@ const editDriver = async (req: Request, res: Response) => {
         type: "UPDATE",
         message: JSON.stringify(editDriverTypeAnswer.data, null, 2)
       });
+
+      const txUpdatedDriver = await tx.query.driver.findFirst({
+        where: (driver, { eq }) => eq(driver.id, editDriverTypeAnswer.data.driver_id),
+        columns: {
+          id: true,
+          name: true,
+          size_of_vehicle: true,
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      });
+
+      return txUpdatedDriver;
     });
 
-    return res.status(200).json({success: true, message: "Driver Edited Successfully"});
+    return res.status(200).json({success: true, message: "Driver Edited Successfully", update: [{ type: "driver", data: updatedDriver }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit driver", error: error.message ? error.message : error});
   }
@@ -206,7 +247,7 @@ const deleteDriver = async (req: Request, res: Response) => {
         });
       })
   
-      return res.status(200).json({success: true, message: "Driver deleted successfully"});
+      return res.status(200).json({success: true, message: "Driver deleted successfully", update: [{ type: "driver", data: { id: deleteDriverTypeAnswer.data.driver_id, _: true } }]});
     } catch (error: any) {
       return res.status(400).json({success: false, message: "Unable to delete driver", error: error.message ? error.message : error});
     }

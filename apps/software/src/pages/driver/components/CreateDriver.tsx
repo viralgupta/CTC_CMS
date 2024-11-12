@@ -25,11 +25,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import request from "@/lib/request";
-import { useAllDrivers } from "@/hooks/driver";
 import { SelectDriverSizeOfVehicle } from "@/components/Inputs/SelectDriverSizeOfVehicle";
 
 const CreateDriverForm = () => {
-  const { refetchDrivers } = useAllDrivers();
 
   const form = useForm<z.infer<typeof createDriverType>>({
     resolver: zodResolver(createDriverType),
@@ -95,7 +93,6 @@ const CreateDriverForm = () => {
       const res = await request.post("/driver/createDriver", values);
       if (res.status == 200) {
         form.reset();
-        refetchDrivers();
       }
     } catch (error) {
       console.log(error);

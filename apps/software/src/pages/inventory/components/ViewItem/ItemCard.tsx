@@ -45,7 +45,6 @@ import { z } from "zod";
 import request from "@/lib/request";
 import React from "react";
 import { editItemType } from "@type/api/item";
-import { useAllItems } from "@/hooks/items";
 import ItemOrders from "./ItemOrders/ItemOrder";
 import LogButton from "@/components/log/logButton";
 
@@ -149,7 +148,6 @@ export default function ItemCard({ item }: { item: viewItemType | null }) {
 const EditItem = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
-  const { refetchItems } = useAllItems();
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
 
   const EditItemForm = () => {
@@ -174,7 +172,6 @@ const EditItem = ({ children }: { children: React.ReactNode }) => {
         setOpen(false);
         setViewItemID(null);
         setViewItem(null);
-        refetchItems();
       }
     }
 
@@ -357,7 +354,6 @@ const DeleteItem = ({
   children: React.ReactNode;
   itemId: string;
 }) => {
-  const { refetchItems } = useAllItems();
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
 
   const handleDelete = async () => {
@@ -367,7 +363,6 @@ const DeleteItem = ({
       },
     });
     if(res.status == 200) {
-      refetchItems();
       setViewItemId(null);
     }
   };

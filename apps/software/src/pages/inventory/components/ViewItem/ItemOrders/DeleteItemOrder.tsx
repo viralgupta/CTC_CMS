@@ -13,7 +13,6 @@ import {
 import request from '@/lib/request';
 import { viewItemAtom, viewItemIDAtom } from '@/store/Items';
 import { useSetRecoilState } from 'recoil';
-import { useAllItems } from '@/hooks/items';
 
 const DeleteItemOrder = ({
   children,
@@ -22,7 +21,6 @@ const DeleteItemOrder = ({
   children: React.ReactNode;
   id: string;
 }) => {
-  const { refetchItems } = useAllItems()
   const setViewItem = useSetRecoilState(viewItemAtom);
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
 
@@ -35,7 +33,6 @@ const DeleteItemOrder = ({
     if(res.status == 200){
       setViewItem(null);
       setViewItemId(null);
-      refetchItems();
     }
   }
 

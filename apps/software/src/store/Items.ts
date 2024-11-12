@@ -25,7 +25,7 @@ export interface viewItemType extends itemType {
   min_rate: number | null;
   order_items: viewItemOrderItems[];
   item_orders: {
-    id: number;
+    id: string;
     vendor_name: string | null;
     ordered_quantity: number | null;
     order_date: Date;
@@ -47,7 +47,7 @@ export interface selectedItemRateType {
   }[];
 }
 
-const allItemsAtom = atom<itemType[]>({
+export const allItemsAtom = atom<itemType[]>({
   key: "allItemsAtom",
   default: []
 });
@@ -67,5 +67,3 @@ export const selectedItemRateAtom = atom<selectedItemRateType | null>({
   key: "selectedItemRateAtom",
   default: null
 });
-
-export default allItemsAtom;

@@ -12,7 +12,6 @@ import EditDriver from "./EditDriver";
 import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
-import { useAllDrivers } from "@/hooks/driver";
 import LogButton from "@/components/log/logButton";
 
 export default function DriverCard({
@@ -20,7 +19,6 @@ export default function DriverCard({
 }: {
   driver: ViewDriverType | null;
 }) {
-  const { refetchDrivers } = useAllDrivers()
   if (!driver) {
     return (
       <Card className="w-full p-6">
@@ -62,7 +60,7 @@ export default function DriverCard({
                   Edit Driver
                 </Button>
               </EditDriver>
-              <DeleteAlert refetchFunction={refetchDrivers} type="driver" viewObjectAtom={viewDriverAtom} viewObjectIdAtom={viewDriverIdAtom}>
+              <DeleteAlert type="driver" viewObjectAtom={viewDriverAtom} viewObjectIdAtom={viewDriverIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Driver

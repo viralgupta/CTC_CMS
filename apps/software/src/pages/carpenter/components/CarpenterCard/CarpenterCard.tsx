@@ -27,7 +27,6 @@ import {
   viewCarpenterIdAtom,
   ViewCarpenterType,
 } from "@/store/carpenter";
-import { useAllCarpenter } from "@/hooks/carpenter";
 import { settleBalanceType } from "@type/api/architect";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
@@ -39,7 +38,6 @@ export default function CarpenterCard({
 }: {
   carpenter: ViewCarpenterType | null;
 }) {
-  const { refetchCarpenters } = useAllCarpenter();
   if (!carpenter) {
     return (
       <Card className="w-full p-6">
@@ -81,7 +79,7 @@ export default function CarpenterCard({
                   Edit Carpenter
                 </Button>
               </EditCarpenter>
-              <DeleteAlert type="carpanter" refetchFunction={refetchCarpenters} viewObjectAtom={viewCarpenterAtom} viewObjectIdAtom={viewCarpenterIdAtom}>
+              <DeleteAlert type="carpanter" viewObjectAtom={viewCarpenterAtom} viewObjectIdAtom={viewCarpenterIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Carpenter
@@ -144,7 +142,6 @@ export default function CarpenterCard({
 
 const SettleBalance = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false);
-  const { refetchCarpenters } = useAllCarpenter();
   const setViewCarpenterId = useSetRecoilState(viewCarpenterIdAtom);
   const [viewCarpenter, setViewCarpenter] = useRecoilState(viewCarpenterAtom);
 
@@ -160,7 +157,6 @@ const SettleBalance = ({ children }: { children: React.ReactNode }) => {
     });
     if (res.status == 200) {
       setOpen(false);
-      refetchCarpenters();
       setViewCarpenter(null);
       setViewCarpenterId(null);
     }

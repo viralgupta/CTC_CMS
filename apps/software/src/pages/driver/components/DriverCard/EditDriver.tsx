@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewDriverAtom, viewDriverIdAtom } from "@/store/driver";
-import { useAllDrivers } from "@/hooks/driver";
 import { editDriverType } from "@type/api/driver";
 import { SelectDriverSizeOfVehicle } from "@/components/Inputs/SelectDriverSizeOfVehicle";
 
@@ -33,7 +32,6 @@ const EditDriver = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewDriver, setViewDriver] = useRecoilState(viewDriverAtom);
   const setViewDriverID = useSetRecoilState(viewDriverIdAtom);
-  const { refetchDrivers } = useAllDrivers();
 
   const EditDriverForm = () => {
     const form = useForm<z.infer<typeof editDriverType>>({
@@ -53,7 +51,6 @@ const EditDriver = ({ children }: { children: React.ReactNode }) => {
       if (res.status == 200) setOpen(false);
       setViewDriverID(null);
       setViewDriver(null);
-      refetchDrivers();
     }
 
     return (

@@ -33,7 +33,6 @@ import { z } from "zod";
 import SelectEstimateItems from "./Input/SelectEstimateItems/SelectEstimateItems";
 import { useAllItems } from "@/hooks/items";
 import React from "react";
-import { useAllEstimates } from "@/hooks/estimate";
 
 const CreateEstimate = () => {
   return (
@@ -55,7 +54,6 @@ const CreateEstimate = () => {
 };
 
 const CreateEstimateForm = () => {
-  const { refetchEstimates } = useAllEstimates()
   const { items: allItems } = useAllItems();
 
   const form = useForm<z.infer<typeof createEstimateType>>({
@@ -71,7 +69,6 @@ const CreateEstimateForm = () => {
       const res = await request.post("/estimate/createEstimate", values);
       if (res.status == 200) {
         form.reset();
-        refetchEstimates();
       }
     } catch (error) {
       console.log(error);

@@ -13,7 +13,7 @@ const createItem = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdItem = await db.transaction(async (tx) => {
       const createdItem = await tx.insert(item).values({
         name: createItemTypeAnswer.data.name,
         multiplier: createItemTypeAnswer.data.multiplier,
@@ -38,9 +38,19 @@ const createItem = async (req: Request, res: Response) => {
         type: "CREATE",
         message: JSON.stringify(createItemTypeAnswer.data, null, 2)
       });
+
+      const txCreatedItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, createdItem[0].id),
+        columns: {
+          min_rate: false,
+          multiplier: false
+        },
+      });
+
+      return txCreatedItem;
     });
 
-    return res.status(200).json({success: true, message: "Item created successfully"});
+    return res.status(200).json({success: true, message: "Item created successfully", update: [{ type: "item", data: createdItem }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create item", error: error.message ? error.message : error});
   }
@@ -146,7 +156,7 @@ const editItem = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedItem = await db.transaction(async (tx) => {
       const updatedItem = await tx.update(item).set({
         name: editItemTypeAnswer.data.name,
         multiplier: editItemTypeAnswer.data.multiplier,
@@ -168,9 +178,19 @@ const editItem = async (req: Request, res: Response) => {
         type: "UPDATE",
         message: JSON.stringify(omit(editItemTypeAnswer.data, "item_id"), null, 2)
       });
+
+      const txUpdatedItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, editItemTypeAnswer.data.item_id),
+        columns: {
+          min_rate: false,
+          multiplier: false
+        },
+      });
+
+      return txUpdatedItem;
     });
 
-    return res.status(200).json({success: true, message: "Item edited successfully"});
+    return res.status(200).json({success: true, message: "Item edited successfully", update: [{ type: "item", data: updatedItem }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit item", error: error.message ? error.message : error});
   }
@@ -277,7 +297,7 @@ const receiveItemOrder = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedItem = await db.transaction(async (tx) => {
       const foundItemOrderTx = await tx.query.item_order.findFirst({
         where: (item_order, { eq }) => eq(item_order.id, receiveItemOrderTypeAnswer.data.id),
         columns: {
@@ -337,9 +357,19 @@ const receiveItemOrder = async (req: Request, res: Response) => {
         heading: "Item Quanitity Updated, Item Order was Updated",
         message: JSON.stringify(omit(receiveItemOrderTypeAnswer.data, "id"), null, 2)
       });
+
+      const txUpdatedItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, foundItemOrderTx.item_id),
+        columns: {
+          min_rate: false,
+          multiplier: false
+        },
+      });
+
+      return txUpdatedItem;
     })
 
-    return res.status(200).json({success: true, message: "Item Order updated, Quanity Updated!"});
+    return res.status(200).json({success: true, message: "Item Order updated, Quanity Updated!", update: [{ type: "item", data: updatedItem }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update item order and quantity!", error: error.message ? error.message : error});
   }
@@ -353,7 +383,7 @@ const deleteItemOrder = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedItem = await db.transaction(async (tx) => {
       const foundItemOrderTx = await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id)).returning();
 
       if(!foundItemOrderTx[0]?.id){
@@ -375,9 +405,19 @@ const deleteItemOrder = async (req: Request, res: Response) => {
         heading: "Item Quanitity Updated, Item Order was Deleted",
         message: JSON.stringify(omit(foundItemOrderTx[0], ["id", "item_id"]), null, 2)
       });
+
+      const txUpdatedItem = await tx.query.item.findFirst({
+        where: (item, { eq }) => eq(item.id, foundItemOrderTx[0].item_id),
+        columns: {
+          min_rate: false,
+          multiplier: false
+        },
+      });
+
+      return txUpdatedItem;
     })
 
-    return res.status(200).json({success: true, message: "Item Order deleted, Quanity Updated!"});
+    return res.status(200).json({success: true, message: "Item Order deleted, Quanity Updated!", update: [{ type: "item", data: updatedItem }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete item order!", error: error.message ? error.message : error});
   }
@@ -426,7 +466,7 @@ const deleteItem = async (req: Request, res: Response) => {
       });
     });
 
-    return res.status(200).json({success: true, message: "Item deleted successfully"});
+    return res.status(200).json({success: true, message: "Item deleted successfully", update: [{ type: "item", data: { id: deleteItemTypeAnswer.data.item_id, _: true }}]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete item", error: error.message ? error.message : error});
   }

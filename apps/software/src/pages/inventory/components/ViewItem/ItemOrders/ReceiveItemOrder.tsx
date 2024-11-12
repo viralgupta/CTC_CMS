@@ -26,7 +26,6 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/ui/Spinner";
 import { useSetRecoilState } from "recoil";
-import { useAllItems } from "@/hooks/items";
 
 const RecieveItemOrder = ({
   children,
@@ -38,7 +37,6 @@ const RecieveItemOrder = ({
   const [open, setOpen] = React.useState(false);
   const setViewItem = useSetRecoilState(viewItemAtom);
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
-  const { refetchItems } = useAllItems()
 
   const form = useForm<z.infer<typeof receiveItemOrderType>>({
     resolver: zodResolver(receiveItemOrderType),
@@ -57,7 +55,6 @@ const RecieveItemOrder = ({
       setOpen(false);
       setViewItem(null);
       setViewItemId(null);
-      refetchItems();
     }
   }
 

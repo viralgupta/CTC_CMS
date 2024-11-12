@@ -27,7 +27,6 @@ import {
   viewArchitectIdAtom,
   ViewArchitectType,
 } from "@/store/architect";
-import { useAllArchitect } from "@/hooks/architect";
 import { settleBalanceType } from "@type/api/architect";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
@@ -39,7 +38,6 @@ export default function ArchitectCard({
 }: {
   architect: ViewArchitectType | null;
 }) {
-  const { refetchArchitects } = useAllArchitect()
   if (!architect) {
     return (
       <Card className="w-full p-6">
@@ -81,7 +79,7 @@ export default function ArchitectCard({
                   Edit Architect
                 </Button>
               </EditArchitect>
-              <DeleteAlert refetchFunction={refetchArchitects} type="architect" viewObjectAtom={viewArchitectAtom} viewObjectIdAtom={viewArchitectIdAtom}>
+              <DeleteAlert type="architect" viewObjectAtom={viewArchitectAtom} viewObjectIdAtom={viewArchitectIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Architect
@@ -144,7 +142,6 @@ export default function ArchitectCard({
 
 const SettleBalance = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false);
-  const { refetchArchitects } = useAllArchitect();
   const setViewArchitectId = useSetRecoilState(viewArchitectIdAtom);
   const [viewArchitect, setViewArchitect] = useRecoilState(viewArchitectAtom);
 
@@ -160,7 +157,6 @@ const SettleBalance = ({ children }: { children: React.ReactNode }) => {
     });
     if (res.status == 200) {
       setOpen(false);
-      refetchArchitects();
       setViewArchitect(null);
       setViewArchitectId(null);
     }

@@ -4,12 +4,10 @@ import React from "react";
 import request from "@/lib/request";
 import SearchCustomer from "@/pages/customer/components/SearchCustomer";
 import { viewEstimateAtom, viewEstimateIdAtom } from "@/store/estimates";
-import { useAllEstimates } from "@/hooks/estimate";
 
 const EditCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
   const [viewEstimate, setViewEstimate] = useRecoilState(viewEstimateAtom);
   const setViewEstimateId = useSetRecoilState(viewEstimateIdAtom);
-  const { refetchEstimates } = useAllEstimates();
   const [customer_id, setCustomer_id] = React.useState(
     viewEstimate?.customer_id ?? ""
   );
@@ -22,7 +20,6 @@ const EditCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
     closeDialog && closeDialog();
     setViewEstimate(null);
     setViewEstimateId(null);
-    refetchEstimates();
   };
 
   return (

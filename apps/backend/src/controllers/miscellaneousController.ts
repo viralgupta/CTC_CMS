@@ -1,5 +1,5 @@
 import db from "@db/db";
-import { phone_number, resource } from "@db/schema";
+import { log, phone_number, resource } from "@db/schema";
 import { createGetSignedURLType, createPhoneType, createPutSignedURLType, deletePhoneType, deleteResourceType, editResourceType, getLogType } from "@type/api/miscellaneous";
 import { Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
@@ -8,6 +8,7 @@ import { Bucket } from "sst/node/bucket";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import { Config } from "sst/node/config";
+import { calculateLinkedTo, omit } from "../lib/utils";
 
 const createPhone = async (req: Request, res: Response) => {
   const createPhoneTypeAnswer = createPhoneType.safeParse(req.body);
@@ -81,6 +82,18 @@ const createPhone = async (req: Request, res: Response) => {
       }
 
       await tx.insert(phone_number).values(createPhoneTypeAnswer.data);
+
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        carpanter_id: createPhoneTypeAnswer.data.carpanter_id,
+        architect_id: createPhoneTypeAnswer.data.architect_id,
+        customer_id: createPhoneTypeAnswer.data.customer_id,
+        driver_id: createPhoneTypeAnswer.data.driver_id,
+        linked_to: calculateLinkedTo(createPhoneTypeAnswer.data.architect_id, createPhoneTypeAnswer.data.carpanter_id, createPhoneTypeAnswer.data.customer_id, createPhoneTypeAnswer.data.driver_id),
+        type: "CREATE",
+        heading: "Phone Number Added",
+        message: JSON.stringify(omit(createPhoneTypeAnswer.data, ["architect_id", "carpanter_id", "customer_id", "driver_id"])),
+      });
     })
     
     
@@ -104,11 +117,13 @@ const deletePhone = async (req: Request, res: Response) => {
       const foundPhone = await tx.query.phone_number.findFirst({
         where: (phone_number, { eq }) => eq(phone_number.id, deletePhoneTypeAnswer.data.phone_number_id),
         columns: {
-          isPrimary: true,
           customer_id: true,
           architect_id: true,
           carpanter_id: true,
-          driver_id: true
+          driver_id: true,
+          country_code: true,
+          phone_number: true,
+          isPrimary: true,
         }
       })
 
@@ -151,6 +166,19 @@ const deletePhone = async (req: Request, res: Response) => {
       }
 
       await tx.delete(phone_number).where(eq(phone_number.id, deletePhoneTypeAnswer.data.phone_number_id));
+
+      
+      await tx.insert(log).values({
+        user_id: res.locals.session.user.id,
+        carpanter_id: foundPhone.carpanter_id,
+        architect_id: foundPhone.architect_id,
+        customer_id: foundPhone.customer_id,
+        driver_id: foundPhone.driver_id,
+        linked_to: calculateLinkedTo(foundPhone.architect_id, foundPhone.carpanter_id, foundPhone.customer_id, foundPhone.driver_id),
+        type: "DELETE",
+        heading: "Phone Number Deleted",
+        message: JSON.stringify(omit(foundPhone, ["architect_id", "carpanter_id", "customer_id", "driver_id"])),
+      });
     })
     
     return res.status(200).json({success: true, message: "Phone number deleted"});

@@ -25,14 +25,12 @@ import {
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewCarpenterAtom, viewCarpenterIdAtom } from "@/store/carpenter";
-import { useAllCarpenter } from "@/hooks/carpenter";
 import { editCarpanterType } from "@type/api/carpanter";
 
 const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewCarpenter, setViewCarpenter] = useRecoilState(viewCarpenterAtom);
   const setViewCarpenterID = useSetRecoilState(viewCarpenterIdAtom);
-  const { refetchCarpenters } = useAllCarpenter();
 
   const EditCarpenterForm = () => {
     const form = useForm<z.infer<typeof editCarpanterType>>({
@@ -51,7 +49,6 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
       if (res.status == 200) setOpen(false);
       setViewCarpenterID(null);
       setViewCarpenter(null);
-      refetchCarpenters();
     }
 
     return (

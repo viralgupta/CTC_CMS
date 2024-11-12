@@ -12,7 +12,7 @@ const createEstimate = async (req: Request, res: Response ) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdEstimate = await db.transaction(async (tx) => {
       const total_estimate_value = (createEstimateTypeAnswer.data.estimate_items.reduce((acc, item) => acc + parseFloat(item.total_value), 0)).toFixed(2);
 
       const tcreatedEstimate = await tx.insert(estimate).values({
@@ -33,9 +33,28 @@ const createEstimate = async (req: Request, res: Response ) => {
           }
         })
       );
+
+      const txCreatedEstimate = await tx.query.estimate.findFirst({
+        where: (estimate, { eq }) => eq(estimate.id, tcreatedEstimate[0].id),
+        columns: {
+          id: true,
+          updated_at: true,
+          total_estimate_amount: true
+        },
+        with: {
+          customer: {
+            columns: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      return txCreatedEstimate;
     })
 
-    return res.status(200).json({success: true, message: "Estimate created successfully"});
+    return res.status(200).json({success: true, message: "Estimate created successfully", update: [{ type: "estimate", data: createdEstimate }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create estimate", error: error.message ? error.message : error});
   }
@@ -140,7 +159,7 @@ const editEstimateItems = async (req: Request, res: Response ) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedEstimate = await db.transaction(async (tx) => {
 
       const oldEstimate = await tx.query.estimate.findFirst({
         where: (estimate, { eq }) => eq(estimate.id, editEstimateOrderItemsTypeAnswer.data.estimate_id),
@@ -195,9 +214,28 @@ const editEstimateItems = async (req: Request, res: Response ) => {
       await tx.update(estimate).set({
         total_estimate_amount
       }).where(eq(estimate.id, editEstimateOrderItemsTypeAnswer.data.estimate_id));
+
+      const txUpdatedEstimate = await tx.query.estimate.findFirst({
+        where: (estimate, { eq }) => eq(estimate.id, editEstimateOrderItemsTypeAnswer.data.estimate_id),
+        columns: {
+          id: true,
+          updated_at: true,
+          total_estimate_amount: true
+        },
+        with: {
+          customer: {
+            columns: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      return txUpdatedEstimate;
     })
 
-    return res.status(200).json({success: true, message: "Estimate edited successfully"});
+    return res.status(200).json({success: true, message: "Estimate edited successfully", update: [{ type: "estimate", data: updatedEstimate }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to edit estimate", error: error.message ? error.message : error});
   }
@@ -242,7 +280,7 @@ const deleteEstimate = async (req: Request, res: Response ) => {
       await tx.delete(estimate).where(eq(estimate.id, deleteEstimateTypeAnswer.data.estimate_id));
     });
 
-    return res.status(200).json({success: true, message: "Estimate Deleted Successfully!"});
+    return res.status(200).json({success: true, message: "Estimate Deleted Successfully!", update: [{ type: "estimate", data: { id: deleteEstimateTypeAnswer.data.estimate_id, _: true } }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete estimate!", error: error.message ? error.message : error});
   }

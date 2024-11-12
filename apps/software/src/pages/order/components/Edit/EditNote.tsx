@@ -1,10 +1,9 @@
-  import { viewOrderAtom } from "@/store/order";
-  import { useRecoilValue } from "recoil";
-  import { Textarea } from "@/components/ui/textarea";
-  import { Button } from "@/components/ui/button";
-  import React from "react";
-  import request from "@/lib/request";
-  import { useAllOrders } from "@/hooks/orders";
+import { viewOrderAtom } from "@/store/order";
+import { useRecoilValue } from "recoil";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import React from "react";
+import request from "@/lib/request";
 import Spinner from "@/components/ui/Spinner";
 
   const EditNote = ({
@@ -13,7 +12,6 @@ import Spinner from "@/components/ui/Spinner";
     closeDialog?: () => void;
   }) => {
     const viewOrder = useRecoilValue(viewOrderAtom);
-  const { refetchOrders } = useAllOrders();
     const [note, setNote] = React.useState(viewOrder?.note ?? "");
     const [loading, setLoading] = React.useState(false);
 
@@ -25,7 +23,6 @@ import Spinner from "@/components/ui/Spinner";
       })
       setLoading(false);
       closeDialog && closeDialog();
-      refetchOrders();
     }
 
     return (

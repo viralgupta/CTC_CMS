@@ -21,3 +21,17 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: K[] | K)
 
   return result;
 }
+
+export function calculateLinkedTo(architect_id: string | undefined | null, carpanter_id: string | undefined | null, customer_id: string | undefined | null, driver_id: string | undefined | null) {
+  if(architect_id){
+    return "ARCHITECT";
+  } else if(carpanter_id){
+    return "CARPANTER";
+  } else if(customer_id){
+    return "CUSTOMER";
+  } else if(customer_id){
+    return "DRIVER";
+  } else {
+    return "CUSTOMER";
+  }
+}

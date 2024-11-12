@@ -13,7 +13,7 @@ const createArchitect = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdArchitect = await db.transaction(async (tx) => {
 
       const tArchitect = await tx.insert(architect).values({
         name: createArchitectTypeAnswer.data.name,
@@ -56,9 +56,27 @@ const createArchitect = async (req: Request, res: Response) => {
           };
         })
       );
+
+      const txCreatedArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, tArchitect[0].id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      })
+
+      return txCreatedArchitect;
     })
     
-    return res.status(200).json({success: true, message: "Architect created successfully"});
+    return res.status(200).json({success: true, message: "Architect created successfully", update: [{ type: "architect", data: createdArchitect }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create Architect", error: error.message ? error.message : error});
   }
@@ -73,7 +91,7 @@ const editArchitect = async (req: Request, res: Response) => {
 
   try {
 
-    await db.transaction(async (tx) => {
+    const updatedArchitect = await db.transaction(async (tx) => {
       const tArchitect = await tx.query.architect.findFirst({
         where: (architect, { eq }) =>
           eq(architect.id, editArchitectTypeAnswer.data.architect_id),
@@ -95,17 +113,37 @@ const editArchitect = async (req: Request, res: Response) => {
         })
         .where(eq(architect.id, tArchitect.id));
 
-        await tx.insert(log).values({
+      await tx.insert(log).values({
         user_id: res.locals.session.user.id,
         architect_id: tArchitect.id,
         linked_to: "ARCHITECT",
         type: "UPDATE",
-        message: JSON.stringify(omit(editArchitectTypeAnswer.data, "architect_id"))
+        message: JSON.stringify(
+          omit(editArchitectTypeAnswer.data, "architect_id")
+        ),
       });
+
+      const txUpdatedArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, tArchitect.id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      });
+
+      return txUpdatedArchitect;
     });
 
 
-    return res.status(200).json({success: true, message: "Architect Updated Successfully"});
+    return res.status(200).json({success: true, message: "Architect Updated Successfully", update: [{ type: "architect", data: updatedArchitect }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update Architect", error: error.message ? error.message : error});
   }
@@ -119,7 +157,7 @@ const settleBalance = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedArchitect = await db.transaction(async (tx) => {
       const tArchitect = await tx.query.architect.findFirst({
         where: (architect, { eq }) => eq(architect.id, settleBalanceTypeAnswer.data.architect_id),
         columns: {
@@ -156,9 +194,27 @@ const settleBalance = async (req: Request, res: Response) => {
         New Balance:${newBalance}
         `
       });
+
+      const txUpdatedArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, tArchitect.id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      })
+
+      return txUpdatedArchitect;
     });
 
-    return res.status(200).json({success: true, message: "Architect balance updated"});
+    return res.status(200).json({success: true, message: "Architect balance updated", update: [{ type: "architect", update: [{type: "architect", data: updatedArchitect}] }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update architect balance", error: error.message ? error.message : error});
   }
@@ -263,7 +319,7 @@ const deleteArchitect = async (req: Request, res: Response) => {
       });
     });
 
-    return res.status(200).json({success: true, message: "Architect deleted successfully"});
+    return res.status(200).json({success: true, message: "Architect deleted successfully", update: [{ type: "architect", data: { id: deleteArchitectTypeAnswer.data.architect_id, _: true } }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete architect", error: error.message ? error.message : error});
   }

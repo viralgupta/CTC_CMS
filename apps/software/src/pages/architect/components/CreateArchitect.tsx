@@ -25,11 +25,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import request from "@/lib/request";
-import { useAllArchitect } from "@/hooks/architect";
 
 const CreateArchitectForm = () => {
-  const { refetchArchitects } = useAllArchitect();
-
   const form = useForm<z.infer<typeof createArchitectType>>({
     resolver: zodResolver(createArchitectType),
     reValidateMode: "onChange",
@@ -96,7 +93,6 @@ const CreateArchitectForm = () => {
       const res = await request.post("/architect/createArchitect", values);
       if (res.status == 200) {
         form.reset();
-        refetchArchitects();
       }
     } catch (error) {
       console.log(error);

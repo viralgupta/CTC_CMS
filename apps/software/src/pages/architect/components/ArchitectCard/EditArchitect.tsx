@@ -25,14 +25,12 @@ import {
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewArchitectAtom, viewArchitectIdAtom } from "@/store/architect";
-import { useAllArchitect } from "@/hooks/architect";
 import { editArchitectType } from "@type/api/architect";
 
 const EditArchitect = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
   const [viewArchitect, setViewArchitect] = useRecoilState(viewArchitectAtom);
   const setViewArchitectID = useSetRecoilState(viewArchitectIdAtom);
-  const { refetchArchitects } = useAllArchitect();
 
   const EditArchitectForm = () => {
     const form = useForm<z.infer<typeof editArchitectType>>({
@@ -51,7 +49,6 @@ const EditArchitect = ({ children }: { children: React.ReactNode }) => {
       if (res.status == 200) setOpen(false);
       setViewArchitectID(null);
       setViewArchitect(null);
-      refetchArchitects();
     }
 
     return (

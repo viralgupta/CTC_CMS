@@ -13,7 +13,7 @@ const createCarpanter = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const createdCarpenter = await db.transaction(async (tx) => {
 
       const tCarpanter = await tx.insert(carpanter).values({
         name: createCarpanterTypeAnswer.data.name,
@@ -56,9 +56,27 @@ const createCarpanter = async (req: Request, res: Response) => {
           };
         })
       );
+
+      const txCreatedCarpenter = await tx.query.carpanter.findFirst({
+        where: (architect, { eq }) => eq(architect.id, tCarpanter[0].id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      })
+
+      return txCreatedCarpenter;
     })
     
-    return res.status(200).json({success: true, message: "Carpanter created successfully"});
+    return res.status(200).json({success: true, message: "Carpanter created successfully", update: [{ type: "carpenter", data: createdCarpenter }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to create Carpanter", error: error.message ? error.message : error});
   }
@@ -72,7 +90,7 @@ const editCarpanter = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedCarpenter = await db.transaction(async (tx) => {
       const tCarpanter = await tx.query.carpanter.findFirst({
         where: (carpanter, { eq }) => eq(carpanter.id, editCarpanterTypeAnswer.data.carpanter_id),
         columns: {
@@ -97,9 +115,27 @@ const editCarpanter = async (req: Request, res: Response) => {
         type: "UPDATE",
         message: JSON.stringify(omit(editCarpanterTypeAnswer.data, "carpanter_id"))
       });
+
+      const txUpdatedCarpenter = await tx.query.architect.findFirst({
+        where: (carpenter, { eq }) => eq(carpenter.id, tCarpanter.id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      });
+
+      return txUpdatedCarpenter;
     });
 
-    return res.status(200).json({success: true, message: "Carpanter Update Successfully"});
+    return res.status(200).json({success: true, message: "Carpanter Update Successfully",  update: [{ type: "carpenter", data: updatedCarpenter }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update Carpanter", error: error.message ? error.message : error});
   }
@@ -113,7 +149,7 @@ const settleBalance = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const updatedCarpenter = await db.transaction(async (tx) => {
       const tCarpanter = await tx.query.carpanter.findFirst({
         where: (carpanter, { eq }) => eq(carpanter.id, settleBalanceTypeAnswer.data.carpanter_id),
         columns: {
@@ -150,9 +186,27 @@ const settleBalance = async (req: Request, res: Response) => {
           New Balance:${newBalance}
         `
       });
+
+      const txUpdatedCarpenter = await tx.query.architect.findFirst({
+        where: (carpenter, { eq }) => eq(carpenter.id, tCarpanter.id),
+        columns: {
+          profileUrl: false
+        },
+        with: {
+          phone_numbers: {
+            where: (phone_number, { eq }) => eq(phone_number.isPrimary, true),
+            columns: {
+              phone_number: true,
+            },
+            limit: 1
+          }
+        }
+      });
+
+      return txUpdatedCarpenter;
     });
 
-    return res.status(200).json({success: true, message: "Carpanter balance updated"});
+    return res.status(200).json({success: true, message: "Carpanter balance updated", update: [{ type: "carpenter", data: updatedCarpenter }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to update carpanter balance", error: error.message ? error.message : error});
   }
@@ -261,7 +315,7 @@ const deleteCarpanter = async (req: Request, res: Response) => {
       });
     });
 
-    return res.status(200).json({success: true, message: "Carpanter deleted successfully"});
+    return res.status(200).json({success: true, message: "Carpanter deleted successfully", update: [{ type: "carpenter", data: { id: deleteCarpanterTypeAnswer.data.carpanter_id, _: true } }]});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to delete carpanter", error: error.message ? error.message : error});
   }

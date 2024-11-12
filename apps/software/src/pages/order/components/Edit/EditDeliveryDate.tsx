@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import request from "@/lib/request";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useAllOrders } from "@/hooks/orders";
 import Spinner from "@/components/ui/Spinner";
 
 const EditDeliveryDate = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
-  const { refetchOrders } = useAllOrders();
   const [delivery_date, setDeliveryDate] = React.useState(
     viewOrder?.delivery_date?.toISOString()
   );
@@ -23,7 +21,6 @@ const EditDeliveryDate = ({ closeDialog }: { closeDialog?: () => void }) => {
     });
     setLoading(false);
     closeDialog && closeDialog();
-    refetchOrders();
   };
 
   return (

@@ -4,13 +4,11 @@ import React from "react";
 import request from "@/lib/request";
 import SelectEstimateItems from "../Input/SelectEstimateItems/SelectEstimateItems";
 import { viewEstimateAtom, viewEstimateIdAtom } from "@/store/estimates";
-import { useAllEstimates } from "@/hooks/estimate";
 
 const EditEstimateItems = ({ closeDialog }: { closeDialog?: () => void }) => {
   const [viewEstimate, setViewEstimate] = useRecoilState(viewEstimateAtom);
   const setViewEstimateId = useSetRecoilState(viewEstimateIdAtom);
 
-  const { refetchEstimates } = useAllEstimates();
   const [estimate_items, set_estimate_items] = React.useState(
     (viewEstimate?.estimate_items ?? []).map((ei) => {
       return {
@@ -30,7 +28,6 @@ const EditEstimateItems = ({ closeDialog }: { closeDialog?: () => void }) => {
     closeDialog && closeDialog();
     setViewEstimate(null);
     setViewEstimateId(null);
-    refetchEstimates();
   };
 
   return (
