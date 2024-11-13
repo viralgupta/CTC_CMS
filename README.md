@@ -1,8 +1,6 @@
 
 # TODO
 
-- check if all omits are added for all the log statements
-- only add log if the stage is not DEV
 - add scroll pagination on table
 - use Tanstack Virtual for rendering big tables
 - create rds in stack itself

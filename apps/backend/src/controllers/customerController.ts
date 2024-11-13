@@ -22,13 +22,15 @@ const createCustomer = async (req: Request, res: Response) => {
         profileUrl: createCustomerTypeAnswer.data.profileUrl
       }).returning({ id: customer.id });
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        customer_id: tCustomer[0].id,
-        linked_to: "CUSTOMER",
-        type: "CREATE",
-        message: JSON.stringify(createCustomerTypeAnswer.data, null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          customer_id: tCustomer[0].id,
+          linked_to: "CUSTOMER",
+          type: "CREATE",
+          message: JSON.stringify(createCustomerTypeAnswer.data, null, 2)
+        });
+      }
 
       const numberswithPrimary = createCustomerTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -599,13 +601,15 @@ const editCustomer = async (req: Request, res: Response) => {
         profileUrl: editCustomerTypeAnswer.data.profileUrl
       }).where(eq(customer.id, tCustomer[0].id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        customer_id: tCustomer[0].id,
-        linked_to: "CUSTOMER",
-        type: "UPDATE",
-        message: JSON.stringify(omit(editCustomerTypeAnswer.data, "customer_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          customer_id: tCustomer[0].id,
+          linked_to: "CUSTOMER",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editCustomerTypeAnswer.data, "customer_id"), null, 2)
+        });
+      }
 
       const txUpdatedCustomer = await tx.query.customer.findFirst({
         where: (customer, { eq }) => eq(customer.id, editCustomerTypeAnswer.data.customer_id),
@@ -676,17 +680,19 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(customer.id, tCustomer[0].id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        customer_id: tCustomer[0].id,
-        linked_to: "CUSTOMER",
-        type: "UPDATE",
-        heading: "Customer Balance Updated",
-        message: `
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          customer_id: tCustomer[0].id,
+          linked_to: "CUSTOMER",
+          type: "UPDATE",
+          heading: "Customer Balance Updated",
+          message: `
           Old balance: ${tCustomer[0].balance}
           New balance: ${newBalance}
-        `
-      });
+          `
+        });
+      }
 
       const txUpdatedCustomer = await tx.query.customer.findFirst({
         where: (customer, { eq }) => eq(customer.id, settleBalanceTypeAnswer.data.customer_id),
@@ -849,12 +855,15 @@ const deleteCustomer = async (req: Request, res: Response) => {
       
       await tx.delete(customer).where(eq(customer.id, tCustomer.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        linked_to: "CUSTOMER",
-        type: "DELETE",
-        message: `Customer Deleted: ${JSON.stringify(omit(tCustomer, "orders"), null, 2)}`
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          customer_id: tCustomer.id,
+          linked_to: "CUSTOMER",
+          type: "DELETE",
+          message: `Customer Deleted: ${JSON.stringify(omit(tCustomer, ["orders", "id"]), null, 2)}`
+        });
+      }
     });
 
     return res.status(200).json({success: true, message: "Customer deleted successfully", update: [{ type: "customer", data: { id: deleteCustomerTypeAnswer.data.customer_id, _: true } }]});

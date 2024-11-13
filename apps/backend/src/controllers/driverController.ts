@@ -22,13 +22,15 @@ const createDriver = async (req: Request, res: Response) => {
         size_of_vehicle: createDriverTypeAnswer.data.size_of_vehicle
       }).returning({ id: driver.id });
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        driver_id: tDriver[0].id,
-        linked_to: "DRIVER",
-        type: "CREATE",
-        message: JSON.stringify(createDriverTypeAnswer.data, null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          driver_id: tDriver[0].id,
+          linked_to: "DRIVER",
+          type: "CREATE",
+          message: JSON.stringify(createDriverTypeAnswer.data, null, 2)
+        });
+      }
 
       if(createDriverTypeAnswer.data.phone_numbers.length === 0){
         throw new Error("Atleast 1 Phone number is required!");
@@ -110,13 +112,15 @@ const editDriver = async (req: Request, res: Response) => {
         size_of_vehicle: editDriverTypeAnswer.data.size_of_vehicle
       }).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        driver_id: tDriver[0].id,
-        linked_to: "DRIVER",
-        type: "UPDATE",
-        message: JSON.stringify(editDriverTypeAnswer.data, null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          driver_id: tDriver[0].id,
+          linked_to: "DRIVER",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editDriverTypeAnswer.data, "driver_id"), null, 2)
+        });
+      }
 
       const txUpdatedDriver = await tx.query.driver.findFirst({
         where: (driver, { eq }) => eq(driver.id, editDriverTypeAnswer.data.driver_id),
@@ -239,12 +243,15 @@ const deleteDriver = async (req: Request, res: Response) => {
 
         await tx.delete(driver).where(eq(driver.id, deleteDriverTypeAnswer.data.driver_id));
 
-        await tx.insert(log).values({
-          user_id: res.locals.session.user.id,
-          linked_to: "DRIVER",
-          type: "DELETE",
-          message: `Deleted Driver: ${JSON.stringify(omit(foundDrivertx, 'order_movements'), null, 2)}`
-        });
+        if(res.locals.session.user.id){
+          await tx.insert(log).values({
+            user_id: res.locals.session.user.id,
+            driver_id: deleteDriverTypeAnswer.data.driver_id,
+            linked_to: "DRIVER",
+            type: "DELETE",
+            message: `Deleted Driver: ${JSON.stringify(omit(foundDrivertx, ['order_movements', "id"]), null, 2)}`
+          });
+        }
       })
   
       return res.status(200).json({success: true, message: "Driver deleted successfully", update: [{ type: "driver", data: { id: deleteDriverTypeAnswer.data.driver_id, _: true } }]});

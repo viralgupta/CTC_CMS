@@ -22,13 +22,16 @@ const createCarpanter = async (req: Request, res: Response) => {
         balance: createCarpanterTypeAnswer.data.balance
       }).returning({id: carpanter.id});
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        carpanter_id: tCarpanter[0].id,
-        linked_to: "CARPANTER",
-        type: "CREATE",
-        message: JSON.stringify(createCarpanterTypeAnswer.data)
-      });
+      if(res.locals.session.user.id){
+
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          carpanter_id: tCarpanter[0].id,
+          linked_to: "CARPANTER",
+          type: "CREATE",
+          message: JSON.stringify(createCarpanterTypeAnswer.data)
+        });
+      }
       
       const numberswithPrimary = createCarpanterTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
@@ -108,13 +111,15 @@ const editCarpanter = async (req: Request, res: Response) => {
         area: editCarpanterTypeAnswer.data.area,
       }).where(eq(carpanter.id, tCarpanter.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        carpanter_id: tCarpanter.id,
-        linked_to: "CARPANTER",
-        type: "UPDATE",
-        message: JSON.stringify(omit(editCarpanterTypeAnswer.data, "carpanter_id"))
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          carpanter_id: tCarpanter.id,
+          linked_to: "CARPANTER",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editCarpanterTypeAnswer.data, "carpanter_id"))
+        });
+      }
 
       const txUpdatedCarpenter = await tx.query.architect.findFirst({
         where: (carpenter, { eq }) => eq(carpenter.id, tCarpanter.id),
@@ -175,17 +180,19 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(carpanter.id, tCarpanter.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        carpanter_id: tCarpanter.id,
-        linked_to: "CARPANTER",
-        type: "UPDATE",
-        heading: "Carpanter Balance Updated",
-        message: `
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          carpanter_id: tCarpanter.id,
+          linked_to: "CARPANTER",
+          type: "UPDATE",
+          heading: "Carpanter Balance Updated",
+          message: `
           Old Balance:${tCarpanter.balance}
           New Balance:${newBalance}
-        `
-      });
+          `
+        });
+      }
 
       const txUpdatedCarpenter = await tx.query.architect.findFirst({
         where: (carpenter, { eq }) => eq(carpenter.id, tCarpanter.id),
@@ -307,12 +314,15 @@ const deleteCarpanter = async (req: Request, res: Response) => {
       
       await tx.delete(carpanter).where(eq(carpanter.id, deleteCarpanterTypeAnswer.data.carpanter_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        linked_to: "CARPANTER",
-        type: "DELETE",
-        message: `Carpenter deleted: ${JSON.stringify(omit(tCarpanter, "orders"), null, 2)}`
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          carpanter_id: deleteCarpanterTypeAnswer.data.carpanter_id,
+          linked_to: "CARPANTER",
+          type: "DELETE",
+          message: `Carpenter deleted: ${JSON.stringify(omit(tCarpanter, ["orders", "id"]), null, 2)}`
+        });
+      }
     });
 
     return res.status(200).json({success: true, message: "Carpanter deleted successfully", update: [{ type: "carpenter", data: { id: deleteCarpanterTypeAnswer.data.carpanter_id, _: true } }]});

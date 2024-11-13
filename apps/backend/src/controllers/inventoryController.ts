@@ -31,13 +31,15 @@ const createItem = async (req: Request, res: Response) => {
         throw new Error("Unable to create item");
       }
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: createdItem[0].id,
-        linked_to: "ITEM",
-        type: "CREATE",
-        message: JSON.stringify(createItemTypeAnswer.data, null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: createdItem[0].id,
+          linked_to: "ITEM",
+          type: "CREATE",
+          message: JSON.stringify(createItemTypeAnswer.data, null, 2)
+        });
+      }
 
       const txCreatedItem = await tx.query.item.findFirst({
         where: (item, { eq }) => eq(item.id, createdItem[0].id),
@@ -171,13 +173,15 @@ const editItem = async (req: Request, res: Response) => {
         throw new Error("Unable to edit item")
       }
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: updatedItem[0].id,
-        linked_to: "ITEM",
-        type: "UPDATE",
-        message: JSON.stringify(omit(editItemTypeAnswer.data, "item_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: updatedItem[0].id,
+          linked_to: "ITEM",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editItemTypeAnswer.data, "item_id"), null, 2)
+        });
+      }
 
       const txUpdatedItem = await tx.query.item.findFirst({
         where: (item, { eq }) => eq(item.id, editItemTypeAnswer.data.item_id),
@@ -236,13 +240,15 @@ const createItemOrder = async (req: Request, res: Response) => {
         receive_date: createItemOrderTypeAnswer.data.receive_date
       })
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: createItemOrderTypeAnswer.data.item_id,
-        linked_to: "ITEM_ORDER",
-        type: "CREATE",
-        message: JSON.stringify(omit(createItemOrderTypeAnswer.data, "item_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: createItemOrderTypeAnswer.data.item_id,
+          linked_to: "ITEM_ORDER",
+          type: "CREATE",
+          message: JSON.stringify(omit(createItemOrderTypeAnswer.data, "item_id"), null, 2)
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Item Order created"});
@@ -274,13 +280,15 @@ const editItemOrder = async (req: Request, res: Response) => {
         throw new Error("Unable to find item order!")
       }
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: foundItemOrdertx[0].item_id,
-        linked_to: "ITEM_ORDER",
-        type: "UPDATE",
-        message: JSON.stringify(omit(editItemOrderTypeAnswer.data, "id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: foundItemOrdertx[0].item_id,
+          linked_to: "ITEM_ORDER",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editItemOrderTypeAnswer.data, "id"), null, 2)
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Item Order updated"});
@@ -349,14 +357,16 @@ const receiveItemOrder = async (req: Request, res: Response) => {
         received_quantity: receiveItemOrderTypeAnswer.data.received_quantity
       }).where(eq(item_order.id, receiveItemOrderTypeAnswer.data.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: foundItemOrderTx.item_id,
-        linked_to: "ITEM_ORDER",
-        type: "UPDATE",
-        heading: "Item Quanitity Updated, Item Order was Updated",
-        message: JSON.stringify(omit(receiveItemOrderTypeAnswer.data, "id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: foundItemOrderTx.item_id,
+          linked_to: "ITEM_ORDER",
+          type: "UPDATE",
+          heading: "Item Quanitity Updated, Item Order was Updated",
+          message: JSON.stringify(omit(receiveItemOrderTypeAnswer.data, "id"), null, 2)
+        });
+      }
 
       const txUpdatedItem = await tx.query.item.findFirst({
         where: (item, { eq }) => eq(item.id, foundItemOrderTx.item_id),
@@ -397,14 +407,16 @@ const deleteItemOrder = async (req: Request, res: Response) => {
         }).where(eq(item.id, foundItemOrderTx[0].item_id));
       }
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        item_id: foundItemOrderTx[0].item_id,
-        linked_to: "ITEM_ORDER",
-        type: "DELETE",
-        heading: "Item Quanitity Updated, Item Order was Deleted",
-        message: JSON.stringify(omit(foundItemOrderTx[0], ["id", "item_id"]), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: foundItemOrderTx[0].item_id,
+          linked_to: "ITEM_ORDER",
+          type: "DELETE",
+          heading: "Item Quanitity Updated, Item Order was Deleted",
+          message: JSON.stringify(omit(foundItemOrderTx[0], ["id", "item_id"]), null, 2)
+        });
+      }
 
       const txUpdatedItem = await tx.query.item.findFirst({
         where: (item, { eq }) => eq(item.id, foundItemOrderTx[0].item_id),
@@ -458,12 +470,15 @@ const deleteItem = async (req: Request, res: Response) => {
 
       await tx.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        linked_to: "ITEM",
-        type: "DELETE",
-        message: JSON.stringify(omit(foundItem, ["id", "order_items"]), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          item_id: deleteItemTypeAnswer.data.item_id,
+          linked_to: "ITEM",
+          type: "DELETE",
+          message: JSON.stringify(omit(foundItem, ["id", "order_items"]), null, 2)
+        });
+      }
     });
 
     return res.status(200).json({success: true, message: "Item deleted successfully", update: [{ type: "item", data: { id: deleteItemTypeAnswer.data.item_id, _: true }}]});

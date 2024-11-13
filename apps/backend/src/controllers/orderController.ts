@@ -139,16 +139,18 @@ const createOrder = async (req: Request, res: Response) => {
         architect_commision: calculateArchitectCommision ? architectCommision : null,
       }).returning({id: order.id});
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: tOrder[0].id,
-        customer_id: createOrderTypeAnswer.data.customer_id,
-        architect_id: createOrderTypeAnswer.data.architect_id,
-        carpanter_id: createOrderTypeAnswer.data.carpanter_id,
-        linked_to: "ORDER",
-        type: "CREATE",
-        message: JSON.stringify(createOrderTypeAnswer.data, null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: tOrder[0].id,
+          customer_id: createOrderTypeAnswer.data.customer_id,
+          architect_id: createOrderTypeAnswer.data.architect_id,
+          carpanter_id: createOrderTypeAnswer.data.carpanter_id,
+          linked_to: "ORDER",
+          type: "CREATE",
+          message: JSON.stringify(omit(createOrderTypeAnswer.data, ["architect_id", "carpanter_id", "customer_id"]), null, 2)
+        });
+      }
 
       // create order items
       const orderItems = await tx.insert(order_item).values(
@@ -259,14 +261,16 @@ const editOrderNote = async (req: Request, res: Response) => {
         note: editOrderNoteTypeAnswer.data.note
       }).where(eq(order.id, editOrderNoteTypeAnswer.data.order_id))
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderNoteTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Note Updated",
-        message: JSON.stringify(omit(editOrderNoteTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderNoteTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Note Updated",
+          message: JSON.stringify(omit(editOrderNoteTypeAnswer.data, "order_id"), null, 2)
+        });
+      }
     })
     
     return res.status(200).json({success: true, message: "Edited Order Note"})    
@@ -292,6 +296,13 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
           total_order_amount: true,
           discount: true,
           amount_paid: true
+        },
+        with: {
+          customer: {
+            columns: {
+              name: true
+            }
+          }
         }
       })
 
@@ -319,15 +330,27 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
         delivery_address_id: null
       }).where(eq(order.id, addOrderCustomerIdTypeAnswer.data.order_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: addOrderCustomerIdTypeAnswer.data.order_id,
-        customer_id: addOrderCustomerIdTypeAnswer.data.customer_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Customer Updated for Order",
-        message: JSON.stringify(omit(addOrderCustomerIdTypeAnswer.data, "order_id"), null, 2)
+      const newCustomer = await tx.query.customer.findFirst({
+        where: (customer, { eq }) => eq(customer.id, addOrderCustomerIdTypeAnswer.data.customer_id),
+        columns: {
+          name: true
+        }
       });
+
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: addOrderCustomerIdTypeAnswer.data.order_id,
+          customer_id: addOrderCustomerIdTypeAnswer.data.customer_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Customer Updated for Order",
+          message: `
+            Old Customer: ${oldOrder.customer?.name ?? ""}
+            New Customer: ${newCustomer?.name ?? ""}
+          `
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Updated Order's Customer!!!"})
@@ -350,6 +373,13 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
         columns: {
           carpanter_id: true,
           carpanter_commision: true
+        },
+        with: {
+          carpanter: {
+            columns: {
+              name: true
+            }
+          }
         }
       })
 
@@ -385,15 +415,27 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
         carpanter_id: order.carpanter_id
       })
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderCarpanterIdTypeAnswer.data.order_id,
-        carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Carpanter Updated for Order",
-        message: JSON.stringify(omit(editOrderCarpanterIdTypeAnswer.data, "order_id"), null, 2)
+      const newCarpanter = await tx.query.carpanter.findFirst({
+        where: (carpanter, { eq }) => eq(carpanter.id, editOrderCarpanterIdTypeAnswer.data.carpanter_id),
+        columns: {
+          name: true
+        }
       });
+
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderCarpanterIdTypeAnswer.data.order_id,
+          carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Carpanter Updated for Order",
+          message: `
+            Old Carpanter: ${oldOrder.carpanter?.name ?? ""}
+            New Carpanter: ${newCarpanter?.name ?? ""}
+          `
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Updated Carpanter in Order"})    
@@ -416,6 +458,13 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
         columns: {
           architect_id: true,
           architect_commision: true
+        },
+        with: {
+          architect: {
+            columns: {
+              name: true
+            }
+          }
         }
       })
 
@@ -451,15 +500,27 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
         architect_id: order.architect_id
       });
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderArchitectIdTypeAnswer.data.order_id,
-        architect_id: editOrderArchitectIdTypeAnswer.data.architect_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Architect Updated for Order",
-        message: JSON.stringify(omit(editOrderArchitectIdTypeAnswer.data, "order_id"), null, 2)
+      const newArchitect = await tx.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, editOrderArchitectIdTypeAnswer.data.architect_id),
+        columns: {
+          name: true
+        }
       });
+
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderArchitectIdTypeAnswer.data.order_id,
+          architect_id: editOrderArchitectIdTypeAnswer.data.architect_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Architect Updated for Order",
+          message: `
+            Old Architect: ${oldOrder.architect?.name ?? ""}
+            New Architect: ${newArchitect?.name ?? ""}
+          `
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Updated Architect in Order"})    
@@ -481,14 +542,16 @@ const editOrderPriority = async (req: Request, res: Response) => {
         priority: editOrderPriorityTypeAnswer.data.priority
       }).where(eq(order.id, editOrderPriorityTypeAnswer.data.order_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderPriorityTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Priority Updated",
-        message: JSON.stringify(omit(editOrderPriorityTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderPriorityTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Priority Updated",
+          message: JSON.stringify(omit(editOrderPriorityTypeAnswer.data, "order_id"), null, 2)
+        });
+      }
     })
     
     return res.status(200).json({success: true, message: "Updated Order Priority!!!"})
@@ -526,14 +589,16 @@ const editOrderDeliveryDate = async (req: Request, res: Response) => {
         delivery_date: editOrderDeliveryDateTypeAnswer.data.delivery_date
       }).where(eq(order.id, editOrderDeliveryDateTypeAnswer.data.order_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderDeliveryDateTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Delivery Date Updated",
-        message: JSON.stringify(omit(editOrderDeliveryDateTypeAnswer.data, "order_id"), null,2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderDeliveryDateTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Delivery Date Updated",
+          message: JSON.stringify(omit(editOrderDeliveryDateTypeAnswer.data, "order_id"), null,2)
+        });
+      }
     })
     
     return res.status(200).json({success: true, message: "Updated Order Delivery Date!!!"})
@@ -563,12 +628,20 @@ const editOrderDeliveryAddressId = async (req: Request, res: Response) => {
             with: {
               addresses: {
                 columns: {
-                  id: true
+                  id: true,
+                  house_number: true,
+                  address: true
                 }
               }
             },
             columns: {
               id: true
+            }
+          },
+          delivery_address: {
+            columns: {
+              house_number: true,
+              address: true
             }
           }
         }
@@ -594,14 +667,19 @@ const editOrderDeliveryAddressId = async (req: Request, res: Response) => {
         delivery_address_id: editOrderDeliveryAddressIdTypeAnswer.data.delivery_address_id
       }).where(eq(order.id, editOrderDeliveryAddressIdTypeAnswer.data.order_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderDeliveryAddressIdTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Address Updated",
-        message: JSON.stringify(omit(editOrderDeliveryAddressIdTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderDeliveryAddressIdTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Address Updated",
+          message: `
+            Old Address: ${oldOrder?.delivery_address?.house_number ?? ""} ${oldOrder?.delivery_address?.address ?? ""}
+            New Address: ${oldOrder.customer.addresses.filter((address) => address.id == editOrderDeliveryAddressIdTypeAnswer.data.delivery_address_id)[0].house_number} ${oldOrder.customer.addresses.filter((address) => address.id == editOrderDeliveryAddressIdTypeAnswer.data.delivery_address_id)[0].address}
+          `
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Updated Order Address!!!"})
@@ -682,14 +760,16 @@ const editOrderDiscount = async (req: Request, res: Response) => {
         payment_status: calculatePaymentStatus(parseFloat(oldOrder.total_order_amount) - parseFloat(editOrderDiscountTypeAnswer.data.discount), parseFloat(oldOrder.amount_paid ?? "0.00"))
       });
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderDiscountTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Discount Updated",
-        message: JSON.stringify(omit(editOrderDiscountTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderDiscountTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Discount Updated",
+          message: JSON.stringify(omit(editOrderDiscountTypeAnswer.data, "order_id"), null, 2)
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Updated Order discount!!!"})
@@ -758,15 +838,22 @@ const settleBalance = async (req: Request, res: Response) => {
         }
       }
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: settleBalanceTypeAnswer.data.order_id,
-        customer_id: updatedOrder[0].customer_id ?? undefined,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Payment Updated",
-        message: JSON.stringify(omit(settleBalanceTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: settleBalanceTypeAnswer.data.order_id,
+          customer_id: updatedOrder[0].customer_id ?? undefined,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Payment Updated",
+          message: `
+          Old Amount Paid: ${oldOrder.amount_paid ?? "0.00"}
+          Old Balance: ${(actualTotalOrderValue - parseFloat(oldOrder.amount_paid ?? "0.00")).toFixed(2) ?? "0.00"}
+          New Amount Paid: ${newAmountPaid.toFixed(2)}
+          New Balance: ${(actualTotalOrderValue - newAmountPaid).toFixed(2) ?? "0.00"}
+          `
+        });
+      }
     })
 
     return res.status(200).json({success: true, message: "Settled Order Payment!!!"})
@@ -892,14 +979,16 @@ const editOrderItems = async (req: Request, res: Response) => {
         }).where(eq(order_item.id, removedOrderItem.id));
       });
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: editOrderItemsTypeAnswer.data.order_id,
-        linked_to: "ORDER",
-        type: "UPDATE",
-        heading: "Order Items Updated",
-        message: JSON.stringify(omit(editOrderItemsTypeAnswer.data, "order_id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: editOrderItemsTypeAnswer.data.order_id,
+          linked_to: "ORDER",
+          type: "UPDATE",
+          heading: "Order Items Updated",
+          message: JSON.stringify(omit(editOrderItemsTypeAnswer.data, "order_id"), null, 2)
+        });
+      }
 
       // update carpanter commission
       const oldCarpanterCommision = parseFloat(oldOrder.carpanter_commision ?? "0.00");
@@ -1282,14 +1371,16 @@ const createMovement = async (req: Request, res: Response) => {
         })
       );
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: createMovementTypeAnswer.data.order_id,
-        driver_id: createMovementTypeAnswer.data.driver_id ?? undefined,
-        linked_to: "ORDER_MOVEMENT",
-        type: "CREATE",
-        message: JSON.stringify(omit(createMovementTypeAnswer.data, ["order_id", "driver_id"]), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: createMovementTypeAnswer.data.order_id,
+          driver_id: createMovementTypeAnswer.data.driver_id ?? undefined,
+          linked_to: "ORDER_MOVEMENT",
+          type: "CREATE",
+          message: JSON.stringify(omit(createMovementTypeAnswer.data, ["order_id", "driver_id"]), null, 2)
+        });
+      }
 
 
       if(createMovementTypeAnswer.data.type == "DELIVERY"){
@@ -1434,14 +1525,16 @@ const editMovement = async (req: Request, res: Response) => {
         driver_id: editMovementTypeAnswer.data.driver_id,
       });
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: foundMovementTx.order_id,
-        driver_id: editMovementTypeAnswer.data.driver_id,
-        linked_to: "ORDER_MOVEMENT",
-        type: "UPDATE",
-        message: JSON.stringify(omit(editMovementTypeAnswer.data, "id"), null, 2)
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: foundMovementTx.order_id,
+          driver_id: editMovementTypeAnswer.data.driver_id,
+          linked_to: "ORDER_MOVEMENT",
+          type: "UPDATE",
+          message: JSON.stringify(omit(editMovementTypeAnswer.data, ["id", "driver_id"]), null, 2)
+        });
+      }
 
       if(editMovementTypeAnswer.data.driver_id == foundMovementTx.driver_id) return;
 
@@ -1615,15 +1708,17 @@ const editMovementStatus = async (req: Request, res: Response) => {
         delivery_date: orderCompleted ? new Date() : null
       }).where(eq(order.id, foundMovementTx.order_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: foundMovementTx.order_id,
-        driver_id: foundMovementTx.driver_id,
-        linked_to: "ORDER_MOVEMENT",
-        type: "UPDATE",
-        heading: "Order Movement Status Updated",
-        message: `${foundMovementTx.status == "Completed" ? "Completed" : "Pending"} -> ${foundMovementTx.status == "Completed" ? "Pending" : "Completed"}`
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: foundMovementTx.order_id,
+          driver_id: foundMovementTx.driver_id,
+          linked_to: "ORDER_MOVEMENT",
+          type: "UPDATE",
+          heading: "Order Movement Status Updated",
+          message: `${foundMovementTx.status == "Completed" ? "Completed" : "Pending"} -> ${foundMovementTx.status == "Completed" ? "Pending" : "Completed"}`
+        });
+      }
     })
     
     return res.status(200).json({success: true, message: "Order Movement Updated!"});
@@ -1735,14 +1830,16 @@ const deleteMovement = async (req: Request, res: Response) => {
 
       await tx.delete(order_movement).where(eq(order_movement.id, deleteMovementTypeAnswer.data.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        order_id: foundMovementTx.order_id,
-        driver_id: foundMovementTx.driver_id,
-        linked_to: "ORDER_MOVEMENT",
-        type: "DELETE",
-        message: `Deleted Order Movement: ${JSON.stringify(omit(foundMovementTx, ["id", "order_id", "driver_id"]), null, 2)}`
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          order_id: foundMovementTx.order_id,
+          driver_id: foundMovementTx.driver_id,
+          linked_to: "ORDER_MOVEMENT",
+          type: "DELETE",
+          message: `Deleted Order Movement: ${JSON.stringify(omit(foundMovementTx, ["id", "order_id", "driver_id"]), null, 2)}`
+        });
+      }
     })
     
     return res.status(200).json({success: true, message: "Order Movement Created!"});

@@ -22,14 +22,16 @@ const createArchitect = async (req: Request, res: Response) => {
         balance: createArchitectTypeAnswer.data.balance
       }).returning({ id: architect.id });
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        architect_id: tArchitect[0].id,
-        linked_to: "ARCHITECT",
-        type: "CREATE",
-        message: JSON.stringify(createArchitectTypeAnswer.data)
-      });
-
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          architect_id: tArchitect[0].id,
+          linked_to: "ARCHITECT",
+          type: "CREATE",
+          message: JSON.stringify(createArchitectTypeAnswer.data)
+        });
+      }
+        
       const numberswithPrimary = createArchitectTypeAnswer.data.phone_numbers.filter((phone_number) => phone_number.isPrimary);
 
       const primaryIndex = createArchitectTypeAnswer.data.phone_numbers.findIndex((phone_number) => phone_number.isPrimary);
@@ -113,15 +115,17 @@ const editArchitect = async (req: Request, res: Response) => {
         })
         .where(eq(architect.id, tArchitect.id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        architect_id: tArchitect.id,
-        linked_to: "ARCHITECT",
-        type: "UPDATE",
-        message: JSON.stringify(
-          omit(editArchitectTypeAnswer.data, "architect_id")
-        ),
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          architect_id: tArchitect.id,
+          linked_to: "ARCHITECT",
+          type: "UPDATE",
+          message: JSON.stringify(
+            omit(editArchitectTypeAnswer.data, "architect_id")
+          ),
+        });
+      }
 
       const txUpdatedArchitect = await tx.query.architect.findFirst({
         where: (architect, { eq }) => eq(architect.id, tArchitect.id),
@@ -183,17 +187,19 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(architect.id, tArchitect.id));
       
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        architect_id: tArchitect.id,
-        linked_to: "ARCHITECT",
-        type: "UPDATE",
-        heading: "Architect Balance was updated",
-        message: `
-        Old Balance:${tArchitect.balance}
-        New Balance:${newBalance}
-        `
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          architect_id: tArchitect.id,
+          linked_to: "ARCHITECT",
+          type: "UPDATE",
+          heading: "Architect Balance was updated",
+          message: `
+          Old Balance:${tArchitect.balance}
+          New Balance:${newBalance}
+          `
+        });
+      }
 
       const txUpdatedArchitect = await tx.query.architect.findFirst({
         where: (architect, { eq }) => eq(architect.id, tArchitect.id),
@@ -311,12 +317,15 @@ const deleteArchitect = async (req: Request, res: Response) => {
       
       await tx.delete(architect).where(eq(architect.id, deleteArchitectTypeAnswer.data.architect_id));
 
-      await tx.insert(log).values({
-        user_id: res.locals.session.user.id,
-        linked_to: "ARCHITECT",
-        type: "DELETE",
-        message: `Architect deleted: ${JSON.stringify(omit(tArchitect, "orders"), null, 2)}`
-      });
+      if(res.locals.session.user.id){
+        await tx.insert(log).values({
+          user_id: res.locals.session.user.id,
+          architect_id: deleteArchitectTypeAnswer.data.architect_id,
+          linked_to: "ARCHITECT",
+          type: "DELETE",
+          message: `Architect deleted: ${JSON.stringify(omit(tArchitect, ["orders", "id"]), null, 2)}`
+        });
+      }
     });
 
     return res.status(200).json({success: true, message: "Architect deleted successfully", update: [{ type: "architect", data: { id: deleteArchitectTypeAnswer.data.architect_id, _: true } }]});
