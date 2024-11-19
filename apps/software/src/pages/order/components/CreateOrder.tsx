@@ -65,6 +65,11 @@ const CreateOrder = () => {
 };
 
 const CreateOrderForm = () => {
+  
+  const [total_order_value, setTotal_order_value] = React.useState(0);
+  const [final_amount, setFinal_amount] = React.useState(0);
+  const [remaining_amount, setRemaining_amount] = React.useState(0);
+
   const { refetchOrders } = useAllOrders();
   const { items: allItems } = useAllItems();
 
@@ -78,7 +83,21 @@ const CreateOrderForm = () => {
     },
   });
 
+  const [order_items, discount, amount_paid, customer_id, status] = form.watch(["order_items", "discount", "amount_paid", "customer_id", "status"]);
+
   async function onSubmit(values: z.infer<typeof createOrderType>) {
+    order_items.forEach(oi => {
+      const totalOrderItemWarehouseQuantity = (oi.warehouse_quantities ?? []).reduce((pre, current) => {
+        return pre + current.quantity;
+      }, 0);
+      if(!oi.warehouse_quantities || totalOrderItemWarehouseQuantity !== oi.quantity) {
+        form.setError("order_items", {
+          message: "Please select warehouse quantities for all order items!"
+        });
+        return;
+      }
+    })
+    if(!form.formState.isValid) return;
     try {
       const res = await request.post("/order/createOrder", values);
       if (res.status == 200) {
@@ -89,13 +108,6 @@ const CreateOrderForm = () => {
       console.log(error);
     }
   }
-
-  const [total_order_value, setTotal_order_value] = React.useState(0);
-  const [final_amount, setFinal_amount] = React.useState(0);
-  const [remaining_amount, setRemaining_amount] = React.useState(0);
-
-  const [order_items, discount, amount_paid, customer_id] = form.watch(["order_items", "discount", "amount_paid", "customer_id"]);
-
 
   React.useEffect(() => {
     setTotal_order_value(order_items.reduce((pre, current) => {
@@ -110,6 +122,31 @@ const CreateOrderForm = () => {
   React.useEffect(() => {
     setRemaining_amount(final_amount - parseFloat(amount_paid ? amount_paid : "0.00"));
   }, [final_amount, amount_paid])
+
+  React.useEffect(() => {
+    if (status === "Delivered") {
+      let errorset = false;
+      order_items.forEach(oi => {
+        const totalOrderItemWarehouseQuantity = (oi.warehouse_quantities ?? []).reduce((pre, current) => {
+          return pre + current.quantity;
+        }, 0);
+        if((!oi.warehouse_quantities || totalOrderItemWarehouseQuantity !== oi.quantity) && !errorset) {
+          errorset = true;
+        }
+      })
+      if(errorset) {
+        form.setError("order_items", {
+          message: "Please select warehouse quantities for all order items!"
+        });
+      } else {
+        form.clearErrors("order_items");
+        form.trigger("order_items");
+      }
+    } else {
+      form.clearErrors("order_items");
+      form.trigger("order_items");
+    }
+  }, [status, order_items])
 
   return (
     <div className="w-full h-full flex space-x-2">
@@ -265,6 +302,7 @@ const CreateOrderForm = () => {
                 <FormLabel>Order Items</FormLabel>
                 <FormControl>
                   <SelectOrderItems
+                    delivered={status === "Delivered"}
                     value={field.value}
                     onChange={field.onChange}
                   />

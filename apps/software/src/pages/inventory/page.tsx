@@ -2,6 +2,7 @@ import CreateItem from './components/CreateItem'
 import SearchItem from './components/SearchItem'
 import LowStockItems from './components/LowStockItems'
 import AllItems from './components/AllItems'
+import Warehouse from './components/Warehouse/Warehouse'
 
 const Inventory = () => {
   return (
@@ -14,6 +15,7 @@ const Inventory = () => {
         </CreateItem>
         <SearchItem/>
       </div>
+      <Warehouse/>
       <div className='w-full h-full space-y-8'>
         <LowStockItems/>
         <AllItems/>

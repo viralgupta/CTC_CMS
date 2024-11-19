@@ -46,17 +46,20 @@ import {
 } from "@/store/Items";
 import request from "@/lib/request";
 import { useRecoilState } from "recoil";
+import DebitWarehouseQuantity from "@/pages/inventory/components/inputs/DebitWarehouseQuantity";
 
 const AddNewItem = ({
   onSubmit: onAdd,
   value,
   children,
+  delivered,
 }: {
   onSubmit: (
     value: z.infer<typeof createOrderType>["order_items"][number]
   ) => void;
   value?: z.infer<typeof createOrderType>["order_items"][number];
   children?: React.ReactNode;
+  delivered: boolean;
 }) => {
   const [selectedItemRates, setSelectedItemRates] =
     useRecoilState(selectedItemRateAtom);
@@ -73,6 +76,7 @@ const AddNewItem = ({
     defaultValues: {
       item_id: value?.item_id ?? undefined,
       quantity: value?.quantity ?? 1,
+      warehouse_quantities: value?.warehouse_quantities,
       rate: value?.rate ?? undefined,
       total_value: value?.total_value ?? undefined,
       architect_commision: value
@@ -99,6 +103,13 @@ const AddNewItem = ({
   async function onSubmit(
     value: z.infer<typeof createOrderType>["order_items"][number]
   ) {
+    if((warehouse_quantities ?? []).reduce((acc, wq) => acc + wq.quantity, 0) !== quantity && delivered){
+      form.setError("warehouse_quantities", {
+        type: "required",
+        message: "Required"
+      });
+      return;
+    }
     const finalValue = {
       ...value,
       architect_commision: parseFloat(architectCommission).toFixed(2),
@@ -147,6 +158,7 @@ const AddNewItem = ({
       form.reset({
         item_id: value.item_id ?? undefined,
         quantity: value.quantity ?? 1,
+        warehouse_quantities: value?.warehouse_quantities,
         rate: value.rate ?? undefined,
         total_value: value.total_value ?? undefined,
         architect_commision: calculateCommissionFromTotalCommission(
@@ -171,6 +183,7 @@ const AddNewItem = ({
   const [
     item_id,
     quantity,
+    warehouse_quantities,
     rate,
     architect_commision,
     architect_commision_type,
@@ -180,6 +193,7 @@ const AddNewItem = ({
   ] = form.watch([
     "item_id",
     "quantity",
+    "warehouse_quantities",
     "rate",
     "architect_commision",
     "architect_commision_type",
@@ -230,6 +244,17 @@ const AddNewItem = ({
     form.setValue("rate", foundItem?.sale_rate ?? 0);
     getItemRate(foundItem.id);
   }, [foundItem]);
+
+  React.useEffect(() => {
+    if((warehouse_quantities ?? []).reduce((acc, wq) => acc + wq.quantity, 0) !== quantity && delivered){
+      form.setError("warehouse_quantities", {
+        type: "required",
+        message: "Required"
+      });
+    } else {
+      form.clearErrors("warehouse_quantities");
+    }
+  }, [quantity, warehouse_quantities, delivered]);
 
   return (
     <Dialog
@@ -282,21 +307,37 @@ const AddNewItem = ({
                 control={form.control}
                 name="quantity"
                 render={({ field }) => (
-                  <FormItem className="w-2/6">
+                  <FormItem className="w-2/12">
                     <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                      <div className="w-full h-full flex gap-x-0.5">
-                        <Input
-                          type="number"
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseFloat(e.target.value) : ""
-                            )
-                          }
-                        />
-                        <Input disabled value={"piece"} className="w-16" />
-                      </div>
+                      <Input
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value ? parseFloat(e.target.value) : ""
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="warehouse_quantities"
+                render={({ field }) => (
+                  <FormItem className="w-2/12">
+                    <FormLabel>Warehouses</FormLabel>
+                    <FormControl>
+                      <DebitWarehouseQuantity
+                        existingQuantities={field.value}
+                        disabled={!delivered || !item_id}
+                        item_id={item_id}
+                        totalQuantity={quantity ?? 0}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

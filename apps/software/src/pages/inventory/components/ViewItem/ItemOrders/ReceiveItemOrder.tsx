@@ -25,7 +25,8 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/ui/Spinner";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import CreditWarehouseQuantity from "../../inputs/CreditWarehouseQuantity";
 
 const RecieveItemOrder = ({
   children,
@@ -35,7 +36,7 @@ const RecieveItemOrder = ({
   itemOrder: viewItemType["item_orders"][number];
 }) => {
   const [open, setOpen] = React.useState(false);
-  const setViewItem = useSetRecoilState(viewItemAtom);
+  const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
 
   const form = useForm<z.infer<typeof receiveItemOrderType>>({
@@ -50,6 +51,14 @@ const RecieveItemOrder = ({
   });
 
   async function onSubmit(values: z.infer<typeof receiveItemOrderType>) {
+    const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
+    if(total_quantity !== received_quantity) {
+      form.setError("warehouse_quantities", {
+        type: "custom",
+        message: "Received quantity must be equal to the total quantity in the warehouse."
+      });
+      return;
+    }
     const res = await request.put("/inventory/receiveItemOrder", values);
     if (res.status == 200) {
       setOpen(false);
@@ -58,7 +67,7 @@ const RecieveItemOrder = ({
     }
   }
 
-  const received_quantity = form.watch("received_quantity");
+  const [received_quantity, warehouse_quantities] = form.watch(["received_quantity", "warehouse_quantities"]);
 
   React.useEffect(() => {
     if(!form.getValues("receive_date") && received_quantity) {
@@ -66,6 +75,23 @@ const RecieveItemOrder = ({
       form.setValue('receive_date', new Date().toISOString());
     }
   }, [received_quantity])
+
+  React.useEffect(() => {
+    if((received_quantity ?? 0) > 0){
+      const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
+      if(total_quantity !== received_quantity) {
+        form.setError("warehouse_quantities", {
+          type: "custom",
+          message: "Received quantity must be equal to the total quantity in the warehouse."
+        })
+      } else {
+        form.clearErrors("warehouse_quantities");
+      }
+    } else {
+      form.clearErrors("warehouse_quantities");
+      
+    }
+  }, [received_quantity, warehouse_quantities])
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -116,6 +142,26 @@ const RecieveItemOrder = ({
                 )}
               />
             </div>
+            <div className="flex w-full flex-col justify-between md:flex-row">
+                <FormField
+                  control={form.control}
+                  name="warehouse_quantities"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>Warehouse Quantities</FormLabel>
+                      <FormControl>
+                        <CreditWarehouseQuantity
+                          totalQuantity={form.getValues("received_quantity") ?? 0}
+                          currentQuantity={viewItem?.warehouse_quantities ?? []}
+                          disabled={form.getValues("received_quantity") == 0}
+                          onChange={field.onChange}
+                          />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             <Button disabled={form.formState.isSubmitting} type="submit">
               {form.formState.isSubmitting && <Spinner />}
               {!form.formState.isSubmitting && "Receive Quantity"}

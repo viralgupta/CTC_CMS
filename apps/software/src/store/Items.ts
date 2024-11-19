@@ -31,7 +31,18 @@ export interface viewItemType extends itemType {
     order_date: Date;
     received_quantity: number | null;
     receive_date: Date | null;
+    i_o_w_q: {
+      quantity: number;
+      warehouse_quantity_id: string;
+    }[]
   }[];
+  warehouse_quantities: {
+    id: string;
+    quantity: number;
+    warehouse: {
+        name: string;
+    };
+  }[]
 }
 
 export interface selectedItemRateType {

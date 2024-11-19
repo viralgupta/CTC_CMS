@@ -1,6 +1,6 @@
 import db from '@db/db';
-import { item, item_order, log } from '@db/schema';
-import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType } from '@type/api/item';
+import { item, item_order, item_order_warehouse_quantity, log, warehouse, warehouse_quantity } from '@db/schema';
+import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType } from '@type/api/item';
 import { Request, Response } from "express";
 import { eq, sql } from "drizzle-orm";
 import { omit } from '../lib/utils';
@@ -14,6 +14,12 @@ const createItem = async (req: Request, res: Response) => {
 
   try {
     const createdItem = await db.transaction(async (tx) => {
+      // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+      const totalWarehouseQuantity = (createItemTypeAnswer.data.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+      if(createItemTypeAnswer.data.quantity > 0 && ((createItemTypeAnswer.data.warehouse_quantities ?? []).length == 0 || !createItemTypeAnswer.data.warehouse_quantities || totalWarehouseQuantity !== createItemTypeAnswer.data.quantity)){
+        throw new Error("Specify warehouse quantities equal to item quantity");
+      }
+
       const createdItem = await tx.insert(item).values({
         name: createItemTypeAnswer.data.name,
         multiplier: createItemTypeAnswer.data.multiplier,
@@ -25,13 +31,36 @@ const createItem = async (req: Request, res: Response) => {
         rate_dimension: createItemTypeAnswer.data.rate_dimension
       }).returning({
         id: item.id,
-      })
+      });
+
+      // create warehouse quantities all the warehouses
+      const warehouses = await tx.query.warehouse.findMany({
+        columns: {
+          id: true
+        }
+      });
+      (warehouses ?? []).forEach(async (warehouse) => {
+        const warehouseWithQuantity = (createItemTypeAnswer.data.warehouse_quantities ?? []).find(wq => wq.warehouse_id === warehouse.id);
+        if(warehouseWithQuantity){
+          await tx.insert(warehouse_quantity).values({
+            item_id: createdItem[0].id,
+            warehouse_id: warehouse.id,
+            quantity: warehouseWithQuantity.quantity
+          })
+        } else {
+          await tx.insert(warehouse_quantity).values({
+            item_id: createdItem[0].id,
+            warehouse_id: warehouse.id,
+            quantity: 0
+          })
+        }
+      });
 
       if(!createdItem[0].id){
         throw new Error("Unable to create item");
       }
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: createdItem[0].id,
@@ -91,11 +120,32 @@ const getItem = async (req: Request, res: Response) => {
           limit: 20
         },
         item_orders: {
+          orderBy: (item_order, { desc }) => [desc(item_order.order_date)],
+          limit: 10,
           columns: {
             item_id: false,
           },
-          orderBy: (item_order, { desc }) => [desc(item_order.order_date)],
-          limit: 10
+          with: {
+            i_o_w_q: {
+              columns: {
+                quantity: true,
+                warehouse_quantity_id: true
+              },
+            }
+          }
+        },
+        warehouse_quantities: {
+          columns: {
+            id: true,
+            quantity: true
+          },
+          with: {
+            warehouse: {
+              columns: {
+                name: true
+              }
+            }
+          }
         }
       }
     })
@@ -106,6 +156,7 @@ const getItem = async (req: Request, res: Response) => {
 
     return res.status(200).json({success: true, message: "Item fetched", data: foundItem});
   } catch (error: any) {
+    console.log("error", error)
     return res.status(400).json({success: false, message: "Unable to fetch item", error: error.message ? error.message : error});
   }
 }
@@ -173,7 +224,7 @@ const editItem = async (req: Request, res: Response) => {
         throw new Error("Unable to edit item")
       }
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: updatedItem[0].id,
@@ -220,27 +271,24 @@ const createItemOrder = async (req: Request, res: Response) => {
         throw new Error("Unable to find item");
       }
 
-      if (createItemOrderTypeAnswer.data.received_quantity){
-        await tx.update(item).set({
-          quantity: foundItem.quantity + createItemOrderTypeAnswer.data.received_quantity
-        }).where(eq(item.id, createItemOrderTypeAnswer.data.item_id));
-      }
-
-      
       if(createItemOrderTypeAnswer.data.received_quantity == 0){
         createItemOrderTypeAnswer.data.receive_date = undefined;
+      } else {
+        if(!createItemOrderTypeAnswer.data.receive_date) createItemOrderTypeAnswer.data.receive_date = new Date();
       }
 
-      await tx.insert(item_order).values({
+      const createdItemOrder = await tx.insert(item_order).values({
         item_id: createItemOrderTypeAnswer.data.item_id,
         vendor_name: createItemOrderTypeAnswer.data.vendor_name,
         ordered_quantity: createItemOrderTypeAnswer.data.ordered_quantity,
         order_date: createItemOrderTypeAnswer.data.order_date,
         received_quantity: createItemOrderTypeAnswer.data.received_quantity,
         receive_date: createItemOrderTypeAnswer.data.receive_date
+      }).returning({
+        id: item_order.id
       })
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: createItemOrderTypeAnswer.data.item_id,
@@ -248,6 +296,37 @@ const createItemOrder = async (req: Request, res: Response) => {
           type: "CREATE",
           message: JSON.stringify(omit(createItemOrderTypeAnswer.data, "item_id"), null, 2)
         });
+      }
+
+      if (createItemOrderTypeAnswer.data.received_quantity){
+        // increase item quantity
+        await tx.update(item).set({
+          quantity: foundItem.quantity + createItemOrderTypeAnswer.data.received_quantity
+        }).where(eq(item.id, createItemOrderTypeAnswer.data.item_id));
+
+        // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+        const totalWarehouseQuantity = (createItemOrderTypeAnswer.data.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+        if(createItemOrderTypeAnswer.data.received_quantity > 0 && ((createItemOrderTypeAnswer.data.warehouse_quantities ?? []).length == 0 || !createItemOrderTypeAnswer.data.warehouse_quantities || totalWarehouseQuantity !== createItemOrderTypeAnswer.data.received_quantity)){
+          throw new Error("Specify warehouse quantities equal to item receivied quantity");
+        }
+
+        // update the warehouse item quantities if already exists else create warehouse item
+        createItemOrderTypeAnswer.data.warehouse_quantities?.forEach(async (wq) => {
+
+          await tx.update(warehouse_quantity).set({
+            quantity: sql`${warehouse_quantity.quantity} + ${sql.placeholder("quantity")}`
+          }).where(eq(warehouse_quantity.id, wq.warehouse_quantity_id)).execute({
+            quantity: wq.quantity
+          })
+
+          // create item_order_warehouse_quantity
+          await tx.insert(item_order_warehouse_quantity).values({
+            item_order_id: createdItemOrder[0].id,
+            warehouse_quantity_id: wq.warehouse_quantity_id,
+            quantity: wq.quantity
+          })
+        })
+
       }
     })
 
@@ -280,7 +359,7 @@ const editItemOrder = async (req: Request, res: Response) => {
         throw new Error("Unable to find item order!")
       }
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: foundItemOrdertx[0].item_id,
@@ -319,45 +398,50 @@ const receiveItemOrder = async (req: Request, res: Response) => {
         throw new Error("Unable to find item order!")
       }
 
-      if ((foundItemOrderTx.received_quantity ?? 0) === receiveItemOrderTypeAnswer.data.received_quantity) {
-        throw new Error("Unable to update, same quantity as before!");
+      if ((foundItemOrderTx.received_quantity ?? 0) > 0) {
+        throw new Error("Item Order is already received, cannot update the quantity!");
       }
 
+      if(receiveItemOrderTypeAnswer.data.received_quantity < 1){
+        throw new Error("Received quantity must be more than 0");
+      }
 
-      if ((foundItemOrderTx.received_quantity ?? 0) > 0){
-        const diff = (foundItemOrderTx.received_quantity ?? 0) - receiveItemOrderTypeAnswer.data.received_quantity;
-        const operator = diff < 0 ? "add" : "subtract"
-        if(operator == "add"){
-          await tx.update(item).set({
-            quantity: sql`${item.quantity} + ${sql.placeholder("difference")}`
-          }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
-            difference: (diff * -1)
-          });
-        } else {
-          await tx.update(item).set({
-            quantity: sql`${item.quantity} - ${sql.placeholder("difference")}`
-          }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
-            difference: diff
-          });
-        }
-      } else {
-        await tx.update(item).set({
-          quantity: sql`${item.quantity} + ${sql.placeholder("quantity")}`
-        }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
-          quantity: receiveItemOrderTypeAnswer.data.received_quantity
+      // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+      const totalWarehouseQuantity = (receiveItemOrderTypeAnswer.data.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+      if(receiveItemOrderTypeAnswer.data.received_quantity > 0 && ((receiveItemOrderTypeAnswer.data.warehouse_quantities ?? []).length == 0 || !receiveItemOrderTypeAnswer.data.warehouse_quantities || totalWarehouseQuantity !== receiveItemOrderTypeAnswer.data.received_quantity)){
+        throw new Error("Specify warehouse quantities equal to item receivied quantity");
+      }
+
+      // update item quantity
+      await tx.update(item).set({
+        quantity: sql`${item.quantity} + ${sql.placeholder("recievedQuantity")}`
+      }).where(eq(item.id, foundItemOrderTx.item_id)).execute({
+        recievedQuantity: receiveItemOrderTypeAnswer.data.received_quantity
+      });
+
+      // update warehouse quantities and create item_order_warehouse_quantity
+      receiveItemOrderTypeAnswer.data.warehouse_quantities.forEach(async(riowq) => {
+        await tx.update(warehouse_quantity).set({
+          quantity: sql`${warehouse_quantity.quantity} + ${sql.placeholder("quantity")}`
+        }).where(eq(warehouse_quantity.id, riowq.warehouse_quantity_id)).execute({
+          quantity: riowq.quantity
         });
-      }
 
-      if(receiveItemOrderTypeAnswer.data.received_quantity == 0){
-        receiveItemOrderTypeAnswer.data.receive_date = undefined;
-      }
+        await tx.insert(item_order_warehouse_quantity).values({
+          item_order_id: foundItemOrderTx.id,
+          warehouse_quantity_id: riowq.warehouse_quantity_id,
+          quantity: riowq.quantity
+        });
+      });
+
+      if(!receiveItemOrderTypeAnswer.data.receive_date) receiveItemOrderTypeAnswer.data.receive_date = new Date();
 
       await tx.update(item_order).set({
         receive_date: receiveItemOrderTypeAnswer.data.receive_date,
         received_quantity: receiveItemOrderTypeAnswer.data.received_quantity
       }).where(eq(item_order.id, receiveItemOrderTypeAnswer.data.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: foundItemOrderTx.item_id,
@@ -394,32 +478,53 @@ const deleteItemOrder = async (req: Request, res: Response) => {
 
   try {
     const updatedItem = await db.transaction(async (tx) => {
-      const foundItemOrderTx = await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id)).returning();
+      const foundItemOrderTx = await tx.query.item_order.findFirst({
+        where: (item_order, { eq }) => eq(item_order.id, deleteItemOrderTypeAnswer.data.id),
+        with: {
+          i_o_w_q: {
+            columns: {
+              warehouse_quantity_id: true,
+              quantity: true
+            }
+          }
+        }
+      });
 
-      if(!foundItemOrderTx[0]?.id){
-        throw new Error("Unable to find item order!")
-      }
+      if(!foundItemOrderTx) throw new Error("Unable to find item order!");
 
-      if((foundItemOrderTx[0].received_quantity ?? 0) > 0){
+      if((foundItemOrderTx.received_quantity ?? 0) > 0){
         // reduce the receive quantity
         await tx.update(item).set({
-          quantity: sql`${item.quantity} - ${foundItemOrderTx[0].received_quantity}`
-        }).where(eq(item.id, foundItemOrderTx[0].item_id));
+          quantity: sql`${item.quantity} - ${foundItemOrderTx.received_quantity}`
+        }).where(eq(item.id, foundItemOrderTx.item_id));
+
+        const foundItemOrderWarehouseQuantities = foundItemOrderTx.i_o_w_q;
+
+        const promises = foundItemOrderWarehouseQuantities.map(async (iowq) => {
+          // reduce the warehouse item quantities
+          await tx.update(warehouse_quantity).set({
+            quantity: sql`${warehouse_quantity.quantity} - ${iowq.quantity}`
+          }).where(eq(warehouse_quantity.id, iowq.warehouse_quantity_id));
+        });
+
+        await Promise.all(promises);
       }
 
-      if(res.locals.session.user.id){
+      await tx.delete(item_order).where(eq(item_order.id, deleteItemOrderTypeAnswer.data.id));
+
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
-          item_id: foundItemOrderTx[0].item_id,
+          item_id: foundItemOrderTx.item_id,
           linked_to: "ITEM_ORDER",
           type: "DELETE",
           heading: "Item Quanitity Updated, Item Order was Deleted",
-          message: JSON.stringify(omit(foundItemOrderTx[0], ["id", "item_id"]), null, 2)
+          message: JSON.stringify(omit(foundItemOrderTx, ["id", "item_id"]), null, 2)
         });
       }
 
       const txUpdatedItem = await tx.query.item.findFirst({
-        where: (item, { eq }) => eq(item.id, foundItemOrderTx[0].item_id),
+        where: (item, { eq }) => eq(item.id, foundItemOrderTx.item_id),
         columns: {
           min_rate: false,
           multiplier: false
@@ -464,13 +569,9 @@ const deleteItem = async (req: Request, res: Response) => {
         throw new Error("Item is being used in orders, cannot delete!");
       }
 
-      if(foundItem.quantity !== 0){
-        throw new Error("Item quantity is not 0, cannot delete!");
-      }
-
       await tx.delete(item).where(eq(item.id, deleteItemTypeAnswer.data.item_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           item_id: deleteItemTypeAnswer.data.item_id,
@@ -506,6 +607,219 @@ const getAllItems = async (_req: Request, res: Response) => {
   }
 }
 
+const createWarehouse = async (req: Request, res: Response) => {
+  const createWarehouseTypeAnswer = createWarehouseType.safeParse(req.body);
+
+  if (!createWarehouseTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createWarehouseTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const createdWarehouse = await tx.insert(warehouse).values({
+        name: createWarehouseTypeAnswer.data.name,
+      }).returning({
+        id: warehouse.id,
+      })
+
+      // find all items and then insert the warehouse quantity for each item as 0
+      const items = await tx.query.item.findMany({
+        columns: {
+          id: true
+        }
+      });
+      
+      let insertWarehouseQuantity: {
+        item_id: string,
+        warehouse_id: string,
+        quantity: number
+      }[] = [];
+    
+      (items ?? []).forEach(async (item) => {
+        insertWarehouseQuantity = [
+          ...insertWarehouseQuantity,
+          {
+            item_id: item.id,
+            warehouse_id: createdWarehouse[0].id,
+            quantity: 0
+          }
+        ]
+      });
+
+      await tx.insert(warehouse_quantity).values(insertWarehouseQuantity);
+    });
+
+    return res.status(200).json({success: true, message: "Warehouse Created!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create warehouse", error: error.message ? error.message : error});
+  }
+}
+
+const getWarehouse = async (req: Request, res: Response) => {
+  const getWarehouseTypeAnswer = getWarehouseType.safeParse(req.query);
+
+  if (!getWarehouseTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getWarehouseTypeAnswer.error.flatten()})
+  }
+
+  try {
+    let FoundWarehouse = await db.query.warehouse.findFirst({
+      where: (warehouse, { eq }) => eq(warehouse.id, getWarehouseTypeAnswer.data.warehouse_id),
+      with: {
+        warehouse_quantities: {
+          orderBy: (warehouse_quantity, { desc }) => [desc(warehouse_quantity.quantity)],
+          limit: 20, // add cursor pagination
+          columns: {
+            item_id: true,
+            quantity: true,
+          },
+          with: {
+            item: {
+              columns: {
+                name: true,
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if(!FoundWarehouse){
+      return res.status(400).json({success: false, message: "Unable to find warehouse"})
+    }
+
+    FoundWarehouse.warehouse_quantities = FoundWarehouse.warehouse_quantities.filter(wq => wq.quantity !== 0);
+
+    return res.status(200).json({success: true, message: "All Warehouse Quantiites Fetched!", data: FoundWarehouse});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch warehouse quantitiy", error: error.message ? error.message : error});
+  }
+}
+
+const getAllWarehouse = async (_req: Request, res: Response) => {
+  try {
+    const warehousees = await db.query.warehouse.findMany();
+    return res.status(200).json({success: true, message: "All Warehouses Fetched!", data: warehousees});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch warehouses", error: error.message ? error.message : error});
+  }
+}
+
+const editWarehouse = async (req: Request, res: Response) => {
+  const editWarehouseTypeAnswer = editWarehouseType.safeParse(req.body);
+
+  if (!editWarehouseTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editWarehouseTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+
+      const foundWarehouse = await db.query.warehouse.findFirst({
+        where: (warehouse, { eq }) => eq(warehouse.id, editWarehouseTypeAnswer.data.warehouse_id),
+        columns: {
+          id: true
+        },
+      });
+
+      if(!foundWarehouse){
+        throw new Error("Unable to find warehouse");
+      }
+
+      await tx.update(warehouse).set({
+        name: editWarehouseTypeAnswer.data.name
+      }).where(eq(warehouse.id, editWarehouseTypeAnswer.data.warehouse_id));
+    })
+
+    return res.status(200).json({success: true, message: "Warehouse Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to update warehouse", error: error.message ? error.message : error});
+  }
+}
+
+const deleteWarehouse = async (req: Request, res: Response) => {
+  const deleteWarehouseTypeAnswer = deleteWarehouseType.safeParse(req.body);
+
+  if (!deleteWarehouseTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteWarehouseTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+
+      const foundWarehouse = await tx.query.warehouse.findFirst({
+        where: (warehouse, { eq }) => eq(warehouse.id, deleteWarehouseTypeAnswer.data.warehouse_id),
+        columns: {
+          id: true
+        },
+        with: {
+          warehouse_quantities: {
+            columns: {
+              quantity: true
+            },
+            with: {
+              i_o_w_q: {
+                columns: {
+                  quantity: true
+                },
+                limit: 1
+              },
+              o_m_i_w_q: {
+                columns: {
+                  quantity: true
+                },
+                limit: 1
+              }
+            }
+          }
+        },
+      });
+
+      const warehouseQuantityNotZero = (foundWarehouse?.warehouse_quantities ?? []).find(wq => wq.quantity !== 0);
+      if(warehouseQuantityNotZero){
+        throw new Error("Warehouse is being used in items, cannot delete!");
+      }
+      if(foundWarehouse?.warehouse_quantities.find(wq => wq.i_o_w_q.length > 0 )) throw new Error("Warehouse items is being used in item orders, cannot delete!");
+      if(foundWarehouse?.warehouse_quantities.find(wq => wq.o_m_i_w_q.length > 0 )) throw new Error("Warehouse items is being used in orders, cannot delete!");
+
+      await tx.delete(warehouse).where(eq(warehouse.id, deleteWarehouseTypeAnswer.data.warehouse_id));
+    })
+
+    return res.status(200).json({success: true, message: "Warehouse Deleted!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to delete warehouse", error: error.message ? error.message : error});
+  }
+}
+
+const getWarehouseItemQuantities = async (req: Request, res: Response) => {
+  const getWarehouseItemQuantitiesTypeAnswer = getWarehouseItemQuantitiesType.safeParse(req.query);
+
+  if (!getWarehouseItemQuantitiesTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getWarehouseItemQuantitiesTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const foundWarehouseQuantity = await db.query.warehouse_quantity.findMany({
+      where: (warehouse_quantity, { eq }) => eq(warehouse_quantity.item_id, getWarehouseItemQuantitiesTypeAnswer.data.item_id),
+      columns: {
+        id: true,
+        quantity: true
+      },
+      with: {
+        warehouse: {
+          columns: {
+            name: true
+          }
+        }
+      }
+    });
+
+    return res.status(200).json({success: true, message: "Warehouse Quantities Found!", data: foundWarehouseQuantity});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find warehouse quantities!", error: error.message ? error.message : error});
+  }
+}
+
 export {
   createItem,
   getAllItems,
@@ -516,5 +830,11 @@ export {
   editItemOrder,
   receiveItemOrder,
   deleteItemOrder,
-  deleteItem
+  deleteItem,
+  createWarehouse,
+  getWarehouse,
+  getAllWarehouse,
+  editWarehouse,
+  deleteWarehouse,
+  getWarehouseItemQuantities
 }

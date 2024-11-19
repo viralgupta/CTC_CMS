@@ -50,7 +50,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
               </button>
             );
           })}
-        <Button variant={"destructive"} className="w-full h-14 text-2xl font-cubano mt-2" onClick={()=>{window.ipcRenderer.invoke("EMERGENCY")}}>
+        <Button variant={"outline"} className="w-full h-14 text-2xl font-cubano mt-2 border-primary text-primary hover:text-primary" onClick={()=>{window.ipcRenderer.invoke("EMERGENCY")}}>
           <Siren className="w-7 aspect-square mr-2"/>
           Emergency
         </Button>

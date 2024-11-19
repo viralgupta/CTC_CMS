@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { recieveWarehouseQuantityType } from "./item";
 
 export const orderItem = z.object({
   item_id: z.string(),
   quantity: z.number(),
+  warehouse_quantities: z.array(recieveWarehouseQuantityType).optional(),
   rate: z.number(),
   total_value: z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
@@ -117,7 +119,7 @@ export const settleBalanceType = z.object({
 
 export const editOrderItemsType = z.object({
   order_id: z.string().transform((val) => Number(val)),
-  order_items: z.array(orderItem).min(1, "At least one item is required")
+  order_items: z.array(orderItem.omit({warehouse_quantities: true})).min(1, "At least one item is required")
 })
 
 
@@ -146,7 +148,7 @@ export const getOrderMovementType = z.object({
 });
 
 export const createOrderMovementType = z.object({
-  order_id: z.string().transform((val) => Number(val)),
+  order_id: z.number(),
   driver_id: z.string().uuid().optional(),
   type: z.enum(["DELIVERY", "RETURN"]),
   status: z.enum(["Pending", "Completed"]),
@@ -169,6 +171,7 @@ export const createOrderMovementType = z.object({
       z.object({
         order_item_id: z.string().uuid(),
         quantity: z.number(),
+        warehouse_quantities: z.array(recieveWarehouseQuantityType).min(1),
       })
     )
     .min(1),

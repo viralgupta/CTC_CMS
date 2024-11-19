@@ -12,7 +12,7 @@ const LowStockItems = () => {
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <div className="text-3xl font-cubano mb-4 flex justify-between items-center">
         <div>Items Low in Stock</div>
         <div>

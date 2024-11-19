@@ -1,5 +1,18 @@
 import db from '@db/db';
-import { architect, carpanter, customer, driver, item, log, order, order_item, order_movement, order_movement_item } from '@db/schema';
+import {
+  architect,
+  carpanter,
+  customer,
+  driver,
+  item,
+  log,
+  order,
+  order_item,
+  order_movement,
+  order_movement_item,
+  order_movement_item_warehouse_quantity,
+  warehouse_quantity,
+} from "@db/schema";
 import {
   createOrderType,
   editOrderNoteType,
@@ -47,7 +60,7 @@ const createOrder = async (req: Request, res: Response) => {
 
       // calculate if we can deliver the order
       let canDeliver = true;
-      createOrderTypeAnswer.data.order_items.forEach(async (oi) => {
+      const canDeliverPromises = createOrderTypeAnswer.data.order_items.map(async (oi) => {
         const foundItem = await tx.query.item.findFirst({
           where: (item, { eq }) => eq(item.id, oi.item_id),
           columns: {
@@ -62,8 +75,10 @@ const createOrder = async (req: Request, res: Response) => {
         };
       });
 
+      await Promise.all(canDeliverPromises);
+
       if(createOrderTypeAnswer.data.status == "Delivered" && !canDeliver){
-        throw new Error("Cannot Deliver this order, Insuficent Quanity!")
+        throw new Error("Cannot Deliver this order, Insufficient Quantity!")
       };
 
       // calculate the total value of the order
@@ -139,7 +154,7 @@ const createOrder = async (req: Request, res: Response) => {
         architect_commision: calculateArchitectCommision ? architectCommision : null,
       }).returning({id: order.id});
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: tOrder[0].id,
@@ -170,6 +185,7 @@ const createOrder = async (req: Request, res: Response) => {
         })
       ).returning({
         id: order_item.id,
+        item_id: order_item.item_id,
         quantity: order_item.quantity
       })
 
@@ -206,13 +222,37 @@ const createOrder = async (req: Request, res: Response) => {
       // create a order movement if the status is deliverd and can be delivered
       if (createOrderTypeAnswer.data.status == "Delivered" && canDeliver) {
         
-        // reduce quanitity of item
         createOrderTypeAnswer.data.order_items.forEach(async (orderitem) => {
+          // reduce quanitity of item
           await tx.update(item).set({
             quantity: sql`${item.quantity} - ${sql.placeholder('orderQuantity')}`
           })
             .where(eq(item.id, orderitem.item_id))
             .execute({ orderQuantity: orderitem.quantity });
+
+          // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+          const totalWarehouseQuantity = (orderitem.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+          if(orderitem.quantity > 0 && ((orderitem.warehouse_quantities ?? []).length == 0 || totalWarehouseQuantity !== orderitem.quantity)){
+            throw new Error("Specify warehouse quantities equal to item delivered quantity");
+          }
+
+          // update the warehouse_quantity quantities
+          (orderitem.warehouse_quantities ?? [])?.forEach(async (oiwq) => {
+            const foundWarehouseItem = await tx.query.warehouse_quantity.findFirst({
+              where: (warehouse_quantity, { eq }) => eq(warehouse_quantity.id, oiwq.warehouse_quantity_id),
+              columns: {
+                quantity: true
+              },
+            });
+
+            if(!foundWarehouseItem) throw new Error("Unable to find the warehouse item!!!");
+
+            if(foundWarehouseItem.quantity < oiwq.quantity) throw new Error("Insufficient quantity in warehouse!!!");
+
+            await tx.update(warehouse_quantity).set({
+              quantity: sql`${warehouse_quantity.quantity} - ${sql.placeholder('warehouseQuantity')}`
+            }).where(eq(warehouse_quantity.id, oiwq.warehouse_quantity_id)).execute({ warehouseQuantity: oiwq.quantity });
+          });
         });
 
         // create order movement
@@ -221,14 +261,14 @@ const createOrder = async (req: Request, res: Response) => {
           labour_frate_cost: 0,
           type: "DELIVERY",
           status: "Completed",
-          created_at: createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date,
-          delivery_at: createOrderTypeAnswer.data.delivery_date === null ? new Date(): createOrderTypeAnswer.data.delivery_date, 
+          created_at: !createOrderTypeAnswer.data.delivery_date ? new Date(): createOrderTypeAnswer.data.delivery_date,
+          delivery_at: !createOrderTypeAnswer.data.delivery_date ? new Date(): createOrderTypeAnswer.data.delivery_date, 
         }).returning({
           id: order_movement.id
         });
 
         // create order movement items
-        await tx.insert(order_movement_item).values(
+        const insertedOrderMovementItems = await tx.insert(order_movement_item).values(
           orderItems.map((oi) => {
             return {
               order_movement_id: tOrderMovememt[0].id,
@@ -236,7 +276,29 @@ const createOrder = async (req: Request, res: Response) => {
               quantity: oi.quantity
             }
           })
-        )
+        ).returning({
+          id: order_movement_item.id,
+          order_item_id: order_movement_item.order_item_id
+        });
+
+        createOrderTypeAnswer.data.order_items.forEach(async (oi) => {
+          
+          const orderMovementItemWarehouseQuantityId = insertedOrderMovementItems.find((iomi) => iomi.order_item_id == orderItems.find((coi) => coi.item_id == oi.item_id)?.id)?.id;
+          
+          if(!orderMovementItemWarehouseQuantityId) return new Error("Unable to find created order movement, this should not happen contact developer!")
+
+          // create order_movement_item_warehouse_quantity for each order item's warehouse quantity
+          await tx.insert(order_movement_item_warehouse_quantity).values(
+            (oi.warehouse_quantities ?? []).map((oiwq) => {
+              return {
+                order_movement_item_id: orderMovementItemWarehouseQuantityId,
+                warehouse_quantity_id: oiwq.warehouse_quantity_id,
+                quantity: oiwq.quantity,
+              }
+            })
+          )
+        })
+
       };
     })
 
@@ -261,7 +323,7 @@ const editOrderNote = async (req: Request, res: Response) => {
         note: editOrderNoteTypeAnswer.data.note
       }).where(eq(order.id, editOrderNoteTypeAnswer.data.order_id))
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderNoteTypeAnswer.data.order_id,
@@ -337,7 +399,7 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
         }
       });
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: addOrderCustomerIdTypeAnswer.data.order_id,
@@ -422,7 +484,7 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
         }
       });
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderCarpanterIdTypeAnswer.data.order_id,
@@ -507,7 +569,7 @@ const editOrderArchitectId = async (req: Request, res: Response) => {
         }
       });
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderArchitectIdTypeAnswer.data.order_id,
@@ -542,7 +604,7 @@ const editOrderPriority = async (req: Request, res: Response) => {
         priority: editOrderPriorityTypeAnswer.data.priority
       }).where(eq(order.id, editOrderPriorityTypeAnswer.data.order_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderPriorityTypeAnswer.data.order_id,
@@ -589,7 +651,7 @@ const editOrderDeliveryDate = async (req: Request, res: Response) => {
         delivery_date: editOrderDeliveryDateTypeAnswer.data.delivery_date
       }).where(eq(order.id, editOrderDeliveryDateTypeAnswer.data.order_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderDeliveryDateTypeAnswer.data.order_id,
@@ -667,7 +729,7 @@ const editOrderDeliveryAddressId = async (req: Request, res: Response) => {
         delivery_address_id: editOrderDeliveryAddressIdTypeAnswer.data.delivery_address_id
       }).where(eq(order.id, editOrderDeliveryAddressIdTypeAnswer.data.order_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderDeliveryAddressIdTypeAnswer.data.order_id,
@@ -760,7 +822,7 @@ const editOrderDiscount = async (req: Request, res: Response) => {
         payment_status: calculatePaymentStatus(parseFloat(oldOrder.total_order_amount) - parseFloat(editOrderDiscountTypeAnswer.data.discount), parseFloat(oldOrder.amount_paid ?? "0.00"))
       });
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderDiscountTypeAnswer.data.order_id,
@@ -838,7 +900,7 @@ const settleBalance = async (req: Request, res: Response) => {
         }
       }
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: settleBalanceTypeAnswer.data.order_id,
@@ -979,7 +1041,7 @@ const editOrderItems = async (req: Request, res: Response) => {
         }).where(eq(order_item.id, removedOrderItem.id));
       });
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: editOrderItemsTypeAnswer.data.order_id,
@@ -1361,7 +1423,7 @@ const createMovement = async (req: Request, res: Response) => {
       }).returning({ id: order_movement.id });
 
       // create order movement items
-      await tx.insert(order_movement_item).values(
+      const createdOrderMovementItems = await tx.insert(order_movement_item).values(
         createMovementTypeAnswer.data.order_movement_items.map((omi) => {
           return {
             order_movement_id: order_movement_id[0].id,
@@ -1369,9 +1431,12 @@ const createMovement = async (req: Request, res: Response) => {
             quantity: omi.quantity
           }
         })
-      );
+      ).returning({
+        id: order_movement_item.id,
+        order_item_id: order_movement_item.order_item_id
+      })
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: createMovementTypeAnswer.data.order_id,
@@ -1384,6 +1449,7 @@ const createMovement = async (req: Request, res: Response) => {
 
 
       if(createMovementTypeAnswer.data.type == "DELIVERY"){
+
         if(fetchedTxOrder.status == "Delivered") throw new Error("Order is already Delivered, Cannot create movement of type Delivery!");
         
         if(createMovementTypeAnswer.data.status == "Completed"){
@@ -1402,30 +1468,69 @@ const createMovement = async (req: Request, res: Response) => {
 
           if(errorMessage !== "") throw new Error(errorMessage);
 
-          // reduce quantities from item
-          createMovementTypeAnswer.data.order_movement_items.forEach(async (omi) => {
+          const promises = createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
             const foundOrderItem = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
             if(!foundOrderItem) throw new Error("Unable to find the order item!");
 
+            // reduce quantities from item
             await tx.update(item).set({
               quantity: sql`${item.quantity} - ${sql.placeholder('orderQuantity')}`
             })
             .where(eq(item.id, foundOrderItem.item.id))
-            .execute({ orderQuantity: omi.quantity }); 
-          })
+            .execute({ orderQuantity: omi.quantity });
 
-          // increase delivered quantities in order_item
-          createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
+            // increase delivered quantities in order_item
             await tx.update(order_item).set({
               delivered_quantity: sql`${order_item.delivered_quantity} + ${sql.placeholder("deliveredQuantities")}`
             })
             .where(eq(order_item.id, omi.order_item_id))
             .execute({
               deliveredQuantities: omi.quantity
-            })
+            });
+
+            // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+            const totalWarehouseQuantity = (omi.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+            if(omi.quantity > 0 && ((omi.warehouse_quantities ?? []).length == 0 || totalWarehouseQuantity !== omi.quantity)){
+              throw new Error("Specify warehouse quantities equal to item delivered quantity");
+            }
+
+            const createdOrderMovementItemId = createdOrderMovementItems.find((comi) => comi.order_item_id == omi.order_item_id)?.id;
+
+            if(!createdOrderMovementItemId) throw new Error("Unable to find created order movement item, this should not happen contact developer.")
+
+            const promises = omi.warehouse_quantities.map(async (omiwq) => {
+
+              const foundWarehouseItem = await db.query.warehouse_quantity.findFirst({
+                where: (warehouse_quantity, { eq }) => eq(warehouse_quantity.id, omiwq.warehouse_quantity_id),
+                columns: {
+                  quantity: true
+                }
+              });
+
+              if(!foundWarehouseItem) throw new Error("Unable to find the warehouse item!!!");
+              if(foundWarehouseItem.quantity < omiwq.quantity) throw new Error("Insufficient quantity in warehouse!!!");
+              
+              // decrease the warehouse_quantity quantity
+              await tx.update(warehouse_quantity).set({
+                quantity: sql`${warehouse_quantity.quantity} - ${sql.placeholder('warehouseQuantity')}`
+              }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({ warehouseQuantity: omiwq.quantity });
+
+              // create order_movement_item_warehouse_quantity
+              await tx.insert(order_movement_item_warehouse_quantity).values({
+                warehouse_quantity_id: omiwq.warehouse_quantity_id,
+                quantity: omiwq.quantity,
+                order_movement_item_id: createdOrderMovementItemId
+              });
+            });
+
+            await Promise.all(promises);
+            
           });
 
-        } else {
+          await Promise.all(promises);
+
+        } else { // Pending Delivery
+
           // update the activeDeliveries for driver if exists
           if(createMovementTypeAnswer.data.driver_id){
             await tx.update(driver).set({
@@ -1433,63 +1538,108 @@ const createMovement = async (req: Request, res: Response) => {
             }).where(eq(driver.id, createMovementTypeAnswer.data.driver_id));
           }
 
-          return;
+          // create order movement items warehouse quantities
+          createMovementTypeAnswer.data.order_movement_items.forEach(async (omi) => {
+
+            const createdOrderMovementItemId = createdOrderMovementItems.find((comi) => comi.order_item_id == omi.order_item_id)?.id;
+            if(!createdOrderMovementItemId) throw new Error("Unable to find created order movement item, this should not happen contact developer.")
+
+            omi.warehouse_quantities.forEach(async (omiwq) => {
+              // create order_movement_item_warehouse_quantity
+              await tx.insert(order_movement_item_warehouse_quantity).values({
+                warehouse_quantity_id: omiwq.warehouse_quantity_id,
+                quantity: omiwq.quantity,
+                order_movement_item_id: createdOrderMovementItemId
+              });
+            });
+
+          });
+
         }
-      } else {
-        // RETURN Type Movement
 
-        // increase quantities from item
-        createMovementTypeAnswer.data.order_movement_items.forEach(async (omi) => {
+      } else { // RETURN Type Movement
+        
+        const promises = createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
 
-          const order_item = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
-          if(!order_item) throw new Error("Unable to find the order item!");
+          // increase quantities from item
+          const foundOrderItem = fetchedTxOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
+          if(!foundOrderItem) throw new Error("Unable to find the order item!");
 
           await tx.update(item).set({
             quantity: sql`${item.quantity} + ${sql.placeholder('returnQuantity')}`
           })
-          .where(eq(item.id, order_item.item.id))
+          .where(eq(item.id, foundOrderItem.item.id))
           .execute({ returnQuantity: omi.quantity });
-        })
-
-        // decrease delivered quantities in order_item
-        createMovementTypeAnswer.data.order_movement_items.map(async (omi) => {
+          
+          // decrease delivered quantities in order_item
           await tx.update(order_item).set({
             delivered_quantity: sql`${order_item.delivered_quantity} - ${sql.placeholder("returnedQuantities")}`
           })
           .where(eq(order_item.id, omi.order_item_id))
           .execute({
             returnedQuantities: omi.quantity
-          })
+          });
+
+          // check if the quanitity is more than 0 and warehouse_quantities are equal to quanitity
+          const totalWarehouseQuantity = (omi.warehouse_quantities ?? [])?.reduce((acc, curr) => acc + curr.quantity, 0);
+          if(omi.quantity > 0 && ((omi.warehouse_quantities ?? []).length == 0 || totalWarehouseQuantity !== omi.quantity)){
+            throw new Error("Specify warehouse quantities equal to item returned quantity");
+          }
+
+          const createdOrderMovementItemId = createdOrderMovementItems.find((comi) => comi.order_item_id == omi.order_item_id)?.id;
+
+          if(!createdOrderMovementItemId) throw new Error("Unable to find created order movement item, this should not happen contact developer.")
+
+          const promises = omi.warehouse_quantities.map(async (omiwq) => {
+            // increase the warehouse_item quantity
+            await tx.update(warehouse_quantity).set({
+              quantity: sql`${warehouse_quantity.quantity} + ${sql.placeholder('warehouseQuantity')}`
+            }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({ warehouseQuantity: omiwq.quantity });
+            
+            // create order_movement_item_warehouse_quantity
+            await tx.insert(order_movement_item_warehouse_quantity).values({
+              warehouse_quantity_id: omiwq.warehouse_quantity_id,
+              quantity: omiwq.quantity,
+              order_movement_item_id: createdOrderMovementItemId
+            });
+          });
+
+          await Promise.all(promises);
         });
+
+        await Promise.all(promises);
       }
 
-      // check if all the items are delivered fully then update the order status
-      const updatedOrderItems = await tx.query.order_item.findMany({
-        where: (order_item, { eq }) => eq(order_item.order_id, createMovementTypeAnswer.data.order_id),
-        columns: {
-          delivered_quantity: true,
-          quantity: true
-        }
-      });
+        if(!fetchedTxOrder) throw new Error("Unable to find the order");
+        if(!createMovementTypeAnswer.data) throw new Error("Unable to find the order movement");
+        
+        // check if all the items are delivered fully then update the order status
+        const updatedOrderItems = await tx.query.order_item.findMany({
+          where: (order_item, { eq }) => eq(order_item.order_id, createMovementTypeAnswer.data.order_id),
+          columns: {
+            delivered_quantity: true,
+            quantity: true
+          }
+        });
 
-      let orderDelivered = true;
-      updatedOrderItems.map((oi) => {
-        if(oi.quantity !== oi.delivered_quantity){
-          orderDelivered = false;
+        let orderDelivered = true;
+        updatedOrderItems.map((oi) => {
+          if(oi.quantity !== oi.delivered_quantity){
+            orderDelivered = false;
+          }
+        });
+              
+        if(orderDelivered && fetchedTxOrder.status !== "Delivered"){ 
+          await tx.update(order).set({
+            status: "Delivered",
+            delivery_date: createMovementTypeAnswer.data.delivery_at ?? new Date()
+          }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
+        } else if(!orderDelivered && fetchedTxOrder.status == "Delivered"){
+          await tx.update(order).set({
+            status: "Pending",
+            delivery_date: null
+          }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
         }
-      });
-
-      if(orderDelivered && fetchedTxOrder.status !== "Delivered"){ 
-        await tx.update(order).set({
-          status: "Delivered",
-          delivery_date: createMovementTypeAnswer.data.delivery_at ?? new Date()
-        }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
-      } else if(!orderDelivered && fetchedTxOrder.status == "Delivered"){
-        await tx.update(order).set({
-          status: "Pending",
-          delivery_date: null
-        }).where(eq(order.id, createMovementTypeAnswer.data.order_id));
-      }
     })
     
     return res.status(200).json({success: true, message: "Order Movement Created!"});
@@ -1525,7 +1675,7 @@ const editMovement = async (req: Request, res: Response) => {
         driver_id: editMovementTypeAnswer.data.driver_id,
       });
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: foundMovementTx.order_id,
@@ -1577,6 +1727,7 @@ const editMovementStatus = async (req: Request, res: Response) => {
         with: {
           order_movement_items: {
             columns: {
+              id: true,
               quantity: true,
               order_item_id: true
             }
@@ -1613,16 +1764,15 @@ const editMovementStatus = async (req: Request, res: Response) => {
 
       if(!foundOrder) throw new Error("Unable to find order linked to movement!");
 
-      if(foundMovementTx.status == "Pending"){
-        // Pending -> Completed
+      if(foundMovementTx.status == "Pending"){ // Pending -> Completed
 
         // check if enough quanitity is there in inventory
         let errorMessage = foundMovementTx.order_movement_items.reduce((acc, cur) => {
-          const foundItem = foundOrder.order_items.filter((oi) => oi.id == cur.order_item_id)[0];
+          const foundOrderItem = foundOrder.order_items.filter((oi) => oi.id == cur.order_item_id)[0];
           if(!order_item) throw new Error("Unable to find the order item!");
           
-          if((foundItem.item.quantity ?? 0) < cur.quantity){
-            return acc += `${foundItem?.item.name} has ${foundItem?.item.quantity} Quantity Available (Requested ${cur.quantity})! `
+          if((foundOrderItem.item.quantity ?? 0) < cur.quantity){
+            return acc += `${foundOrderItem?.item.name} has ${foundOrderItem?.item.quantity} Quantity Available (Requested ${cur.quantity})! `
           } else {
             return acc;
           }
@@ -1630,18 +1780,69 @@ const editMovementStatus = async (req: Request, res: Response) => {
 
         if(errorMessage !== "") throw new Error(errorMessage);
 
+        let errorMessage2 = "";
+
+        const pendingStatusPromises = foundMovementTx.order_movement_items.map(async (omi) => {
+          const orderMovementItemWarehouseQuantity = await tx.query.order_movement_item_warehouse_quantity.findMany({
+            where: (omiwq_table, { eq }) => eq(omiwq_table.order_movement_item_id, omi.id),
+            columns: {
+              warehouse_quantity_id: true,
+              quantity: true
+            }
+          });
+
+          const decreaseWarehouseQuantityPromises = orderMovementItemWarehouseQuantity.map(async (omiwq) => {
+            // get actual quantity
+            const foundWarehouseQuantity = await tx.query.warehouse_quantity.findFirst({
+              where: (warehouse_quantity, { eq }) => eq(warehouse_quantity.id, omiwq.warehouse_quantity_id),
+              columns: {
+                quantity: true
+              },
+              with: {
+                item: {
+                  columns: {
+                    name: true
+                  }
+                },
+                warehouse: {
+                  columns: {
+                    name: true
+                  }
+                }
+              }
+            });
+
+            // check if enough warehouse quantity
+            if((foundWarehouseQuantity?.quantity ?? 0) < omiwq.quantity) {
+              errorMessage2 += `${foundWarehouseQuantity?.item.name} has less quantity in Warehouse: ${foundWarehouseQuantity?.warehouse.name} then requested. `
+            }
+
+            // reduce quantity in warehouse_quanitity for now, if there will be any error then errorMessage2 will rollback the transaction
+            await tx.update(warehouse_quantity).set({
+              quantity: sql`${warehouse_quantity.quantity} - ${sql.placeholder("OrderMovementWarehouseQuantity")}`
+            }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({
+              OrderMovementWarehouseQuantity: omiwq.quantity
+            });
+          });
+
+          await Promise.all(decreaseWarehouseQuantityPromises);
+        });
+
+        await Promise.all(pendingStatusPromises);
+
+        if(errorMessage2 !== "") throw new Error(errorMessage2);
+
         // increase delivered quanitites for order item and decrease item quantity
         foundMovementTx.order_movement_items.forEach(async(omi) => {
-          await tx.update(order_item).set({
+          const updatedOrderItemItemId = await tx.update(order_item).set({
             delivered_quantity: sql`${order_item.delivered_quantity} + ${omi.quantity}`
-          }).where(eq(order_item.id, omi.order_item_id));
-          
-          const foundItem = foundOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
-          if(!foundItem) throw new Error("Unable to find order item in order linked to movement");
+          }).where(eq(order_item.id, omi.order_item_id)).returning({
+            item_id: order_item.item_id
+          })
           
           await tx.update(item).set({
             quantity: sql`${item.quantity} - ${omi.quantity}`
-          }).where(eq(item.id, foundItem.item.id));
+          }).where(eq(item.id, updatedOrderItemItemId[0].item_id));        
         });
 
         if(foundMovementTx.driver_id) {
@@ -1649,21 +1850,37 @@ const editMovementStatus = async (req: Request, res: Response) => {
             activeDeliveries: sql`${driver.activeDeliveries} - 1`
           }).where(eq(driver.id, foundMovementTx.driver_id));
         }
-      } else {
-        // Completed -> Pending
+      } else { // Completed -> Pending
 
-        // decrease delivered quanitites for order item and increase item quantity
-        foundMovementTx.order_movement_items.forEach(async(omi) => {
-          await tx.update(order_item).set({
+        const completedPromises = foundMovementTx.order_movement_items.map(async(omi) => {
+          // decrease delivered quanitites for order item and increase item quantity
+
+          const updatedOrderItemItemId = await tx.update(order_item).set({
             delivered_quantity: sql`${order_item.delivered_quantity} - ${omi.quantity}`
-          }).where(eq(order_item.id, omi.order_item_id));
-          
-          const foundItem = foundOrder.order_items.filter((oi) => oi.id == omi.order_item_id)[0];
-          if(!foundItem) throw new Error("Unable to find order item in order linked to movement");
+          }).where(eq(order_item.id, omi.order_item_id)).returning({
+            item_id: order_item.item_id
+          })
           
           await tx.update(item).set({
             quantity: sql`${item.quantity} + ${omi.quantity}`
-          }).where(eq(item.id, foundItem.item.id));
+          }).where(eq(item.id, updatedOrderItemItemId[0].item_id));
+
+          // increase the warehouse quantity
+          const orderMovementItemWarehouseQuantity = await tx.query.order_movement_item_warehouse_quantity.findMany({
+            where: (order_movement_item_warehouse_quantity, { eq }) => eq(order_movement_item_warehouse_quantity.order_movement_item_id, omi.id),
+            columns: {
+              warehouse_quantity_id: true,
+              quantity: true
+            }
+          });
+          orderMovementItemWarehouseQuantity.forEach(async (omiwq) => {
+            await tx.update(warehouse_quantity).set({
+              quantity: sql`${warehouse_quantity.quantity} + ${sql.placeholder("OrderMovementWarehouseQuantity")}`
+            }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({
+              OrderMovementWarehouseQuantity: omiwq.quantity
+            });
+          });
+
         });
 
         
@@ -1672,6 +1889,8 @@ const editMovementStatus = async (req: Request, res: Response) => {
             activeDeliveries: sql`${driver.activeDeliveries} + 1`
           }).where(eq(driver.id, foundMovementTx.driver_id));
         }
+
+        await Promise.all(completedPromises);
       }
 
       // update status for the order_movement
@@ -1708,7 +1927,7 @@ const editMovementStatus = async (req: Request, res: Response) => {
         delivery_date: orderCompleted ? new Date() : null
       }).where(eq(order.id, foundMovementTx.order_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: foundMovementTx.order_id,
@@ -1741,8 +1960,17 @@ const deleteMovement = async (req: Request, res: Response) => {
         with: {
           order_movement_items: {
             columns: {
+              id: true,
               order_item_id: true,
               quantity: true
+            },
+            with: {
+              o_m_i_w_q: {
+                columns: {
+                  warehouse_quantity_id: true,
+                  quantity: true
+                }
+              }
             }
           }
         }
@@ -1763,7 +1991,7 @@ const deleteMovement = async (req: Request, res: Response) => {
 
       if(foundMovementTx.type == "RETURN"){
         // increase the deliverd quantites in order_item and decrease the quantity of item
-        foundMovementTx.order_movement_items.forEach(async (omi) => {
+        const IncreaseDeliveryQuantitiesPromises = foundMovementTx.order_movement_items.map(async (omi) => {
           const oi = await tx.update(order_item).set({
             delivered_quantity: sql`${order_item.delivered_quantity} + ${omi.quantity ?? 0}`
           }).where(eq(order_item.id, omi.order_item_id)).returning({
@@ -1775,11 +2003,52 @@ const deleteMovement = async (req: Request, res: Response) => {
           }).where(eq(item.id, oi[0].item_id)).execute({
             quantity: omi.quantity
           });
+
+          let errorMessage = ''
+          // decrease the warehouse quantity
+          const decreaseWarehouseQuantityPromises = omi.o_m_i_w_q.map(async (omiwq) => {
+            // get actual warehouse quantity
+            const foundWarehouseQuantity = await tx.query.warehouse_quantity.findFirst({
+              where: (warehouse_quantity, { eq }) => eq(warehouse_quantity.id, omiwq.warehouse_quantity_id),
+              columns: {
+                quantity: true
+              },
+              with: {
+                item: {
+                  columns: {
+                    name: true
+                  }
+                },
+                warehouse: {
+                  columns: {
+                    name: true
+                  }
+                }
+              }
+            });
+
+            if((foundWarehouseQuantity?.quantity ?? 0) < omiwq.quantity) {
+              errorMessage += `${foundWarehouseQuantity?.item.name} has less quantity in Warehouse: ${foundWarehouseQuantity?.warehouse.name} then requested. `
+            }
+
+            // reduce quantity in warehouse_quanitity for now, if there will be any error then errorMessage2 will rollback the transaction
+            await tx.update(warehouse_quantity).set({
+              quantity: sql`${warehouse_quantity.quantity} - ${sql.placeholder("OrderMovementWarehouseQuantity")}`
+            }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({
+              OrderMovementWarehouseQuantity: omiwq.quantity
+            });
+          })
+
+          await Promise.all(decreaseWarehouseQuantityPromises);
+
+          if(errorMessage !== '') throw new Error(errorMessage);
         });
+
+        await Promise.all(IncreaseDeliveryQuantitiesPromises);
       } else {
         if(foundMovementTx.status == "Completed"){
           // decrease the deliverd quantity in order_item and increase quanitity in item
-          foundMovementTx.order_movement_items.forEach(async (omi) => {
+          const decreaseDeliveredQuantityPromises = foundMovementTx.order_movement_items.map(async (omi) => {
             const oi = await tx.update(order_item).set({
               delivered_quantity: sql`${order_item.delivered_quantity} - ${omi.quantity ?? 0}`
             }).where(eq(order_item.id, omi.order_item_id)).returning({
@@ -1791,7 +2060,22 @@ const deleteMovement = async (req: Request, res: Response) => {
             }).where(eq(item.id, oi[0].item_id)).execute({
               quantity: omi.quantity
             });
+
+            // increase the warehouse quantity
+            const increaseWarehouseQuantitiesPromises = omi.o_m_i_w_q.map(async (omiwq) => {
+              // increase quantity in warehouse_quanitity
+              await tx.update(warehouse_quantity).set({
+                quantity: sql`${warehouse_quantity.quantity} + ${sql.placeholder("OrderMovementWarehouseQuantity")}`
+              }).where(eq(warehouse_quantity.id, omiwq.warehouse_quantity_id)).execute({
+                OrderMovementWarehouseQuantity: omiwq.quantity
+              });
+            });
+
+            await Promise.all(increaseWarehouseQuantitiesPromises);
           });
+
+          await Promise.all(decreaseDeliveredQuantityPromises);
+
         } else {
           if(foundMovementTx.driver_id){
             // decrease active deliveries from driver
@@ -1824,13 +2108,12 @@ const deleteMovement = async (req: Request, res: Response) => {
         }
       });
 
-      await tx.update(order).set({
-        status: orderCompleted ? "Delivered" : "Pending"
-      }).where(eq(order.id, foundMovementTx.order_id));
+      await tx.update(order).set({ status: orderCompleted ? "Delivered" : "Pending" })
+      .where(eq(order.id, foundMovementTx.order_id));
 
       await tx.delete(order_movement).where(eq(order_movement.id, deleteMovementTypeAnswer.data.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           order_id: foundMovementTx.order_id,
@@ -1842,9 +2125,9 @@ const deleteMovement = async (req: Request, res: Response) => {
       }
     })
     
-    return res.status(200).json({success: true, message: "Order Movement Created!"});
+    return res.status(200).json({success: true, message: "Order Movement Deleted!"});
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to create order movement!", error: error.message ? error.message : error});
+    return res.status(400).json({success: false, message: "Unable to delete order movement!", error: error.message ? error.message : error});
   }
 }
 
@@ -1920,14 +2203,61 @@ const getMovement = async (req: Request, res: Response) => {
                     }
                   }
                 }
+              },
+              o_m_i_w_q: {
+                columns: {
+                  quantity: true,
+                  warehouse_quantity_id: true
+                },
               }
             }
           }
         }
-
       });
 
-      return tMovement;
+      if(!tMovement) throw new Error("Unable to find the order movement!");
+
+      const allWarehouseQuantitiesIds = tMovement.order_movement_items.map((omi) =>
+        omi.o_m_i_w_q.map(
+          (omiwq) => omiwq.warehouse_quantity_id
+        )
+      ).flat()
+
+      const UniqueAllWarehouseQuantitiesIds = [...new Set(allWarehouseQuantitiesIds)];
+
+      if(UniqueAllWarehouseQuantitiesIds.length < 1) throw new Error("No Warehouse Quantities found linked to Some Order Movement Item!");
+
+      const allWarehouseQuantities = await tx.query.warehouse_quantity.findMany(
+        {
+          where: (warehouse_quantity, { inArray }) =>
+            inArray(warehouse_quantity.id, UniqueAllWarehouseQuantitiesIds),
+          columns: {
+            id: true,
+          },
+          with: {
+            warehouse: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+        }
+      );
+
+      type MovementWithQuantities = typeof tMovement & {
+        warehouse_quantities?: Array<{
+          id: string;
+          warehouse: {
+            name: string;
+          };
+        }>;
+      };
+      const fetchedMovementWithQuantities: MovementWithQuantities = {
+        ...tMovement,
+        warehouse_quantities: allWarehouseQuantities,
+      };
+
+      return fetchedMovementWithQuantities;
     })
     
     return res.status(200).json({success: true, message: "Order Movement fetched", data: fetchedMovement});

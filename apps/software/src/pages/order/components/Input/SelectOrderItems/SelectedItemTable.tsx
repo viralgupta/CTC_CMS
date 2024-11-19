@@ -19,7 +19,9 @@ const SelectedItemTable = ({
   items,
   removeItem,
   editItem,
+  delivered,
 }: {
+  delivered: boolean
   items: z.infer<typeof createOrderType>["order_items"];
   removeItem: (item_id: string) => void;
   editItem: (
@@ -65,7 +67,7 @@ const SelectedItemTable = ({
                   {`₹${item.carpanter_commision} ${calculateCommissionFromTotalCommission(item.carpanter_commision, item.carpanter_commision_type, item.total_value, item.quantity).bracket}`}
                 </TableCell>
                 <TableCell className="text-center">
-                  <AddNewItem onSubmit={editItem} value={item}>
+                  <AddNewItem delivered={delivered} onSubmit={editItem} value={item}>
                     <Button size={"icon"}>
                       <Pencil />
                     </Button>

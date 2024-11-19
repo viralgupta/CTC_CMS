@@ -2,51 +2,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BoxIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  viewItemAtom,
-  viewItemIDAtom,
   viewItemType,
 } from "@/store/Items";
-import SelectCategory from "@/components/Inputs/SelectCategory";
-import RateDimension from "@/components/Inputs/RateDimension";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
-import Spinner from "@/components/ui/Spinner";
-import { Input } from "@/components/ui/input";
-import { useRecoilState, useSetRecoilState } from "recoil";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import request from "@/lib/request";
 import React from "react";
-import { editItemType } from "@type/api/item";
 import ItemOrders from "./ItemOrders/ItemOrder";
 import LogButton from "@/components/log/logButton";
+import EditItem from "./EditItem";
+import DeleteItem from "./DeleteItem";
 
 export default function ItemCard({ item }: { item: viewItemType | null }) {
 
@@ -97,7 +74,9 @@ export default function ItemCard({ item }: { item: viewItemType | null }) {
               <span className="text-lg font-medium flex items-center">
                 Quantity
               </span>
-              <p className="text-lg">{item.quantity}</p>
+              <ItemStoreQuantity warehouseQuantities={item.warehouse_quantities}>
+                <span className="text-lg border px-2 rounded-md cursor-pointer">{item.quantity}</span>
+              </ItemStoreQuantity>
             </div>
             <div className="mr-10">
               <span className="text-lg font-medium flex items-center">
@@ -144,247 +123,36 @@ export default function ItemCard({ item }: { item: viewItemType | null }) {
   );
 }
 
-
-const EditItem = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false)
-  const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
-  const setViewItemID = useSetRecoilState(viewItemIDAtom);
-
-  const EditItemForm = () => {
-    const form = useForm<z.infer<typeof editItemType>>({
-      resolver: zodResolver(editItemType),
-      reValidateMode: "onChange",
-      defaultValues: {
-        item_id: viewItem!.id,
-        category: viewItem!.category,
-        min_quantity: viewItem!.min_quantity,
-        min_rate: viewItem!.min_rate ? viewItem!.min_rate : undefined,
-        multiplier: viewItem!.multiplier,
-        name: viewItem!.name,
-        rate_dimension: viewItem!.rate_dimension,
-        sale_rate: viewItem!.sale_rate,
-      },
-    });
-
-    async function onSubmit(values: z.infer<typeof editItemType>) {
-      const res = await request.put("/inventory/editItem", values);
-      if (res.status == 200) {
-        setOpen(false);
-        setViewItemID(null);
-        setViewItem(null);
-      }
-    }
-
-    return (
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Category</FormLabel>
-                <FormControl>
-                  <SelectCategory onValueChange={field.onChange} defaultValue={field.value}/>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Name</FormLabel>
-                <FormControl>
-                <Input type="text" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
-          <FormField
-            control={form.control}
-            name="rate_dimension"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Rate Dimension</FormLabel>
-                <FormControl>
-                  <RateDimension onValueChange={field.onChange} defaultValue={field.value}/>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="min_rate"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Minimum Rate</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? parseFloat(e.target.value) : ""
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sale_rate"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Sale Rate</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? parseFloat(e.target.value) : ""
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
-          <FormField
-            control={form.control}
-            name="multiplier"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Multiplier</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? parseFloat(e.target.value) : ""
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="min_quantity"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Item Minimum Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? parseFloat(e.target.value) : ""
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-          <Button disabled={form.formState.isSubmitting} type="submit">
-            {form.formState.isSubmitting && <Spinner />}
-            {!form.formState.isSubmitting && "Edit Quantity"}
-          </Button>
-        </form>
-      </Form>
-    );
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent size="4xl">
-        <DialogHeader>
-          <DialogTitle>Edit Item</DialogTitle>
-          <DialogDescription className="hidden"></DialogDescription>
-        </DialogHeader>
-        {viewItem && <EditItemForm />}
-        {!viewItem && (
-          <div className="w-full h-40 flex items-center justify-center">
-            Unable to find item to edit!!!
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-
-
-
-const DeleteItem = ({
-  children,
-  itemId,
+export const ItemStoreQuantity = ({
+  warehouseQuantities,
+  children
 }: {
+  warehouseQuantities: viewItemType["warehouse_quantities"];
   children: React.ReactNode;
-  itemId: string;
 }) => {
-  const setViewItemId = useSetRecoilState(viewItemIDAtom);
-
-  const handleDelete = async () => {
-    const res = await request.delete("/inventory/deleteItem", {
-      data: {
-        item_id: itemId,
-      },
-    });
-    if(res.status == 200) {
-      setViewItemId(null);
-    }
-  };
-
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Are you sure you want to delete item?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete item and
-            remove data from servers.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Warehouse</TableHead>
+                <TableHead className="text-center">Quantity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {warehouseQuantities.map((wq, i) => (
+                <TableRow key={i}>
+                  <TableCell className="leading-3 py-4">{wq.warehouse.name}</TableCell>
+                  <TableCell className="text-center leading-3 py-4">{wq.quantity}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };

@@ -34,7 +34,7 @@ import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import Spinner from "@/components/ui/Spinner";
 import { createItemOrderType } from "@type/api/item";
 import { z } from "zod";
@@ -46,6 +46,8 @@ import { CreditCard, EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 import EditItemOrder from "./EditItemOrder";
 import DeleteItemOrder from "./DeleteItemOrder";
 import RecieveItemOrder from "./ReceiveItemOrder";
+import CreditWarehouseQuantity from "../../inputs/CreditWarehouseQuantity";
+import { ItemStoreQuantity } from "../ItemCard";
 
 const ItemOrders = ({
   children,
@@ -57,7 +59,7 @@ const ItemOrders = ({
   item_orders: viewItemType["item_orders"];
 }) => {
   const [open, setOpen] = React.useState(false);
-  const setViewItem = useSetRecoilState(viewItemAtom);
+  const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
   const { refetchItems } = useAllItems();
 
@@ -77,7 +79,14 @@ const ItemOrders = ({
     });
 
     async function onSubmit(values: z.infer<typeof createItemOrderType>) {
-      const res = await request.post("/inventory/createItemOrder", values);
+      const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
+      if(total_quantity !== received_quantity) {
+        form.setError("warehouse_quantities", {
+          type: "custom",
+          message: "Received quantity must be equal to the total quantity in the warehouse."
+        });
+        return;
+      }      const res = await request.post("/inventory/createItemOrder", values);
       if (res.status == 200) {
         setOpen2(false);
         setOpen(false);
@@ -87,7 +96,7 @@ const ItemOrders = ({
       }
     }
 
-    const received_quantity = form.watch("received_quantity");
+    const [received_quantity, warehouse_quantities] = form.watch(["received_quantity", "warehouse_quantities"]);
 
     React.useEffect(() => {
       if(!form.getValues("receive_date") && received_quantity) {
@@ -95,6 +104,23 @@ const ItemOrders = ({
         form.setValue('receive_date', new Date().toISOString());
       }
     }, [received_quantity])
+
+    React.useEffect(() => {
+      if((received_quantity ?? 0) > 0){
+        const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
+        if(total_quantity !== received_quantity) {
+          form.setError("warehouse_quantities", {
+            type: "custom",
+            message: "Received quantity must be equal to the total quantity in the warehouse."
+          })
+        } else {
+          form.clearErrors("warehouse_quantities");
+        }
+      } else {
+        form.clearErrors("warehouse_quantities");
+        
+      }
+    }, [received_quantity, warehouse_quantities])
 
     return (
       <Dialog open={open2} onOpenChange={setOpen2}>
@@ -205,6 +231,26 @@ const ItemOrders = ({
                   )}
                 />
               </div>
+              <div className="flex w-full flex-col justify-between md:flex-row">
+                <FormField
+                  control={form.control}
+                  name="warehouse_quantities"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>Warehouse Quantities</FormLabel>
+                      <FormControl>
+                        <CreditWarehouseQuantity
+                          totalQuantity={form.getValues("received_quantity") ?? 0}
+                          currentQuantity={viewItem?.warehouse_quantities ?? []}
+                          disabled={form.getValues("received_quantity") == 0}
+                          onChange={field.onChange}
+                          />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <Button disabled={form.formState.isSubmitting} type="submit">
                 {form.formState.isSubmitting && <Spinner />}
                 {!form.formState.isSubmitting && "Create Item Order"}
@@ -251,7 +297,39 @@ const ItemOrders = ({
                     {parseDateToString(io.order_date)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {io.received_quantity ?? "--"}
+                    {io.received_quantity ? (
+                      <ItemStoreQuantity
+                        warehouseQuantities={io.i_o_w_q.map(
+                          (iowq) => {
+                            const foundWarehouseQuantity =
+                              viewItem?.warehouse_quantities.find(
+                                (wq) => wq.id == iowq.warehouse_quantity_id
+                              );
+                            if (foundWarehouseQuantity) {
+                              return {
+                                id: iowq.warehouse_quantity_id,
+                                warehouse: foundWarehouseQuantity.warehouse,
+                                quantity: iowq.quantity,
+                              };
+                            } else {
+                              return {
+                                id: iowq.warehouse_quantity_id,
+                                warehouse: {
+                                  name: "--",
+                                },
+                                quantity: iowq.quantity,
+                              };
+                            }
+                          }
+                        )}
+                      >
+                        <span className="border p-2 rounded-md cursor-pointer">
+                          {io.received_quantity}
+                        </span>
+                      </ItemStoreQuantity>
+                    ) : (
+                      "--"
+                    )}
                   </TableCell>
                   <TableCell className="text-center">
                     {parseDateToString(io.receive_date)}
@@ -269,7 +347,7 @@ const ItemOrders = ({
                           </Button>
                         </EditItemOrder>
                         <RecieveItemOrder itemOrder={io}>
-                          <Button variant={"outline"} className="gap-2">
+                          <Button disabled={(io.received_quantity ?? 0) > 0} variant={"outline"} className="gap-2">
                             <CreditCard className="w-4 h-4" />
                             Receive Item Order
                           </Button>

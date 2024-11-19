@@ -17,9 +17,11 @@ import SelectedItemTable from "./SelectedItemTable";
 const SelectOrderItems = ({
   value,
   onChange,
+  delivered,
 }: {
   value: z.infer<typeof createOrderType>["order_items"];
   onChange: (values: z.infer<typeof createOrderType>["order_items"]) => void;
+  delivered: boolean;
 }) => {
   const [orderItems, setOrderItems] = React.useState<
     z.infer<typeof createOrderType>["order_items"]
@@ -67,12 +69,13 @@ const SelectOrderItems = ({
           }
         />
       </DialogTrigger>
-      <DialogContent size="6xl">
+      <DialogContent size={value.length > 0 ? "6xl" : "2xl"}>
         <DialogHeader className="hidden">
           <DialogTitle></DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <AddNewItem
+          delivered={delivered}
           onSubmit={(v) => {
             setOrderItems((oi) => {
               const sameItem = oi.filter(i => i.item_id === v.item_id);
@@ -88,6 +91,7 @@ const SelectOrderItems = ({
           }}
         />
         <SelectedItemTable
+          delivered={delivered}
           items={orderItems}
           removeItem={removeItem}
           editItem={editItem}

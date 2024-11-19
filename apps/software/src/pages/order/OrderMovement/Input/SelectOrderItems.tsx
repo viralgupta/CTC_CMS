@@ -21,15 +21,18 @@ import React from "react";
 import { useRecoilValue } from "recoil";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import DebitWarehouseQuantity from "@/pages/inventory/components/inputs/DebitWarehouseQuantity";
 
 const SelectOrderItems = ({
   onChange,
   value,
+  delivered
 }: {
   onChange: (
     value: z.infer<typeof createOrderMovementType>["order_movement_items"]
   ) => void;
   value: z.infer<typeof createOrderMovementType>["order_movement_items"];
+  delivered: boolean;
 }) => {
   const [orderMovementItems, setOrderMovementItems] = React.useState<
     z.infer<typeof createOrderMovementType>["order_movement_items"]
@@ -38,7 +41,10 @@ const SelectOrderItems = ({
   const viewOrder = useRecoilValue(viewOrderAtom);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => {
+      setOpen(o);
+      if(o) setOrderMovementItems(value ?? []);
+    }}>
       <DialogTrigger className="w-full pb-2">
         <Input
           className="w-full"
@@ -61,6 +67,7 @@ const SelectOrderItems = ({
               <TableHead className="text-center">Total Quantity</TableHead>
               <TableHead className="text-center">Delivered Quantity</TableHead>
               <TableHead className="text-center">Quantity</TableHead>
+              <TableHead className="text-center">Warehouse Quantity</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,22 +84,46 @@ const SelectOrderItems = ({
                       onChange={(e) => {
                         const value = parseFloat(e.target.value) ?? 0;
                         if (value > 0) {
-                          setOrderMovementItems([
-                            ...orderMovementItems,
+                          setOrderMovementItems((omi) => [
                             {
+                              warehouse_quantities: (omi.find((item) => item.order_item_id == orderItem.id)?.warehouse_quantities ?? []),
                               order_item_id: orderItem.id,
                               quantity: value,
                             },
+                            ...omi.filter((item) => item.order_item_id !== orderItem.id),
                           ]);
                         } else {
-                          setOrderMovementItems(
-                            orderMovementItems.filter(
-                              (item) => item.order_item_id !== orderItem.id
-                            )
+                          setOrderMovementItems((omi) =>
+                            omi.filter((item) => item.order_item_id !== orderItem.id)
                           );
                         }
                       }}
                     />
+                  </TableCell>
+                  <TableCell className="text-center py-2">
+                      <DebitWarehouseQuantity
+                        disabled={
+                          !delivered || 
+                          ((orderMovementItems ?? []).find((omi) => omi.order_item_id === orderItem.id)?.quantity ?? 0) <= 0
+                        }
+                        item_id={orderItem.item_id}
+                        totalQuantity={orderItem.quantity}
+                        existingQuantities={((orderMovementItems ?? []).find((omi) => omi.order_item_id === orderItem.id)?.warehouse_quantities ?? [])}
+                        onChange={(wq) => {
+                          if((orderMovementItems ?? []).find((omi) => omi.order_item_id === orderItem.id) !== undefined) {
+                            setOrderMovementItems((omi) => [
+                              {
+                                warehouse_quantities: (wq ?? []),
+                                order_item_id: orderItem.id,
+                                quantity: orderItem.quantity,
+                              },
+                              ...(omi ?? []).filter((item) => item.order_item_id !== orderItem.id),
+                            ]);
+                            return;
+
+                          }
+                        }}
+                      />
                   </TableCell>
                 </TableRow>
               );

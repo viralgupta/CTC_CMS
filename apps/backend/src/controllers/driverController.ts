@@ -22,7 +22,7 @@ const createDriver = async (req: Request, res: Response) => {
         size_of_vehicle: createDriverTypeAnswer.data.size_of_vehicle
       }).returning({ id: driver.id });
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           driver_id: tDriver[0].id,
@@ -112,7 +112,7 @@ const editDriver = async (req: Request, res: Response) => {
         size_of_vehicle: editDriverTypeAnswer.data.size_of_vehicle
       }).where(eq(driver.id, editDriverTypeAnswer.data.driver_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           driver_id: tDriver[0].id,
@@ -243,7 +243,7 @@ const deleteDriver = async (req: Request, res: Response) => {
 
         await tx.delete(driver).where(eq(driver.id, deleteDriverTypeAnswer.data.driver_id));
 
-        if(res.locals.session.user.id){
+        if(res.locals.session){
           await tx.insert(log).values({
             user_id: res.locals.session.user.id,
             driver_id: deleteDriverTypeAnswer.data.driver_id,

@@ -55,7 +55,17 @@ export interface viewMovementType {
             name: string;
         };
     };
+    o_m_i_w_q: {
+      quantity: number;
+      warehouse_quantity_id: string;
+    }[];
   }[] | undefined
+  warehouse_quantities?: {
+    id: string;
+    warehouse: {
+        name: string;
+    };
+  }[]
 }
 
 const ViewDriver = () => {
@@ -100,6 +110,7 @@ const ViewDriver = () => {
         {!loading ? (
           <OrderMovementItemTable
             type={viewOrderMovement?.type}
+            warehouseQuantities={(viewOrderMovement?.warehouse_quantities ?? [])}
             order_movement_items={viewOrderMovement?.order_movement_items}
           />
         ) : (

@@ -40,6 +40,7 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
   return (
     <div className="space-y-4 flex flex-col">
       <SelectOrderItems
+        delivered={false}
         value={order_items}
         onChange={(value) => {
           setOrderItems(

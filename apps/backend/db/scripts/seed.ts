@@ -8,10 +8,15 @@ import {
   driver,
   phone_number,
   item,
+  warehouse,
+  warehouse_quantity,
+  item_order,
+  item_order_warehouse_quantity,
   order,
   order_item,
   order_movement,
   order_movement_item,
+  order_movement_item_warehouse_quantity,
   // estimate,
   // estimate_item,
   // resource,
@@ -243,13 +248,25 @@ async function main() {
     }
   ])
 
+  // insert warehouses
+  const warehouseIds = await db.insert(warehouse).values([
+    {
+      name: "Shop",
+    },
+    {
+      name: "Godown 1",
+    }
+  ]).returning({
+    id: warehouse.id
+  })
+
   // insert items
   const itemIds = await db.insert(item).values([
     {
       category: "Adhesives",
       name: "Mahacol 5kg",
       min_quantity: 2,
-      quantity: 8,
+      quantity: 9,
       rate_dimension: "piece",
       sale_rate: 5000.00,
       multiplier: 1.00,
@@ -259,7 +276,7 @@ async function main() {
       category: "Miscellaneous",
       name: "Cutter 10 Inch",
       min_quantity: 19,
-      quantity: 10,
+      quantity: 9,
       rate_dimension: "piece",
       sale_rate: 130.00,
       multiplier: 1.00,
@@ -278,6 +295,96 @@ async function main() {
   ]).returning({
     id: item.id
   });
+
+  // insert warehouse_quantities
+  const warehouseQuantityIds = await db.insert(warehouse_quantity).values([
+    {
+      warehouse_id: warehouseIds[0].id,
+      item_id: itemIds[0].id,
+      quantity: 5,
+    },
+    {
+      warehouse_id: warehouseIds[1].id,
+      item_id: itemIds[0].id,
+      quantity: 4,
+    },
+    {
+      warehouse_id: warehouseIds[0].id,
+      item_id: itemIds[1].id,
+      quantity: 9,
+    },
+    {
+      warehouse_id: warehouseIds[1].id,
+      item_id: itemIds[1].id,
+      quantity: 0,
+    },
+    {
+      warehouse_id: warehouseIds[0].id,
+      item_id: itemIds[2].id,
+      quantity: 0,
+    },
+    {
+      warehouse_id: warehouseIds[1].id,
+      item_id: itemIds[2].id,
+      quantity: 40,
+    },
+  ]).returning({
+    id: warehouse_quantity.id
+  })
+
+  // insert item_orders
+  const itemOrderIds = await db.insert(item_order).values([
+    {
+      vendor_name: "Mahacol Vendor",
+      item_id: itemIds[0].id,
+      order_date: new Date(),
+      ordered_quantity: 10,
+      receive_date: new Date(),
+      received_quantity: 10,
+    },
+    {
+      vendor_name: "Cutter Vendor",
+      item_id: itemIds[1].id,
+      order_date: new Date(),
+      ordered_quantity: 8,
+      receive_date: new Date(),
+      received_quantity: 10,
+    },
+    {
+      vendor_name: "Plywood Vendor",
+      item_id: itemIds[2].id,
+      order_date: new Date(),
+      ordered_quantity: 40,
+      receive_date: new Date(),
+      received_quantity: 40,
+    },
+  ]).returning({
+    id: item_order.id
+  });
+
+  // insert item_order_warehouse_quantities
+  const itemOrderWarehouseQuantityIds = await db.insert(item_order_warehouse_quantity).values([
+    {
+      item_order_id: itemOrderIds[0].id,
+      warehouse_quantity_id: warehouseQuantityIds[0].id,
+      quantity: 6,
+    },
+    {
+      item_order_id: itemOrderIds[0].id,
+      warehouse_quantity_id: warehouseQuantityIds[1].id,
+      quantity: 4,
+    },
+    {
+      item_order_id: itemOrderIds[1].id,
+      warehouse_quantity_id: warehouseQuantityIds[2].id,
+      quantity: 10,
+    },
+    {
+      item_order_id: itemOrderIds[2].id,
+      warehouse_quantity_id: warehouseQuantityIds[5].id,
+      quantity: 40,
+    },
+  ])
 
   // insert orders
   const orderIds = await db.insert(order).values([
@@ -400,6 +507,25 @@ async function main() {
   ]).returning({
     id: order_movement_item.id
   });
+
+  // insert order_movement_item_warehouse_quantities
+  const orderMovementItemWarehouseQuantityIds = await db.insert(order_movement_item_warehouse_quantity).values([
+    {
+      order_movement_item_id: orderMovementItemsIds[0].id,
+      warehouse_quantity_id: warehouseQuantityIds[0].id,
+      quantity: 1,
+    },
+    {
+      order_movement_item_id: orderMovementItemsIds[1].id,
+      warehouse_quantity_id: warehouseQuantityIds[2].id,
+      quantity: 1,
+    },
+    {
+      order_movement_item_id: orderMovementItemsIds[2].id,
+      warehouse_quantity_id: warehouseQuantityIds[0].id,
+      quantity: 1,
+    },
+  ]);
   
   // insert estimates
   // insert estimate_items

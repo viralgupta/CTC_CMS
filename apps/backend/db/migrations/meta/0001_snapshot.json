@@ -1,6 +1,6 @@
 {
-  "id": "b6975c6f-038f-48db-af13-a8efb3124b78",
-  "prevId": "53ed4b4f-e7be-4664-ae61-0cf1918d0ea3",
+  "id": "c8d8b1e4-c2f8-4d2c-90bd-b6d49caf38d2",
+  "prevId": "b0226cb5-4153-46ee-bfee-e4c13f317da5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -8,8 +8,8 @@
       "name": "address",
       "schema": "",
       "columns": {
-        "address_id": {
-          "name": "address_id",
+        "a_id": {
+          "name": "a_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
@@ -21,14 +21,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "address_house_number": {
-          "name": "address_house_number",
+        "a_house_number": {
+          "name": "a_house_number",
           "type": "varchar(15)",
           "primaryKey": false,
           "notNull": true
         },
-        "address_area_id": {
-          "name": "address_area_id",
+        "a_area_id": {
+          "name": "a_area_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -39,33 +39,33 @@
           "primaryKey": false,
           "notNull": true
         },
-        "address_city": {
-          "name": "address_city",
+        "a_city": {
+          "name": "a_city",
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
         },
-        "address_state": {
-          "name": "address_state",
+        "a_state": {
+          "name": "a_state",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
-        "address_isPrimary": {
-          "name": "address_isPrimary",
+        "a_isPrimary": {
+          "name": "a_isPrimary",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
         },
-        "address_latitude": {
-          "name": "address_latitude",
+        "a_latitude": {
+          "name": "a_latitude",
           "type": "double precision",
           "primaryKey": false,
           "notNull": false
         },
-        "address_longitude": {
-          "name": "address_longitude",
+        "a_longitude": {
+          "name": "a_longitude",
           "type": "double precision",
           "primaryKey": false,
           "notNull": false
@@ -73,28 +73,28 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "address_customer_id_customer_customer_id_fk": {
-          "name": "address_customer_id_customer_customer_id_fk",
+        "address_customer_id_customer_c_id_fk": {
+          "name": "address_customer_id_customer_c_id_fk",
           "tableFrom": "address",
           "columnsFrom": [
             "customer_id"
           ],
           "tableTo": "customer",
           "columnsTo": [
-            "customer_id"
+            "c_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "address_address_area_id_address_area_address_area_id_fk": {
-          "name": "address_address_area_id_address_area_address_area_id_fk",
+        "address_a_area_id_address_area_aa_id_fk": {
+          "name": "address_a_area_id_address_area_aa_id_fk",
           "tableFrom": "address",
           "columnsFrom": [
-            "address_area_id"
+            "a_area_id"
           ],
           "tableTo": "address_area",
           "columnsTo": [
-            "address_area_id"
+            "aa_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -107,15 +107,15 @@
       "name": "address_area",
       "schema": "",
       "columns": {
-        "address_area_id": {
-          "name": "address_area_id",
+        "aa_id": {
+          "name": "aa_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "address_area_area": {
-          "name": "address_area_area",
+        "aa_area": {
+          "name": "aa_area",
           "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
@@ -130,33 +130,33 @@
       "name": "architect",
       "schema": "",
       "columns": {
-        "architect_id": {
-          "name": "architect_id",
+        "ar_id": {
+          "name": "ar_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "architect_name": {
-          "name": "architect_name",
+        "ar_name": {
+          "name": "ar_name",
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
         },
-        "architect_profileUrl": {
-          "name": "architect_profileUrl",
+        "ar_profileUrl": {
+          "name": "ar_profileUrl",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "architect_area": {
-          "name": "architect_area",
+        "ar_area": {
+          "name": "ar_area",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
-        "architect_balance": {
-          "name": "architect_balance",
+        "ar_balance": {
+          "name": "ar_balance",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false,
@@ -172,33 +172,33 @@
       "name": "carpanter",
       "schema": "",
       "columns": {
-        "carpanter_id": {
-          "name": "carpanter_id",
+        "ca_id": {
+          "name": "ca_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "carpanter_name": {
-          "name": "carpanter_name",
+        "ca_name": {
+          "name": "ca_name",
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
         },
-        "carpanter_profileUrl": {
-          "name": "carpanter_profileUrl",
+        "ca_profileUrl": {
+          "name": "ca_profileUrl",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "carpanter_area": {
-          "name": "carpanter_area",
+        "ca_area": {
+          "name": "ca_area",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
-        "carpanter_balance": {
-          "name": "carpanter_balance",
+        "ca_balance": {
+          "name": "ca_balance",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false,
@@ -214,41 +214,41 @@
       "name": "customer",
       "schema": "",
       "columns": {
-        "customer_id": {
-          "name": "customer_id",
+        "c_id": {
+          "name": "c_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "customer_name": {
-          "name": "customer_name",
+        "c_name": {
+          "name": "c_name",
           "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
         },
-        "customer_profileUrl": {
-          "name": "customer_profileUrl",
+        "c_profileUrl": {
+          "name": "c_profileUrl",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "customer_priority": {
-          "name": "customer_priority",
+        "c_priority": {
+          "name": "c_priority",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false,
           "default": "'Low'"
         },
-        "customer_balance": {
-          "name": "customer_balance",
+        "c_balance": {
+          "name": "c_balance",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false,
           "default": "'0.00'"
         },
-        "customer_total_order_value": {
-          "name": "customer_total_order_value",
+        "c_total_order_value": {
+          "name": "c_total_order_value",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false,
@@ -264,39 +264,39 @@
       "name": "driver",
       "schema": "",
       "columns": {
-        "driver_id": {
-          "name": "driver_id",
+        "d_id": {
+          "name": "d_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "driver_name": {
-          "name": "driver_name",
+        "d_name": {
+          "name": "d_name",
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
         },
-        "driver_profileUrl": {
-          "name": "driver_profileUrl",
+        "d_profileUrl": {
+          "name": "d_profileUrl",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "driver_vehicle_number": {
-          "name": "driver_vehicle_number",
+        "d_vehicle_number": {
+          "name": "d_vehicle_number",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
         },
-        "driver_size_of_vehicle": {
-          "name": "driver_size_of_vehicle",
+        "d_size_of_vehicle": {
+          "name": "d_size_of_vehicle",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "driver_activeDeliveries": {
-          "name": "driver_activeDeliveries",
+        "d_activeDeliveries": {
+          "name": "d_activeDeliveries",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -312,34 +312,34 @@
       "name": "estimate",
       "schema": "",
       "columns": {
-        "estimate_id": {
-          "name": "estimate_id",
+        "e_id": {
+          "name": "e_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "customer_id": {
-          "name": "customer_id",
+        "e_customer_id": {
+          "name": "e_customer_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "total_estimate_amount": {
-          "name": "total_estimate_amount",
+        "e_total_estimate_amount": {
+          "name": "e_total_estimate_amount",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "e_created_at": {
+          "name": "e_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "e_updated_at": {
+          "name": "e_updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -347,11 +347,11 @@
         }
       },
       "indexes": {
-        "estimate_updated_at_idx": {
-          "name": "estimate_updated_at_idx",
+        "e_updated_at_idx": {
+          "name": "e_updated_at_idx",
           "columns": [
             {
-              "expression": "updated_at",
+              "expression": "e_updated_at",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -364,15 +364,15 @@
         }
       },
       "foreignKeys": {
-        "estimate_customer_id_customer_customer_id_fk": {
-          "name": "estimate_customer_id_customer_customer_id_fk",
+        "estimate_e_customer_id_customer_c_id_fk": {
+          "name": "estimate_e_customer_id_customer_c_id_fk",
           "tableFrom": "estimate",
           "columnsFrom": [
-            "customer_id"
+            "e_customer_id"
           ],
           "tableTo": "customer",
           "columnsTo": [
-            "customer_id"
+            "c_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
@@ -385,39 +385,39 @@
       "name": "estimate_item",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "ei_id": {
+          "name": "ei_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "estimate_item_estimate_id": {
-          "name": "estimate_item_estimate_id",
+        "ei_estimate_id": {
+          "name": "ei_estimate_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "estimate_item_item_id": {
-          "name": "estimate_item_item_id",
+        "ei_item_id": {
+          "name": "ei_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "estimate_item_quantity": {
-          "name": "estimate_item_quantity",
+        "ei_quantity": {
+          "name": "ei_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "estimate_item_rate": {
-          "name": "estimate_item_rate",
+        "ei_rate": {
+          "name": "ei_rate",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "estimate_item_total_value": {
-          "name": "estimate_item_total_value",
+        "ei_total_value": {
+          "name": "ei_total_value",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": true
@@ -425,28 +425,28 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "estimate_item_estimate_item_estimate_id_estimate_estimate_id_fk": {
-          "name": "estimate_item_estimate_item_estimate_id_estimate_estimate_id_fk",
+        "estimate_item_ei_estimate_id_estimate_e_id_fk": {
+          "name": "estimate_item_ei_estimate_id_estimate_e_id_fk",
           "tableFrom": "estimate_item",
           "columnsFrom": [
-            "estimate_item_estimate_id"
+            "ei_estimate_id"
           ],
           "tableTo": "estimate",
           "columnsTo": [
-            "estimate_id"
+            "e_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "estimate_item_estimate_item_item_id_item_item_id_fk": {
-          "name": "estimate_item_estimate_item_item_id_item_item_id_fk",
+        "estimate_item_ei_item_id_item_i_id_fk": {
+          "name": "estimate_item_ei_item_id_item_i_id_fk",
           "tableFrom": "estimate_item",
           "columnsFrom": [
-            "estimate_item_item_id"
+            "ei_item_id"
           ],
           "tableTo": "item",
           "columnsTo": [
-            "item_id"
+            "i_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -459,58 +459,58 @@
       "name": "item",
       "schema": "",
       "columns": {
-        "item_id": {
-          "name": "item_id",
+        "i_id": {
+          "name": "i_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "item_name": {
-          "name": "item_name",
+        "i_name": {
+          "name": "i_name",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
-        "item_multiplier": {
-          "name": "item_multiplier",
+        "i_multiplier": {
+          "name": "i_multiplier",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
           "default": 1
         },
-        "item_category": {
-          "name": "item_category",
+        "i_category": {
+          "name": "i_category",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "item_quantity": {
-          "name": "item_quantity",
+        "i_quantity": {
+          "name": "i_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "item_min_quantity": {
-          "name": "item_min_quantity",
+        "i_min_quantity": {
+          "name": "i_min_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "item_min_rate": {
-          "name": "item_min_rate",
+        "i_min_rate": {
+          "name": "i_min_rate",
           "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "item_sale_rate": {
-          "name": "item_sale_rate",
+        "i_sale_rate": {
+          "name": "i_sale_rate",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "item_rate_dimension": {
-          "name": "item_rate_dimension",
+        "i_rate_dimension": {
+          "name": "i_rate_dimension",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -525,56 +525,56 @@
       "name": "item_order",
       "schema": "",
       "columns": {
-        "item_order_id": {
-          "name": "item_order_id",
+        "io_id": {
+          "name": "io_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "vendor_name": {
-          "name": "vendor_name",
+        "io_vendor_name": {
+          "name": "io_vendor_name",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
-        "ordered_quantity": {
-          "name": "ordered_quantity",
+        "io_ordered_quantity": {
+          "name": "io_ordered_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "item_order_date": {
-          "name": "item_order_date",
+        "io_date": {
+          "name": "io_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "received_quantity": {
-          "name": "received_quantity",
+        "io_received_quantity": {
+          "name": "io_received_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "item_receive_date": {
-          "name": "item_receive_date",
+        "io_receive_date": {
+          "name": "io_receive_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "item_order_item_id": {
-          "name": "item_order_item_id",
+        "io_item_id": {
+          "name": "io_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {
-        "item_order_order_date_idx": {
-          "name": "item_order_order_date_idx",
+        "io_order_date_idx": {
+          "name": "io_order_date_idx",
           "columns": [
             {
-              "expression": "item_order_date",
+              "expression": "io_date",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -587,101 +587,164 @@
         }
       },
       "foreignKeys": {
-        "item_order_item_order_item_id_item_item_id_fk": {
-          "name": "item_order_item_order_item_id_item_item_id_fk",
+        "item_order_io_item_id_item_i_id_fk": {
+          "name": "item_order_io_item_id_item_i_id_fk",
           "tableFrom": "item_order",
           "columnsFrom": [
-            "item_order_item_id"
+            "io_item_id"
           ],
           "tableTo": "item",
           "columnsTo": [
-            "item_id"
+            "i_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.iowq": {
+      "name": "iowq",
+      "schema": "",
+      "columns": {
+        "iowq_io_id": {
+          "name": "iowq_io_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "iowq_wq_id": {
+          "name": "iowq_wq_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "iowq_quantity": {
+          "name": "iowq_quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "iowq_iowq_io_id_item_order_io_id_fk": {
+          "name": "iowq_iowq_io_id_item_order_io_id_fk",
+          "tableFrom": "iowq",
+          "columnsFrom": [
+            "iowq_io_id"
+          ],
+          "tableTo": "item_order",
+          "columnsTo": [
+            "io_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "iowq_iowq_wq_id_warehouse_quantity_wq_id_fk": {
+          "name": "iowq_iowq_wq_id_warehouse_quantity_wq_id_fk",
+          "tableFrom": "iowq",
+          "columnsFrom": [
+            "iowq_wq_id"
+          ],
+          "tableTo": "warehouse_quantity",
+          "columnsTo": [
+            "wq_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "iowq_pk": {
+          "name": "iowq_pk",
+          "columns": [
+            "iowq_io_id",
+            "iowq_wq_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "public.log": {
       "name": "log",
       "schema": "",
       "columns": {
-        "log_id": {
-          "name": "log_id",
+        "l_id": {
+          "name": "l_id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "log_user_id": {
-          "name": "log_user_id",
+        "l_user_id": {
+          "name": "l_user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "log_linked_to": {
-          "name": "log_linked_to",
+        "l_linked_to": {
+          "name": "l_linked_to",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "log_type": {
-          "name": "log_type",
+        "l_type": {
+          "name": "l_type",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "log_customer_id": {
-          "name": "log_customer_id",
+        "l_customer_id": {
+          "name": "l_customer_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "log_architect_id": {
-          "name": "log_architect_id",
+        "l_architect_id": {
+          "name": "l_architect_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "log_carpanter_id": {
-          "name": "log_carpanter_id",
+        "l_carpanter_id": {
+          "name": "l_carpanter_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "log_driver_id": {
-          "name": "log_driver_id",
+        "l_driver_id": {
+          "name": "l_driver_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "log_item_id": {
-          "name": "log_item_id",
+        "l_item_id": {
+          "name": "l_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "log_order_id": {
-          "name": "log_order_id",
+        "l_order_id": {
+          "name": "l_order_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "log_heading": {
-          "name": "log_heading",
+        "l_heading": {
+          "name": "l_heading",
           "type": "varchar(50)",
           "primaryKey": false,
           "notNull": false
         },
-        "log_message": {
-          "name": "log_message",
+        "l_message": {
+          "name": "l_message",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "l_created_at": {
+          "name": "l_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -689,11 +752,11 @@
         }
       },
       "indexes": {
-        "log_id_idx": {
-          "name": "log_id_idx",
+        "l_id_idx": {
+          "name": "l_id_idx",
           "columns": [
             {
-              "expression": "log_id",
+              "expression": "l_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -706,15 +769,15 @@
         }
       },
       "foreignKeys": {
-        "log_log_user_id_user_user_id_fk": {
-          "name": "log_log_user_id_user_user_id_fk",
+        "log_l_user_id_user_u_id_fk": {
+          "name": "log_l_user_id_user_u_id_fk",
           "tableFrom": "log",
           "columnsFrom": [
-            "log_user_id"
+            "l_user_id"
           ],
           "tableTo": "user",
           "columnsTo": [
-            "user_id"
+            "u_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -727,77 +790,77 @@
       "name": "order",
       "schema": "",
       "columns": {
-        "order_id": {
-          "name": "order_id",
+        "o_id": {
+          "name": "o_id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "order_note": {
-          "name": "order_note",
+        "o_note": {
+          "name": "o_note",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "customer_id": {
-          "name": "customer_id",
+        "o_customer_id": {
+          "name": "o_customer_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "carpanter_id": {
-          "name": "carpanter_id",
+        "o_carpanter_id": {
+          "name": "o_carpanter_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "architect_id": {
-          "name": "architect_id",
+        "o_architect_id": {
+          "name": "o_architect_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "order_status": {
-          "name": "order_status",
+        "o_status": {
+          "name": "o_status",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
           "default": "'Pending'"
         },
-        "order_priority": {
-          "name": "order_priority",
+        "o_priority": {
+          "name": "o_priority",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
           "default": "'Low'"
         },
-        "order_payment_status": {
-          "name": "order_payment_status",
+        "o_payment_status": {
+          "name": "o_payment_status",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
           "default": "'UnPaid'"
         },
-        "order_delivery_date": {
-          "name": "order_delivery_date",
+        "o_delivery_date": {
+          "name": "o_delivery_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "order_delivery_address_id": {
-          "name": "order_delivery_address_id",
+        "o_delivery_address_id": {
+          "name": "o_delivery_address_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "total_order_amount": {
-          "name": "total_order_amount",
+        "o_total_order_amount": {
+          "name": "o_total_order_amount",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": true
         },
-        "order_discount": {
-          "name": "order_discount",
+        "o_discount": {
+          "name": "o_discount",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false,
@@ -810,27 +873,27 @@
           "notNull": false,
           "default": "'0.00'"
         },
-        "order_carpanter_commision": {
-          "name": "order_carpanter_commision",
+        "o_carpanter_commision": {
+          "name": "o_carpanter_commision",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "order_architect_commision": {
-          "name": "order_architect_commision",
+        "o_architect_commision": {
+          "name": "o_architect_commision",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "created_at": {
-          "name": "created_at",
+        "o_created_at": {
+          "name": "o_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "o_updated_at": {
+          "name": "o_updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -838,11 +901,11 @@
         }
       },
       "indexes": {
-        "order_id_idx": {
-          "name": "order_id_idx",
+        "o_id_idx": {
+          "name": "o_id_idx",
           "columns": [
             {
-              "expression": "order_id",
+              "expression": "o_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
@@ -853,17 +916,17 @@
           "method": "btree",
           "concurrently": false
         },
-        "order_id_status_idx": {
-          "name": "order_id_status_idx",
+        "o_id_status_idx": {
+          "name": "o_id_status_idx",
           "columns": [
             {
-              "expression": "order_id",
+              "expression": "o_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
             },
             {
-              "expression": "order_status",
+              "expression": "o_status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -874,17 +937,17 @@
           "method": "btree",
           "concurrently": false
         },
-        "order_id_payment_status_idx": {
-          "name": "order_id_payment_status_idx",
+        "o_id_payment_status_idx": {
+          "name": "o_id_payment_status_idx",
           "columns": [
             {
-              "expression": "order_id",
+              "expression": "o_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
             },
             {
-              "expression": "order_payment_status",
+              "expression": "o_payment_status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -895,17 +958,17 @@
           "method": "btree",
           "concurrently": false
         },
-        "order_id_priority_idx": {
-          "name": "order_id_priority_idx",
+        "o_id_priority_idx": {
+          "name": "o_id_priority_idx",
           "columns": [
             {
-              "expression": "order_id",
+              "expression": "o_id",
               "isExpression": false,
               "asc": false,
               "nulls": "last"
             },
             {
-              "expression": "order_priority",
+              "expression": "o_priority",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -918,54 +981,54 @@
         }
       },
       "foreignKeys": {
-        "order_customer_id_customer_customer_id_fk": {
-          "name": "order_customer_id_customer_customer_id_fk",
+        "order_o_customer_id_customer_c_id_fk": {
+          "name": "order_o_customer_id_customer_c_id_fk",
           "tableFrom": "order",
           "columnsFrom": [
-            "customer_id"
+            "o_customer_id"
           ],
           "tableTo": "customer",
           "columnsTo": [
-            "customer_id"
+            "c_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "order_carpanter_id_carpanter_carpanter_id_fk": {
-          "name": "order_carpanter_id_carpanter_carpanter_id_fk",
+        "order_o_carpanter_id_carpanter_ca_id_fk": {
+          "name": "order_o_carpanter_id_carpanter_ca_id_fk",
           "tableFrom": "order",
           "columnsFrom": [
-            "carpanter_id"
+            "o_carpanter_id"
           ],
           "tableTo": "carpanter",
           "columnsTo": [
-            "carpanter_id"
+            "ca_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "order_architect_id_architect_architect_id_fk": {
-          "name": "order_architect_id_architect_architect_id_fk",
+        "order_o_architect_id_architect_ar_id_fk": {
+          "name": "order_o_architect_id_architect_ar_id_fk",
           "tableFrom": "order",
           "columnsFrom": [
-            "architect_id"
+            "o_architect_id"
           ],
           "tableTo": "architect",
           "columnsTo": [
-            "architect_id"
+            "ar_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "order_order_delivery_address_id_address_address_id_fk": {
-          "name": "order_order_delivery_address_id_address_address_id_fk",
+        "order_o_delivery_address_id_address_a_id_fk": {
+          "name": "order_o_delivery_address_id_address_a_id_fk",
           "tableFrom": "order",
           "columnsFrom": [
-            "order_delivery_address_id"
+            "o_delivery_address_id"
           ],
           "tableTo": "address",
           "columnsTo": [
-            "address_id"
+            "a_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -985,75 +1048,75 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "order_item_order_id": {
-          "name": "order_item_order_id",
+        "oi_order_id": {
+          "name": "oi_order_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_item_id": {
-          "name": "order_item_item_id",
+        "oi_item_id": {
+          "name": "oi_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_quantity": {
-          "name": "order_item_quantity",
+        "oi_quantity": {
+          "name": "oi_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_delivered_quantity": {
-          "name": "order_item_delivered_quantity",
+        "oi_delivered_quantity": {
+          "name": "oi_delivered_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_rate": {
-          "name": "order_item_rate",
+        "oi_rate": {
+          "name": "oi_rate",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_total_value": {
-          "name": "order_item_total_value",
+        "oi_total_value": {
+          "name": "oi_total_value",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": true
         },
-        "order_item_carpanter_commision": {
-          "name": "order_item_carpanter_commision",
+        "oi_carpanter_commision": {
+          "name": "oi_carpanter_commision",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "order_item_carpanter_commision_type": {
-          "name": "order_item_carpanter_commision_type",
+        "oi_carpanter_commision_type": {
+          "name": "oi_carpanter_commision_type",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "order_item_architect_commision": {
-          "name": "order_item_architect_commision",
+        "oi_architect_commision": {
+          "name": "oi_architect_commision",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "order_item_architect_commision_type": {
-          "name": "order_item_architect_commision_type",
+        "oi_architect_commision_type": {
+          "name": "oi_architect_commision_type",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "created_at": {
-          "name": "created_at",
+        "oi_created_at": {
+          "name": "oi_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "oi_updated_at": {
+          "name": "oi_updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -1062,28 +1125,28 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "order_item_order_item_order_id_order_order_id_fk": {
-          "name": "order_item_order_item_order_id_order_order_id_fk",
+        "order_item_oi_order_id_order_o_id_fk": {
+          "name": "order_item_oi_order_id_order_o_id_fk",
           "tableFrom": "order_item",
           "columnsFrom": [
-            "order_item_order_id"
+            "oi_order_id"
           ],
           "tableTo": "order",
           "columnsTo": [
-            "order_id"
+            "o_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "order_item_order_item_item_id_item_item_id_fk": {
-          "name": "order_item_order_item_item_id_item_item_id_fk",
+        "order_item_oi_item_id_item_i_id_fk": {
+          "name": "order_item_oi_item_id_item_i_id_fk",
           "tableFrom": "order_item",
           "columnsFrom": [
-            "order_item_item_id"
+            "oi_item_id"
           ],
           "tableTo": "item",
           "columnsTo": [
-            "item_id"
+            "i_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -1096,53 +1159,53 @@
       "name": "order_movement",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "om_id": {
+          "name": "om_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "order_movement_order_id": {
-          "name": "order_movement_order_id",
+        "om_order_id": {
+          "name": "om_order_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "order_movement_driver_id": {
-          "name": "order_movement_driver_id",
+        "om_driver_id": {
+          "name": "om_driver_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "order_movement_type": {
-          "name": "order_movement_type",
+        "om_type": {
+          "name": "om_type",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "order_status": {
-          "name": "order_status",
+        "om_status": {
+          "name": "om_status",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
           "default": "'Pending'"
         },
-        "order_labour_frate_cost": {
-          "name": "order_labour_frate_cost",
+        "om_labour_frate_cost": {
+          "name": "om_labour_frate_cost",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "om_created_at": {
+          "name": "om_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "delivery_at": {
-          "name": "delivery_at",
+        "om_delivery_at": {
+          "name": "om_delivery_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
@@ -1150,28 +1213,28 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "order_movement_order_movement_order_id_order_order_id_fk": {
-          "name": "order_movement_order_movement_order_id_order_order_id_fk",
+        "order_movement_om_order_id_order_o_id_fk": {
+          "name": "order_movement_om_order_id_order_o_id_fk",
           "tableFrom": "order_movement",
           "columnsFrom": [
-            "order_movement_order_id"
+            "om_order_id"
           ],
           "tableTo": "order",
           "columnsTo": [
-            "order_id"
+            "o_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
-        "order_movement_order_movement_driver_id_driver_driver_id_fk": {
-          "name": "order_movement_order_movement_driver_id_driver_driver_id_fk",
+        "order_movement_om_driver_id_driver_d_id_fk": {
+          "name": "order_movement_om_driver_id_driver_d_id_fk",
           "tableFrom": "order_movement",
           "columnsFrom": [
-            "order_movement_driver_id"
+            "om_driver_id"
           ],
           "tableTo": "driver",
           "columnsTo": [
-            "driver_id"
+            "d_id"
           ],
           "onUpdate": "no action",
           "onDelete": "no action"
@@ -1180,8 +1243,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.order_movement_item": {
-      "name": "order_movement_item",
+    "public.omi": {
+      "name": "omi",
       "schema": "",
       "columns": {
         "id": {
@@ -1191,20 +1254,20 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "order_movement_item_order_movement_id": {
-          "name": "order_movement_item_order_movement_id",
+        "omi_order_movement_id": {
+          "name": "omi_order_movement_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "order_movement_item_order_item_id": {
-          "name": "order_movement_item_order_item_id",
+        "omi_order_item_id": {
+          "name": "omi_order_item_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "order_movement_item_quantity": {
-          "name": "order_movement_item_quantity",
+        "omi_quantity": {
+          "name": "omi_quantity",
           "type": "real",
           "primaryKey": false,
           "notNull": true
@@ -1212,24 +1275,24 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "order_movement_item_order_movement_item_order_movement_id_order_movement_id_fk": {
-          "name": "order_movement_item_order_movement_item_order_movement_id_order_movement_id_fk",
-          "tableFrom": "order_movement_item",
+        "omi_omi_order_movement_id_order_movement_om_id_fk": {
+          "name": "omi_omi_order_movement_id_order_movement_om_id_fk",
+          "tableFrom": "omi",
           "columnsFrom": [
-            "order_movement_item_order_movement_id"
+            "omi_order_movement_id"
           ],
           "tableTo": "order_movement",
           "columnsTo": [
-            "id"
+            "om_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "order_movement_item_order_movement_item_order_item_id_order_item_id_fk": {
-          "name": "order_movement_item_order_movement_item_order_item_id_order_item_id_fk",
-          "tableFrom": "order_movement_item",
+        "omi_omi_order_item_id_order_item_id_fk": {
+          "name": "omi_omi_order_item_id_order_item_id_fk",
+          "tableFrom": "omi",
           "columnsFrom": [
-            "order_movement_item_order_item_id"
+            "omi_order_item_id"
           ],
           "tableTo": "order_item",
           "columnsTo": [
@@ -1242,61 +1305,124 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "public.omiwq": {
+      "name": "omiwq",
+      "schema": "",
+      "columns": {
+        "omiwq_omi_id": {
+          "name": "omiwq_omi_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "omiwq_wq_id": {
+          "name": "omiwq_wq_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "omiwq_quantity": {
+          "name": "omiwq_quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "omiwq_omiwq_omi_id_omi_id_fk": {
+          "name": "omiwq_omiwq_omi_id_omi_id_fk",
+          "tableFrom": "omiwq",
+          "columnsFrom": [
+            "omiwq_omi_id"
+          ],
+          "tableTo": "omi",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "omiwq_omiwq_wq_id_warehouse_quantity_wq_id_fk": {
+          "name": "omiwq_omiwq_wq_id_warehouse_quantity_wq_id_fk",
+          "tableFrom": "omiwq",
+          "columnsFrom": [
+            "omiwq_wq_id"
+          ],
+          "tableTo": "warehouse_quantity",
+          "columnsTo": [
+            "wq_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "omiwq_pk": {
+          "name": "omiwq_pk",
+          "columns": [
+            "omiwq_omi_id",
+            "omiwq_wq_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "public.phone_number": {
       "name": "phone_number",
       "schema": "",
       "columns": {
-        "phone_number_id": {
-          "name": "phone_number_id",
+        "pn_id": {
+          "name": "pn_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "customer_id": {
-          "name": "customer_id",
+        "pn_customer_id": {
+          "name": "pn_customer_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "architect_id": {
-          "name": "architect_id",
+        "pn_architect_id": {
+          "name": "pn_architect_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "carpanter_id": {
-          "name": "carpanter_id",
+        "pn_carpanter_id": {
+          "name": "pn_carpanter_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "driver_id": {
-          "name": "driver_id",
+        "pn_driver_id": {
+          "name": "pn_driver_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "phone_number_country_code": {
-          "name": "phone_number_country_code",
+        "pn_country_code": {
+          "name": "pn_country_code",
           "type": "varchar(5)",
           "primaryKey": false,
           "notNull": false
         },
-        "phone_number": {
-          "name": "phone_number",
+        "pn_phone_number": {
+          "name": "pn_phone_number",
           "type": "varchar(10)",
           "primaryKey": false,
           "notNull": true
         },
-        "phone_number_whatsappChatId": {
-          "name": "phone_number_whatsappChatId",
+        "pn_whatsappChatId": {
+          "name": "pn_whatsappChatId",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
         },
-        "phone_number_isPrimary": {
-          "name": "phone_number_isPrimary",
+        "pn_isPrimary": {
+          "name": "pn_isPrimary",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -1305,54 +1431,54 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "phone_number_customer_id_customer_customer_id_fk": {
-          "name": "phone_number_customer_id_customer_customer_id_fk",
+        "phone_number_pn_customer_id_customer_c_id_fk": {
+          "name": "phone_number_pn_customer_id_customer_c_id_fk",
           "tableFrom": "phone_number",
           "columnsFrom": [
-            "customer_id"
+            "pn_customer_id"
           ],
           "tableTo": "customer",
           "columnsTo": [
-            "customer_id"
+            "c_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "phone_number_architect_id_architect_architect_id_fk": {
-          "name": "phone_number_architect_id_architect_architect_id_fk",
+        "phone_number_pn_architect_id_architect_ar_id_fk": {
+          "name": "phone_number_pn_architect_id_architect_ar_id_fk",
           "tableFrom": "phone_number",
           "columnsFrom": [
-            "architect_id"
+            "pn_architect_id"
           ],
           "tableTo": "architect",
           "columnsTo": [
-            "architect_id"
+            "ar_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "phone_number_carpanter_id_carpanter_carpanter_id_fk": {
-          "name": "phone_number_carpanter_id_carpanter_carpanter_id_fk",
+        "phone_number_pn_carpanter_id_carpanter_ca_id_fk": {
+          "name": "phone_number_pn_carpanter_id_carpanter_ca_id_fk",
           "tableFrom": "phone_number",
           "columnsFrom": [
-            "carpanter_id"
+            "pn_carpanter_id"
           ],
           "tableTo": "carpanter",
           "columnsTo": [
-            "carpanter_id"
+            "ca_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
-        "phone_number_driver_id_driver_driver_id_fk": {
-          "name": "phone_number_driver_id_driver_driver_id_fk",
+        "phone_number_pn_driver_id_driver_d_id_fk": {
+          "name": "phone_number_pn_driver_id_driver_d_id_fk",
           "tableFrom": "phone_number",
           "columnsFrom": [
-            "driver_id"
+            "pn_driver_id"
           ],
           "tableTo": "driver",
           "columnsTo": [
-            "driver_id"
+            "d_id"
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
@@ -1360,17 +1486,17 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "phone_number_phone_number_unique": {
-          "name": "phone_number_phone_number_unique",
+        "phone_number_pn_phone_number_unique": {
+          "name": "phone_number_pn_phone_number_unique",
           "columns": [
-            "phone_number"
+            "pn_phone_number"
           ],
           "nullsNotDistinct": false
         },
-        "phone_number_phone_number_whatsappChatId_unique": {
-          "name": "phone_number_phone_number_whatsappChatId_unique",
+        "phone_number_pn_whatsappChatId_unique": {
+          "name": "phone_number_pn_whatsappChatId_unique",
           "columns": [
-            "phone_number_whatsappChatId"
+            "pn_whatsappChatId"
           ],
           "nullsNotDistinct": false
         }
@@ -1380,39 +1506,39 @@
       "name": "resource",
       "schema": "",
       "columns": {
-        "resource_id": {
-          "name": "resource_id",
+        "r_id": {
+          "name": "r_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "resource_extension": {
-          "name": "resource_extension",
+        "r_extension": {
+          "name": "r_extension",
           "type": "varchar(10)",
           "primaryKey": false,
           "notNull": false
         },
-        "resource_key": {
-          "name": "resource_key",
+        "r_key": {
+          "name": "r_key",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "resource_previewKey": {
-          "name": "resource_previewKey",
+        "r_previewKey": {
+          "name": "r_previewKey",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "resource_name": {
-          "name": "resource_name",
+        "r_name": {
+          "name": "r_name",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
-        "resource_description": {
-          "name": "resource_description",
+        "r_description": {
+          "name": "r_description",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1427,34 +1553,34 @@
       "name": "user",
       "schema": "",
       "columns": {
-        "user_id": {
-          "name": "user_id",
+        "u_id": {
+          "name": "u_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_name": {
-          "name": "user_name",
+        "u_name": {
+          "name": "u_name",
           "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true
         },
-        "user_phone_number": {
-          "name": "user_phone_number",
+        "u_phone_number": {
+          "name": "u_phone_number",
           "type": "varchar(10)",
           "primaryKey": false,
           "notNull": true
         },
-        "user_isAdmin": {
-          "name": "user_isAdmin",
+        "u_isAdmin": {
+          "name": "u_isAdmin",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
         },
-        "user_otp": {
-          "name": "user_otp",
+        "u_otp": {
+          "name": "u_otp",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -1464,14 +1590,99 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_user_phone_number_unique": {
-          "name": "user_user_phone_number_unique",
+        "user_u_phone_number_unique": {
+          "name": "user_u_phone_number_unique",
           "columns": [
-            "user_phone_number"
+            "u_phone_number"
           ],
           "nullsNotDistinct": false
         }
       }
+    },
+    "public.warehouse": {
+      "name": "warehouse",
+      "schema": "",
+      "columns": {
+        "w_id": {
+          "name": "w_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "w_name": {
+          "name": "w_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.warehouse_quantity": {
+      "name": "warehouse_quantity",
+      "schema": "",
+      "columns": {
+        "wq_id": {
+          "name": "wq_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "wq_item_id": {
+          "name": "wq_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "wq_warehouse_id": {
+          "name": "wq_warehouse_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "wq_quantity": {
+          "name": "wq_quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "warehouse_quantity_wq_item_id_item_i_id_fk": {
+          "name": "warehouse_quantity_wq_item_id_item_i_id_fk",
+          "tableFrom": "warehouse_quantity",
+          "columnsFrom": [
+            "wq_item_id"
+          ],
+          "tableTo": "item",
+          "columnsTo": [
+            "i_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "warehouse_quantity_wq_warehouse_id_warehouse_w_id_fk": {
+          "name": "warehouse_quantity_wq_warehouse_id_warehouse_w_id_fk",
+          "tableFrom": "warehouse_quantity",
+          "columnsFrom": [
+            "wq_warehouse_id"
+          ],
+          "tableTo": "warehouse",
+          "columnsTo": [
+            "w_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     }
   },
   "enums": {},

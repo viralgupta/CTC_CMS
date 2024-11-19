@@ -8,7 +8,7 @@ const AllItems = () => {
   const { items, loading, refetchItems } = useAllItems();
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <div className="text-3xl font-cubano mb-4 flex justify-between items-center">
         <div>All Items</div>
         <div className="flex gap-2">

@@ -22,7 +22,7 @@ const createCarpanter = async (req: Request, res: Response) => {
         balance: createCarpanterTypeAnswer.data.balance
       }).returning({id: carpanter.id});
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
 
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
@@ -111,7 +111,7 @@ const editCarpanter = async (req: Request, res: Response) => {
         area: editCarpanterTypeAnswer.data.area,
       }).where(eq(carpanter.id, tCarpanter.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           carpanter_id: tCarpanter.id,
@@ -180,7 +180,7 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(carpanter.id, tCarpanter.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           carpanter_id: tCarpanter.id,
@@ -314,7 +314,7 @@ const deleteCarpanter = async (req: Request, res: Response) => {
       
       await tx.delete(carpanter).where(eq(carpanter.id, deleteCarpanterTypeAnswer.data.carpanter_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           carpanter_id: deleteCarpanterTypeAnswer.data.carpanter_id,

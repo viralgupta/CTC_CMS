@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const createWarehouseQuantityType = z.object({
+  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+  quantity: z.number().nonnegative("Quantity needs to be greater than equal to 0"),
+});
+
+export const recieveWarehouseQuantityType = z.object({
+  warehouse_quantity_id: z.string().uuid("Invalid Warehouse Quantity ID"),
+  quantity: z.number().nonnegative("Quantity needs to be greater than equal to 0"),
+});
+
 export const createItemType = z
   .object({
     name: z.string().max(255, "Item name is too long"),
@@ -27,6 +37,7 @@ export const createItemType = z
     quantity: z
       .number()
       .nonnegative("Quantity needs to be greater than equal to 0"),
+    warehouse_quantities: z.array(createWarehouseQuantityType).optional(),
     min_quantity: z
       .number()
       .nonnegative("Min Quantity needs to be greater than equal to 0")
@@ -67,6 +78,7 @@ export const createItemOrderType = z.object({
   .transform((dateString) => new Date(dateString))
   .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }),
   received_quantity: z.number().optional(),
+  warehouse_quantities: z.array(recieveWarehouseQuantityType).optional(),
   receive_date: z.string()
     .transform((dateString) => new Date(dateString))
     .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional()
@@ -84,6 +96,7 @@ export const editItemOrderType = z.object({
 export const receiveItemOrderType = z.object({
   id: z.string().uuid(),
   received_quantity: z.number(),
+  warehouse_quantities: z.array(recieveWarehouseQuantityType).min(1),
   receive_date: z.string()
     .transform((dateString) => new Date(dateString))
     .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional()
@@ -96,3 +109,21 @@ export const deleteItemOrderType = z.object({
 export const deleteItemType = z.object({
   item_id: z.string().uuid("Invalid Item ID"),
 })
+
+export const createWarehouseType = z.object({
+  name: z.string().max(255, "Warehouse name is too long"),
+});
+
+export const editWarehouseType = createWarehouseType.extend({
+  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+})
+
+export const getWarehouseType = z.object({
+  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+});
+
+export const deleteWarehouseType = getWarehouseType;
+
+export const getWarehouseItemQuantitiesType = z.object({
+  item_id: z.string().uuid("Invalid Item ID"),
+});

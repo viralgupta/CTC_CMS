@@ -78,6 +78,19 @@ const CreateOrderMovementForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof createOrderMovementType>) {
+    let setError = false;
+    (order_movement_items ?? []).forEach((omi) => {
+      const totalWarehouseQuantity = omi.warehouse_quantities.reduce((acc, wq) => acc + wq.quantity, 0);
+      if(totalWarehouseQuantity !== omi.quantity){
+        setError = true;
+      }
+    });
+    if(setError){
+      form.setError("order_movement_items", {
+        message: "Warehouse quantity must be equal to the quantity of the order item"
+      });
+      return;
+    }
     try {
       const res = await request.post("/order/createMovement", values);
       if (res.status == 200) {
@@ -92,7 +105,7 @@ const CreateOrderMovementForm = () => {
     }
   }
 
-  const [type, status, delivery_at] = form.watch(["type", "status", "delivery_at"]);
+  const [type, status, delivery_at, order_movement_items] = form.watch(["type", "status", "delivery_at", "order_movement_items"]);
 
   React.useEffect(() => {
     if (type == "RETURN") {
@@ -101,6 +114,24 @@ const CreateOrderMovementForm = () => {
       form.resetField("delivery_at");
     }
   }, [type]);
+
+  React.useEffect(() => {
+    let setError = false;
+    (order_movement_items ?? []).forEach((omi) => {
+      const totalWarehouseQuantity = (omi.warehouse_quantities ?? []).reduce((acc, wq) => acc + wq.quantity, 0);
+      if(totalWarehouseQuantity !== omi.quantity){
+        setError = true;
+      }
+    });
+    if(setError){
+      form.setError("order_movement_items", {
+        message: "Warehouse quantity must be equal to the quantity of the order item"
+      });
+    } else {
+      form.clearErrors("order_movement_items");
+      form.trigger("order_movement_items");
+    }
+  }, [order_movement_items]);
 
   React.useEffect(() => {
     if (status == "Completed" && !delivery_at) {
@@ -247,7 +278,7 @@ const CreateOrderMovementForm = () => {
               <FormItem className="w-full">
                 <FormLabel>Order items</FormLabel>
                 <FormControl>
-                  <SelectOrderItems onChange={field.onChange} value={field.value}/>
+                  <SelectOrderItems delivered={true} onChange={field.onChange} value={field.value}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

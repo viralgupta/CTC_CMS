@@ -22,7 +22,7 @@ const createCustomer = async (req: Request, res: Response) => {
         profileUrl: createCustomerTypeAnswer.data.profileUrl
       }).returning({ id: customer.id });
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           customer_id: tCustomer[0].id,
@@ -601,7 +601,7 @@ const editCustomer = async (req: Request, res: Response) => {
         profileUrl: editCustomerTypeAnswer.data.profileUrl
       }).where(eq(customer.id, tCustomer[0].id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           customer_id: tCustomer[0].id,
@@ -680,7 +680,7 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(customer.id, tCustomer[0].id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           customer_id: tCustomer[0].id,
@@ -855,7 +855,7 @@ const deleteCustomer = async (req: Request, res: Response) => {
       
       await tx.delete(customer).where(eq(customer.id, tCustomer.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           customer_id: tCustomer.id,

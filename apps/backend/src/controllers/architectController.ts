@@ -22,7 +22,7 @@ const createArchitect = async (req: Request, res: Response) => {
         balance: createArchitectTypeAnswer.data.balance
       }).returning({ id: architect.id });
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           architect_id: tArchitect[0].id,
@@ -115,7 +115,7 @@ const editArchitect = async (req: Request, res: Response) => {
         })
         .where(eq(architect.id, tArchitect.id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           architect_id: tArchitect.id,
@@ -187,7 +187,7 @@ const settleBalance = async (req: Request, res: Response) => {
         balance: newBalance.toFixed(2)
       }).where(eq(architect.id, tArchitect.id));
       
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           architect_id: tArchitect.id,
@@ -317,7 +317,7 @@ const deleteArchitect = async (req: Request, res: Response) => {
       
       await tx.delete(architect).where(eq(architect.id, deleteArchitectTypeAnswer.data.architect_id));
 
-      if(res.locals.session.user.id){
+      if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           architect_id: deleteArchitectTypeAnswer.data.architect_id,
