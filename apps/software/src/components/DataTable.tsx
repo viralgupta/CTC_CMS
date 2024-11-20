@@ -69,7 +69,7 @@ const DataTable = ({ message, data, columns, columnFilters, defaultColumn, colum
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 34,
-    overscan: 20,
+    overscan: 2,
   })
 
   return (

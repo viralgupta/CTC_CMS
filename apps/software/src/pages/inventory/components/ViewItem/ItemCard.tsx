@@ -55,7 +55,7 @@ export default function ItemCard({ item }: { item: viewItemType | null }) {
                   Edit Item
                 </Button>
               </EditItem>
-              <ItemOrders item_id={item.id} item_orders={item.item_orders}>
+              <ItemOrders>
                 <Button size="sm" variant="outline">
                   <BoxIcon className="h-4 w-4 mr-2" />
                   Item Orders

@@ -36,6 +36,7 @@ import { viewItemIDAtom } from "@/store/Items";
 import request from "@/lib/request";
 import { useAllWarehouse } from "@/hooks/warehouse";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ViewWarehouse = ({
   warehouse_id,
@@ -59,6 +60,15 @@ const ViewWarehouse = ({
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
   const { refetchWarehouses } = useAllWarehouse();
   const [deleteLoading, setDeleteLoading] = React.useState(false);
+
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: (warehouse?.warehouse_quantities ?? []).length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 34,
+    overscan: 2,
+  });
 
   const deleteWarehouse = async () => {
     setDeleteLoading(true);
@@ -168,36 +178,56 @@ const ViewWarehouse = ({
               className="w-full"
               onClick={deleteWarehouse}
             >
-              {deleteLoading ? <Spinner/> :(
-                <div className="flex gap-2">Delete<Trash2 /></div>
+              {deleteLoading ? (
+                <Spinner />
+              ) : (
+                <div className="flex gap-2">
+                  Delete
+                  <Trash2 />
+                </div>
               )}
             </Button>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-center">Item Name</TableHead>
-                <TableHead className="text-center">Quantity</TableHead>
-                <TableHead className="text-center w-[100px]">View</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {warehouse.warehouse_quantities.map((wq) => (
-                <TableRow key={wq.item_id}>
-                  <TableCell className="text-center py-1">{wq.item.name}</TableCell>
-                  <TableCell className="text-center py-1">{wq.quantity}</TableCell>
-                  <TableCell className="text-center py-1">
-                    <Button
-                      size={"icon"}
-                      onClick={() => setViewItemId(wq.item_id)}
-                    >
-                      <Eye />
-                    </Button>
-                  </TableCell>
+          <div className="max-h-96 overflow-y-auto hide-scroll" ref={parentRef}>
+            <Table style={{ height: `${virtualizer.getTotalSize()}px` }}>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Item Name</TableHead>
+                  <TableHead className="text-center">Quantity</TableHead>
+                  <TableHead className="text-center w-[100px]">View</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                  const wq = warehouse.warehouse_quantities[virtualRow.index];
+                  return (
+                    <TableRow
+                      key={wq.item_id}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
+                      }}
+                    >
+                      <TableCell className="text-center py-1">
+                        {wq.item.name}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        {wq.quantity}
+                      </TableCell>
+                      <TableCell className="text-center py-1">
+                        <Button
+                          size={"icon"}
+                          onClick={() => setViewItemId(wq.item_id)}
+                        >
+                          <Eye />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </DialogContent>
       )}
     </Dialog>

@@ -30,7 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAllItems } from "@/hooks/items";
-import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
+import { viewItemAtom, viewItemIDAtom } from "@/store/Items";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -48,20 +48,26 @@ import DeleteItemOrder from "./DeleteItemOrder";
 import RecieveItemOrder from "./ReceiveItemOrder";
 import CreditWarehouseQuantity from "../../inputs/CreditWarehouseQuantity";
 import { ItemStoreQuantity } from "../ItemCard";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ItemOrders = ({
   children,
-  item_id,
-  item_orders,
 }: {
   children: React.ReactNode;
-  item_id: string;
-  item_orders: viewItemType["item_orders"];
 }) => {
   const [open, setOpen] = React.useState(false);
   const [viewItem, setViewItem] = useRecoilState(viewItemAtom);
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
   const { refetchItems } = useAllItems();
+
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: (viewItem?.item_orders ?? []).length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 34,
+    overscan: 2,
+  });
 
   const CreateItemOrderForm = () => {
     const [open2, setOpen2] = React.useState(false);
@@ -69,7 +75,7 @@ const ItemOrders = ({
       resolver: zodResolver(createItemOrderType),
       reValidateMode: "onChange",
       defaultValues: {
-        item_id,
+        item_id: viewItem?.id ?? '',
         vendor_name: "",
         ordered_quantity: 0,
         received_quantity: 0,
@@ -79,14 +85,19 @@ const ItemOrders = ({
     });
 
     async function onSubmit(values: z.infer<typeof createItemOrderType>) {
-      const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
-      if(total_quantity !== received_quantity) {
+      const total_quantity = (warehouse_quantities ?? []).reduce(
+        (acc, curr) => acc + curr.quantity,
+        0
+      );
+      if (total_quantity !== received_quantity) {
         form.setError("warehouse_quantities", {
           type: "custom",
-          message: "Received quantity must be equal to the total quantity in the warehouse."
+          message:
+            "Received quantity must be equal to the total quantity in the warehouse.",
         });
         return;
-      }      const res = await request.post("/inventory/createItemOrder", values);
+      }
+      const res = await request.post("/inventory/createItemOrder", values);
       if (res.status == 200) {
         setOpen2(false);
         setOpen(false);
@@ -96,31 +107,37 @@ const ItemOrders = ({
       }
     }
 
-    const [received_quantity, warehouse_quantities] = form.watch(["received_quantity", "warehouse_quantities"]);
+    const [received_quantity, warehouse_quantities] = form.watch([
+      "received_quantity",
+      "warehouse_quantities",
+    ]);
 
     React.useEffect(() => {
-      if(!form.getValues("receive_date") && received_quantity) {
+      if (!form.getValues("receive_date") && received_quantity) {
         // @ts-expect-error
-        form.setValue('receive_date', new Date().toISOString());
+        form.setValue("receive_date", new Date().toISOString());
       }
-    }, [received_quantity])
+    }, [received_quantity]);
 
     React.useEffect(() => {
-      if((received_quantity ?? 0) > 0){
-        const total_quantity = (warehouse_quantities ?? []).reduce((acc, curr) => acc + curr.quantity, 0);
-        if(total_quantity !== received_quantity) {
+      if ((received_quantity ?? 0) > 0) {
+        const total_quantity = (warehouse_quantities ?? []).reduce(
+          (acc, curr) => acc + curr.quantity,
+          0
+        );
+        if (total_quantity !== received_quantity) {
           form.setError("warehouse_quantities", {
             type: "custom",
-            message: "Received quantity must be equal to the total quantity in the warehouse."
-          })
+            message:
+              "Received quantity must be equal to the total quantity in the warehouse.",
+          });
         } else {
           form.clearErrors("warehouse_quantities");
         }
       } else {
         form.clearErrors("warehouse_quantities");
-        
       }
-    }, [received_quantity, warehouse_quantities])
+    }, [received_quantity, warehouse_quantities]);
 
     return (
       <Dialog open={open2} onOpenChange={setOpen2}>
@@ -240,11 +257,13 @@ const ItemOrders = ({
                       <FormLabel>Warehouse Quantities</FormLabel>
                       <FormControl>
                         <CreditWarehouseQuantity
-                          totalQuantity={form.getValues("received_quantity") ?? 0}
+                          totalQuantity={
+                            form.getValues("received_quantity") ?? 0
+                          }
                           currentQuantity={viewItem?.warehouse_quantities ?? []}
                           disabled={form.getValues("received_quantity") == 0}
                           onChange={field.onChange}
-                          />
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -271,101 +290,114 @@ const ItemOrders = ({
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
         <CreateItemOrderForm />
-        <Table>
-          <TableCaption>A list of item orders.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center">Vendor Name</TableHead>
-              <TableHead className="text-center">Order Quantity</TableHead>
-              <TableHead className="text-center">Order Date</TableHead>
-              <TableHead className="text-center">Receive Quantity</TableHead>
-              <TableHead className="text-center">Receive Date</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {item_orders.map((io) => {
-              return (
-                <TableRow key={io.id}>
-                  <TableCell className="text-center">
-                    {io.vendor_name == "" ? "--" : io.vendor_name}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {io.ordered_quantity}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {parseDateToString(io.order_date)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {io.received_quantity ? (
-                      <ItemStoreQuantity
-                        warehouseQuantities={io.i_o_w_q.map(
-                          (iowq) => {
-                            const foundWarehouseQuantity =
-                              viewItem?.warehouse_quantities.find(
-                                (wq) => wq.id == iowq.warehouse_quantity_id
-                              );
-                            if (foundWarehouseQuantity) {
-                              return {
-                                id: iowq.warehouse_quantity_id,
-                                warehouse: foundWarehouseQuantity.warehouse,
-                                quantity: iowq.quantity,
-                              };
-                            } else {
-                              return {
-                                id: iowq.warehouse_quantity_id,
-                                warehouse: {
-                                  name: "--",
-                                },
-                                quantity: iowq.quantity,
-                              };
-                            }
-                          }
+        <div className="max-h-96 overflow-y-auto hide-scroll" ref={parentRef}>
+          <Table style={{ height: `${virtualizer.getTotalSize()}px` }}>
+            <TableCaption>A list of item orders.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Vendor Name</TableHead>
+                <TableHead className="text-center">Order Quantity</TableHead>
+                <TableHead className="text-center">Order Date</TableHead>
+                <TableHead className="text-center">Receive Quantity</TableHead>
+                <TableHead className="text-center">Receive Date</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {viewItem &&
+                (viewItem.item_orders ?? []).length > 0 &&
+                virtualizer.getVirtualItems().map((virtualRow, index) => {
+                  const io = viewItem.item_orders[virtualRow.index];
+                  return (
+                    <TableRow
+                      key={io.id}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
+                      }}
+                    >
+                      <TableCell className="text-center">
+                        {io.vendor_name == "" ? "--" : io.vendor_name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {io.ordered_quantity}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {parseDateToString(io.order_date)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {io.received_quantity ? (
+                          <ItemStoreQuantity
+                            warehouseQuantities={io.i_o_w_q.map((iowq) => {
+                              const foundWarehouseQuantity =
+                                viewItem?.warehouse_quantities.find(
+                                  (wq) => wq.id == iowq.warehouse_quantity_id
+                                );
+                              if (foundWarehouseQuantity) {
+                                return {
+                                  id: iowq.warehouse_quantity_id,
+                                  warehouse: foundWarehouseQuantity.warehouse,
+                                  quantity: iowq.quantity,
+                                };
+                              } else {
+                                return {
+                                  id: iowq.warehouse_quantity_id,
+                                  warehouse: {
+                                    name: "--",
+                                  },
+                                  quantity: iowq.quantity,
+                                };
+                              }
+                            })}
+                          >
+                            <span className="border p-2 rounded-md cursor-pointer">
+                              {io.received_quantity}
+                            </span>
+                          </ItemStoreQuantity>
+                        ) : (
+                          "--"
                         )}
-                      >
-                        <span className="border p-2 rounded-md cursor-pointer">
-                          {io.received_quantity}
-                        </span>
-                      </ItemStoreQuantity>
-                    ) : (
-                      "--"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {parseDateToString(io.receive_date)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Popover>
-                      <PopoverTrigger>
-                        <EllipsisVertical className="border rounded-md p-0.5 aspect-square" />
-                      </PopoverTrigger>
-                      <PopoverContent className="flex space-x-2">
-                        <EditItemOrder itemOrder={io}>
-                          <Button variant={"outline"} className="gap-2">
-                            <Pencil className="w-4 h-4" />
-                            Edit Item Order
-                          </Button>
-                        </EditItemOrder>
-                        <RecieveItemOrder itemOrder={io}>
-                          <Button disabled={(io.received_quantity ?? 0) > 0} variant={"outline"} className="gap-2">
-                            <CreditCard className="w-4 h-4" />
-                            Receive Item Order
-                          </Button>
-                        </RecieveItemOrder>
-                        <DeleteItemOrder id={io.id}>
-                          <Button variant={"outline"} className="gap-2">
-                            <Trash2 className="w-4 h-4" />
-                            Delete Item Order
-                          </Button>
-                        </DeleteItemOrder>
-                      </PopoverContent>
-                    </Popover>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {parseDateToString(io.receive_date)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Popover>
+                          <PopoverTrigger>
+                            <EllipsisVertical className="border rounded-md p-0.5 aspect-square" />
+                          </PopoverTrigger>
+                          <PopoverContent className="flex space-x-2">
+                            <EditItemOrder itemOrder={io}>
+                              <Button variant={"outline"} className="gap-2">
+                                <Pencil className="w-4 h-4" />
+                                Edit Item Order
+                              </Button>
+                            </EditItemOrder>
+                            <RecieveItemOrder itemOrder={io}>
+                              <Button
+                                disabled={(io.received_quantity ?? 0) > 0}
+                                variant={"outline"}
+                                className="gap-2"
+                              >
+                                <CreditCard className="w-4 h-4" />
+                                Receive Item Order
+                              </Button>
+                            </RecieveItemOrder>
+                            <DeleteItemOrder id={io.id}>
+                              <Button variant={"outline"} className="gap-2">
+                                <Trash2 className="w-4 h-4" />
+                                Delete Item Order
+                              </Button>
+                            </DeleteItemOrder>
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </div>
       </DialogContent>
     </Dialog>
   );
