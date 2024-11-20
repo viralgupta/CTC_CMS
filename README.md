@@ -1,7 +1,6 @@
 
 # TODO
 
-- add option to store items in different warehouse
 - convert maked tables to composite primary key
 
 - add scroll pagination on table
