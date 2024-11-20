@@ -5,15 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1732028302953,
-      "tag": "0000_init-schema",
+      "when": 1732094782728,
+      "tag": "0000_init",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1732028329847,
-      "tag": "0001_add-customer-tov-trigger",
+      "when": 1732094816016,
+      "tag": "0001_customer-tov-trigger",
       "breakpoints": true
     }
   ]

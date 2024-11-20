@@ -1,9 +1,10 @@
 import tabAtom from "@/store/tabs";
 import { useSession } from "next-auth/react";
 import React from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { Button } from "./ui/button";
 import { Siren } from "lucide-react";
+import { WindowHeightAtom } from "@/store/size";
 
 const Body = ({ children }: { children: React.ReactNode }) => {
   const availableTabs = [
@@ -21,6 +22,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
 
   const { status } = useSession();
   const [tab, setTabs] = useRecoilState(tabAtom);
+  const height = useRecoilValue(WindowHeightAtom);
 
   return (
     <div className="fixed flex w-full h-full">
@@ -55,9 +57,13 @@ const Body = ({ children }: { children: React.ReactNode }) => {
           Emergency
         </Button>
       </div>
-      <div className="w-5/6 h-full overflow-x-hidden overflow-y-auto">
+      <div className={`w-5/6 p-10 pb-0 overflow-x-hidden overflow-y-scroll hide-scroll`}
+        style={{
+          height: typeof height === "number" && height > 0 ? height : "83.3333333%"
+        }}
+      >
         {import.meta.env.DEV || status == "authenticated" ? (
-          <div className="p-10 pb-0 w-full h-full">{children}</div>
+          children
         ) : (
           <div className="flex items-center justify-center h-full font-mono uppercase text-3xl italic">
             Not Authenticated

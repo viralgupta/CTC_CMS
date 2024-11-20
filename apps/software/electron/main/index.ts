@@ -57,8 +57,8 @@ async function createWindow() {
   mainWin = new BrowserWindow({
     title: "Main window",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
-    minHeight: 693,
-    minWidth: 780,
+    minHeight: 695,
+    minWidth: 1092,
     autoHideMenuBar: true,
     webPreferences: {
       preload,
@@ -78,6 +78,18 @@ async function createWindow() {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+
+  mainWin.on("resized", () => {
+    mainWin?.webContents.send("resize-body", (mainWin?.getSize()[1] ?? 0));
+  })
+
+  mainWin.on("maximize", () => {
+    mainWin?.webContents.send("resize-body", (mainWin?.getSize()[1] ?? 0));
+  })
+
+  mainWin.on("unmaximize", () => {
+    mainWin?.webContents.send("resize-body", (mainWin?.getSize()[1] ?? 0));
+  })
 }
 
 app.whenReady().then(() => {
@@ -195,6 +207,10 @@ app.whenReady().then(() => {
     if (mainWin) {
       mainWin.webContents.send("whatsapp-connected");
     }
+  });
+
+  ipcMain.handle("window-height", async () => {
+    return mainWin?.getSize()[1] ?? 0;
   });
 
   ipcMain.handle("get-whatsapp-info", async (_event, data) => {

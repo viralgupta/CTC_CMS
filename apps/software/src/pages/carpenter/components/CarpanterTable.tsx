@@ -16,12 +16,6 @@ interface DataTableProps {
   onChange?: (cusId: string) => void;
 }
 
-declare module "@tanstack/react-table" {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>;
-  }
-}
-
 function CarpenterTable({
   CompKey: key,
   data,

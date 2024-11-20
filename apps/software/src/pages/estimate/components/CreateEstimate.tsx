@@ -38,7 +38,7 @@ const CreateEstimate = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano">
+        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano flex-none">
           Create New Estimate
         </Button>
       </DialogTrigger>
@@ -94,7 +94,7 @@ const CreateEstimateForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4 w-1/2 h-full flex flex-col items-end justify-between"
         >
-          <div className="w-full space--4">
+          <div className="w-full space-y-4">
             <FormField
               control={form.control}
               name="customer_id"

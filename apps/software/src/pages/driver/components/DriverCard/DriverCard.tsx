@@ -12,7 +12,7 @@ import EditDriver from "./EditDriver";
 import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 
 export default function DriverCard({
   driver,

@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import SearchAddress from "@/pages/address/components/SearchAddress";
+import Address from "@/pages/address/page";
 import { Input } from "@/components/ui/input";
 import { useAllAddresses } from "@/hooks/addresses";
 
@@ -42,7 +42,7 @@ const SearchAddressInput = ({
           <DialogTitle></DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
-        <SearchAddress
+        <Address
           onChange={
             onChange
               ? (v) => {

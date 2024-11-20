@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS "address" (
 	"a_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"customer_id" uuid NOT NULL,
+	"a_customer_id" uuid NOT NULL,
 	"a_house_number" varchar(15) NOT NULL,
 	"a_area_id" uuid NOT NULL,
-	"address" varchar(255) NOT NULL,
+	"a_address" varchar(255) NOT NULL,
 	"a_city" varchar(30) NOT NULL,
 	"a_state" varchar(20) NOT NULL,
 	"a_isPrimary" boolean DEFAULT false,
@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS "warehouse_quantity" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "address" ADD CONSTRAINT "address_customer_id_customer_c_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."customer"("c_id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "address" ADD CONSTRAINT "address_a_customer_id_customer_c_id_fk" FOREIGN KEY ("a_customer_id") REFERENCES "public"."customer"("c_id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

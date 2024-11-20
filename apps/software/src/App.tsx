@@ -25,6 +25,7 @@ import ViewEstimate from "./pages/estimate/components/ViewEstimate"
 import ViewPrintOptions from "./components/ViewPrintOption"
 import ViewOrderMovement from "./pages/order/OrderMovement/OrderMovement"
 import ViewAllLogs from "./components/log/ViewAllLogs"
+import React from "react"
 
 function App() {
   const tab = useRecoilValue(tabAtom);
@@ -71,9 +72,11 @@ function App() {
       <ViewPrintOptions/>
       <ViewOrderMovement/>
       <ViewAllLogs/>
-      <Body>
-          {renderTabContent()}
-      </Body>
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <Body>
+            {renderTabContent()}
+        </Body>
+      </React.Suspense>
     </div>
   )
 }

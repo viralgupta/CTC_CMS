@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import React from "react";
 import ItemOrders from "./ItemOrders/ItemOrder";
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 import EditItem from "./EditItem";
 import DeleteItem from "./DeleteItem";
 

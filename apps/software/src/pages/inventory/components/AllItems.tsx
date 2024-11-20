@@ -1,4 +1,4 @@
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 import ItemTable from "./ItemTable";
 import RefetchButton from "@/components/RefetchButton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,8 +8,8 @@ const AllItems = () => {
   const { items, loading, refetchItems } = useAllItems();
 
   return (
-    <div className="mt-4">
-      <div className="text-3xl font-cubano mb-4 flex justify-between items-center">
+    <div className="flex-1 flex flex-col">
+      <div className="text-3xl font-cubano mb-4 flex justify-between items-center flex-none mt-4">
         <div>All Items</div>
         <div className="flex gap-2">
           <RefetchButton
@@ -21,7 +21,7 @@ const AllItems = () => {
         </div>
       </div>
       {loading ? (
-        <Skeleton className="w-full h-48" />
+        <Skeleton className="w-full flex-1" />
       ) : (
         <ItemTable CompKey="AllItemsTable" data={items} />
       )}

@@ -91,7 +91,7 @@ const SearchDriver = ({
             />
           </div>
         </div>
-        <div className="w-full max-h-96 overflow-y-auto">
+        <div className="w-full h-96 overflow-y-auto">
           {loading ? (
             <Skeleton className="w-full h-96" />
           ) : (

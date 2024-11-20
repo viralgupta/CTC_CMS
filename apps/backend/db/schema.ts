@@ -65,7 +65,7 @@ export const address = pgTable("address", {
   address_area_id: uuid("a_area_id")
     .references(() => address_area.id)
     .notNull(),
-  address: varchar("address", { length: 255 }).notNull(),
+  address: varchar("a_address", { length: 255 }).notNull(),
   city: varchar("a_city", { length: 30 }).notNull(),
   state: varchar("a_state", { length: 20 }).notNull(),
   isPrimary: boolean("a_isPrimary").default(false),

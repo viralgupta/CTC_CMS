@@ -48,7 +48,7 @@ const SelectEstimateItems = ({
     <Dialog>
       <DialogTrigger className="w-full">
         <Input
-          className="w-full"
+          className="w-full h-12"
           placeholder={
             value && value.length > 0
               ? `${value.length} items selected...`

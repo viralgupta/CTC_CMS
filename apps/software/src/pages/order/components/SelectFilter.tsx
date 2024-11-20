@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import RefetchButton from "@/components/RefetchButton";
 import { allOrdersType } from "@/store/order";
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 
 const SelectFilter = () => {
   const { filter, setFilter, refetchOrders } = useAllOrders();
@@ -38,7 +38,7 @@ const SelectFilter = () => {
   };
 
   return (
-    <div className="w-full mb-4 space-y-4">
+    <div className="w-full mb-4 space-y-4 flex-none">
       <div className="flex">
         <Button
           variant={"outline"}

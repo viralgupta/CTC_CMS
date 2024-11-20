@@ -127,29 +127,28 @@ function OrdersTable() {
   useEffect(() => {
     setLoading(orderLoadingMap.get(filter))
   }, [filter, orderLoadingMap.get(filter)])
-  
 
+  if(loading) return <Skeleton className="w-full flex-1"/>
+  
   return (
-    <div className="w-full h-full">
-      {!loading ? <DataTable
-        data={orders[filter]}
-        key={filter}
-        columns={columns}
-        columnFilters={[]}
-        defaultColumn={{
-          meta: {
-            headerStyle: {
-              textAlign: "center",
-            },
-            align: "center",
+    <DataTable
+      data={orders[filter]}
+      key={filter}
+      columns={columns}
+      columnFilters={false}
+      defaultColumn={{
+        meta: {
+          headerStyle: {
+            textAlign: "center",
           },
-        }}
-        columnVisibility={{
-          id: false,
-        }}
-        message="No orders found for particular filter!"
-      /> : <Skeleton className="w-full h-96"/>}
-    </div>
+          align: "center",
+        },
+      }}
+      columnVisibility={{
+        id: false,
+      }}
+      message="No orders found for particular filter!"
+    />
   );
 }
 

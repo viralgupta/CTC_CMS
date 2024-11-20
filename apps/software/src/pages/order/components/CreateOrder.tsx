@@ -49,7 +49,7 @@ const CreateOrder = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano">
+        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano flex-none">
           Create New Order
         </Button>
       </DialogTrigger>

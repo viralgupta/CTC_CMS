@@ -1,7 +1,6 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  type FilterFn,
 } from "@tanstack/react-table";
 import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
@@ -13,12 +12,6 @@ interface DataTableProps {
   data: DriverType[];
   columnFilters?: ColumnFiltersState;
   onChange?: (cusId: string) => void;
-}
-
-declare module "@tanstack/react-table" {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>;
-  }
 }
 
 function DriverTable({

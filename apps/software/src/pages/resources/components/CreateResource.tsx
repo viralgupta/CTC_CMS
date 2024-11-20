@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAllResources } from "@/hooks/resources";
 import React from "react";
 import FileUpload from "@/components/Inputs/FileUpload";
 import axios from "axios";
@@ -34,7 +33,7 @@ const CreateResource = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano">
+        <Button variant={"outline"} className="w-full mb-4 text-xl font-cubano flex-none">
           Create New Resource +
         </Button>
       </DialogTrigger>

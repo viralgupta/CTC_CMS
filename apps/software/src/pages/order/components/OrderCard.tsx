@@ -40,7 +40,7 @@ import EditOrder from "./EditOrder";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import CreateOrderMovement from "../OrderMovement/CreateMovement";
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 
 const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
   if (!order) return <Skeleton className="w-full h-96" />;

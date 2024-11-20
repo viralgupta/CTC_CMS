@@ -37,6 +37,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.20.5",
+    "@tanstack/react-virtual": "^3.10.9",
     "@vis.gl/react-google-maps": "^1.3.0",
     "axios": "^1.7.3",
     "class-variance-authority": "^0.7.0",

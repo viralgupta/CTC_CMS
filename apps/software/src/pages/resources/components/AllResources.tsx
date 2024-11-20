@@ -19,8 +19,8 @@ const AllResources = () => {
   const setViewResourceId = useSetRecoilState(viewResourceIdAtom);
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between text-3xl font-cubano mb-2">
+    <div className="w-full flex-1 flex flex-col">
+      <div className="flex justify-between text-3xl font-cubano mb-2 flex-none">
         All Resources
         <RefetchButton
           description="Refetch All Resources"
@@ -29,9 +29,9 @@ const AllResources = () => {
         />
       </div>
       {loading ? (
-        <Skeleton className="w-full h-svh" />
+        <Skeleton className="w-full flex-1" />
       ) : (
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
           {resources.map((resource) => {
             return (
               <Card

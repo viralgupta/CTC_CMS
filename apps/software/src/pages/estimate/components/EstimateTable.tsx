@@ -11,6 +11,10 @@ function EstimateTable() {
   const { estimates , loading} = useAllEstimates();
   const setViewEstimateIdAtom = useSetRecoilState(viewEstimateIdAtom);
 
+  if (loading) {
+    return <Skeleton className="w-full flex-1"/>;
+  }
+
   const columns: ColumnDef<EstimateType>[] = [
     {
       id: "customer_name",
@@ -56,26 +60,24 @@ function EstimateTable() {
   ];
 
   return (
-    <div className="w-full h-full">
-      {!loading ? <DataTable
-        data={estimates}
-        key={"AllEsimtateTable"}
-        columns={columns}
-        columnFilters={[]}
-        defaultColumn={{
-          meta: {
-            headerStyle: {
-              textAlign: "center",
-            },
-            align: "center",
+    <DataTable
+      data={estimates}
+      key={"AllEsimtateTable"}
+      columns={columns}
+      columnFilters={false}
+      defaultColumn={{
+        meta: {
+          headerStyle: {
+            textAlign: "center",
           },
-        }}
-        columnVisibility={{
-          id: false,
-        }}
-        message="No estimates found!"
-      /> : <Skeleton className="w-full h-svh"/>}
-    </div>
+          align: "center",
+        },
+      }}
+      columnVisibility={{
+        id: false,
+      }}
+      message="No estimates found!"
+    />
   );
 }
 

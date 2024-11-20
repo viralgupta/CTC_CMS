@@ -31,7 +31,7 @@ import { settleBalanceType } from "@type/api/architect";
 import ViewAllPhoneNumbers from "@/components/Inputs/PhoneInput/ViewAllPhoneNo";
 import DeleteAlert from "@/components/DeleteAlert";
 import SettleBalanceForm from "@/components/Inputs/SettleBalanceForm";
-import LogButton from "@/components/log/logButton";
+import LogButton from "@/components/log/LogButton";
 
 export default function CarpenterCard({
   carpenter,

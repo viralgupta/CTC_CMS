@@ -87,7 +87,7 @@ const SearchItem = ({
           </div>
           <SelectCategory className="w-1/2" onValueChange={setCategory} />
         </div>
-        <div className="w-full max-h-96 overflow-y-auto">
+        <div className="w-full h-96 overflow-y-auto">
           {loading ? (
             <Skeleton className="w-full h-96" />
           ) : (

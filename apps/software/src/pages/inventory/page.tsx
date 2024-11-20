@@ -6,8 +6,8 @@ import Warehouse from './components/Warehouse/Warehouse'
 
 const Inventory = () => {
   return (
-    <div className='w-full h-full'>
-      <div className='flex h-12 justify-between space-x-4'>
+    <div className='w-full h-full flex flex-col'>
+      <div className='flex h-12 justify-between space-x-4 flex-none'>
         <CreateItem>
           <div className='border border-border rounded-md flex items-center justify-center text-2xl font-sofiapro cursor-pointer hover:border-accent-foreground duration-200 w-full'>
             Create New Item
@@ -16,12 +16,8 @@ const Inventory = () => {
         <SearchItem/>
       </div>
       <Warehouse/>
-      <div className='w-full h-full space-y-8'>
-        <LowStockItems/>
-        <AllItems/>
-        <div>&nbsp;</div>
-        <div>&nbsp;</div>
-      </div>
+      <LowStockItems/>
+      <AllItems/>
     </div>
   )
 }
