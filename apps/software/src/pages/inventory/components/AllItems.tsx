@@ -8,7 +8,7 @@ const AllItems = () => {
   const { items, loading, refetchItems } = useAllItems();
 
   return (
-    <div className="flex-1 flex flex-col">
+    <>
       <div className="text-3xl font-cubano mb-4 flex justify-between items-center flex-none mt-4">
         <div>All Items</div>
         <div className="flex gap-2">
@@ -25,7 +25,7 @@ const AllItems = () => {
       ) : (
         <ItemTable CompKey="AllItemsTable" data={items} />
       )}
-    </div>
+    </>
   );
 };
 

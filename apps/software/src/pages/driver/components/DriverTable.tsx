@@ -24,11 +24,6 @@ function DriverTable({
 
   const columns: ColumnDef<DriverType>[] = [
     {
-      id: "id",
-      accessorKey: "id",
-      header: "ID",
-    },
-    {
       id: "name",
       accessorKey: "name",
       header: "Name",
@@ -61,9 +56,6 @@ function DriverTable({
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const driverId = row.original.id;
         return (
@@ -97,11 +89,7 @@ function DriverTable({
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No Driver Found!"
     />

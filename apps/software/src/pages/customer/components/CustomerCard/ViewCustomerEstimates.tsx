@@ -1,15 +1,6 @@
 import { viewCustomerAtom, viewCustomerType } from "@/store/customer";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -22,80 +13,80 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import React from "react";
 import { viewEstimateIdAtom } from "@/store/estimates";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import DataTable from "@/components/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
 
 const ViewCustomerEstimates = ({ children }: { children: React.ReactNode }) => {
   const viewCustomer = useRecoilValue(viewCustomerAtom);
   const setViewEstimateId = useSetRecoilState(viewEstimateIdAtom);
-  const parentRef = React.useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: (viewCustomer?.estimates ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
-  });
 
   if (!viewCustomer) return <Skeleton className="w-full h-48" />;
+
+  const columns: ColumnDef<viewCustomerType["estimates"][number]>[] = [
+    {
+      id: "total_estimate_amount",
+      accessorKey: "total_estimate_amount",
+      header: "Total Amount",
+    },
+    {
+      id: "created_at",
+      accessorKey: "created_at",
+      header: "Date Created",
+      cell: ({ row }) => {
+        const createdAt = row.original.created_at;
+        return parseDateToString(createdAt);
+      }
+    },
+    {
+      id: "updated_at",
+      accessorKey: "updated_at",
+      header: "Date Updated",
+      cell: ({ row }) => {
+        const updatedAt = row.original.updated_at;
+        return parseDateToString(updatedAt);
+      }
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const estimateId = row.original.id;
+        return (
+          <Button
+            size={"sm"}
+            onClick={() => {
+              setViewEstimateId(estimateId);
+            }}
+          >
+            View Estimate
+          </Button>
+        );
+      }
+    },
+  ];
 
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent size="xl"
-        ref={parentRef}
-        className="max-h-96 overflow-y-auto hide-scroll"
-      >
-        <DialogHeader>
+      <DialogContent size="xl" className="max-h-96 overflow-y-auto hide-scroll flex flex-col">
+        <DialogHeader className="flex-none">
           <DialogTitle>Customer Estimates</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
-        <Table>
-          <TableCaption>A list of customer's recent estimates.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="">Total Amount</TableHead>
-              <TableHead className="">Create At</TableHead>
-              <TableHead className="">Updated At</TableHead>
-              <TableHead className="">View</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {viewCustomer.estimates &&
-              virtualizer.getVirtualItems().map((virtualRow, index) => {
-                const estimate = viewCustomer.estimates[virtualRow.index];
-                return (
-                  <TableRow key={estimate.id}
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${
-                        virtualRow.start - index * virtualRow.size
-                      }px)`,
-                    }}
-                  >
-                    <TableCell className="">
-                      {estimate.total_estimate_amount}
-                    </TableCell>
-                    <TableCell className="">
-                      {parseDateToString(estimate.created_at)}
-                    </TableCell>
-                    <TableCell className="">
-                      {parseDateToString(estimate.updated_at)}
-                    </TableCell>
-                    <TableCell className="">
-                      <Button
-                        size={"sm"}
-                        onClick={() => {
-                          setViewEstimateId(estimate.id);
-                        }}
-                      >
-                        View Estimate
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
+        <DataTable
+          data={viewCustomer.estimates}
+          key={"Customer Estimates"}
+          columns={columns}
+          columnFilters={false}
+          defaultColumn={{
+            meta: {
+              headerStyle: {
+                textAlign: "center",
+              },
+            },
+          }}
+          message="No Customers Estimates Found!"
+        />
       </DialogContent>
     </Dialog>
   );

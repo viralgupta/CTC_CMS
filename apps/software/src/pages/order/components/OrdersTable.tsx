@@ -1,17 +1,18 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
-import DataTable from "../../../components/DataTable";
 import { OrderRow, viewOrderIdAtom } from "@/store/order";
 import { parseDateToString } from "@/lib/utils";
 import { useAllOrders } from "@/hooks/orders";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
+import PaginationDataTable from "@/components/PaginationDataTable";
 
 function OrdersTable() {
   const setViewOrderIdAtom = useSetRecoilState(viewOrderIdAtom);
-  const { orders, filter, orderLoadingMap } = useAllOrders();
+  const { orders, filter, orderLoadingMap, fetchMoreOrders, orderHasNextPageMap } = useAllOrders();
   const [loading, setLoading] = useState(orderLoadingMap.get(filter));
+  const [hasNextPage, setHasNextPage] = useState(orderHasNextPageMap.get(filter));
 
   const columns: ColumnDef<OrderRow>[] = [
     {
@@ -39,21 +40,19 @@ function OrdersTable() {
       id: "priority",
       accessorKey: "priority",
       header: "Priority",
-      cell: ({ row }) => {
-        return (
-          <div
-            className={
-              row.original.priority == "High"
-                ? "text-red-500"
-                : row.original.priority == "Medium"
-                  ? "text-yellow-500"
-                  : "text-green-500"
-            }
-          >
-            {row.original.priority.toUpperCase()}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <span
+          className={
+            row.original.priority == "High"
+              ? "text-red-500"
+              : row.original.priority == "Medium"
+                ? "text-yellow-500"
+                : "text-green-500"
+          }
+        >
+          {row.original.priority.toUpperCase()}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -61,7 +60,7 @@ function OrdersTable() {
       header: "Delivery Status",
       cell: ({ row }) => {
         return (
-          <div
+          <span
             className={
               row.original.status == "Pending"
                 ? "text-red-500"
@@ -69,7 +68,7 @@ function OrdersTable() {
             }
           >
             {row.original.status.toUpperCase()}
-          </div>
+          </span>
         );
       },
     },
@@ -79,7 +78,7 @@ function OrdersTable() {
       header: "Payment Status",
       cell: ({ row }) => {
         return (
-          <div
+          <span
             className={
               row.original.payment_status == "UnPaid"
                 ? "text-red-500"
@@ -89,7 +88,7 @@ function OrdersTable() {
             }
           >
             {row.original.payment_status.toUpperCase()}
-          </div>
+          </span>
         );
       },
     },
@@ -103,9 +102,6 @@ function OrdersTable() {
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const orderId = row.original.id;
         return (
@@ -128,10 +124,14 @@ function OrdersTable() {
     setLoading(orderLoadingMap.get(filter))
   }, [filter, orderLoadingMap.get(filter)])
 
+  useEffect(() => {
+    setHasNextPage(orderHasNextPageMap.get(filter))
+  }, [filter, orderHasNextPageMap.get(filter)])
+
   if(loading) return <Skeleton className="w-full flex-1"/>
   
   return (
-    <DataTable
+    <PaginationDataTable
       data={orders[filter]}
       key={filter}
       columns={columns}
@@ -141,12 +141,14 @@ function OrdersTable() {
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
       }}
       columnVisibility={{
         id: false,
       }}
+      fetchNextPage={fetchMoreOrders}
+      hasNextPage={hasNextPage ?? false}
+      isFetchingNextPage={loading && orders[filter].length > 0 ? true : false}
       message="No orders found for particular filter!"
     />
   );

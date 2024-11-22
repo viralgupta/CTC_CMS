@@ -22,10 +22,6 @@ function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: Data
 
   const columns: ColumnDef<AddressType>[] = [
     {
-      id: "id",
-      accessorKey: "id",
-    },
-    {
       id: "customer_name",
       accessorFn: ( originalRow ) => {
         return originalRow.customer.name
@@ -66,9 +62,6 @@ function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: Data
     {
       id: "view_customer",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const customerId = row.original.customer.id;
         if (onChange) return null;
@@ -89,9 +82,6 @@ function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: Data
     {
       id: "view_address",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const addressId = row.original.id;
         return (
@@ -125,11 +115,7 @@ function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: Data
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No Address Found!"
     />

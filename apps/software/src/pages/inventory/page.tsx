@@ -1,6 +1,5 @@
 import CreateItem from './components/CreateItem'
 import SearchItem from './components/SearchItem'
-import LowStockItems from './components/LowStockItems'
 import AllItems from './components/AllItems'
 import Warehouse from './components/Warehouse/Warehouse'
 
@@ -16,7 +15,6 @@ const Inventory = () => {
         <SearchItem/>
       </div>
       <Warehouse/>
-      <LowStockItems/>
       <AllItems/>
     </div>
   )

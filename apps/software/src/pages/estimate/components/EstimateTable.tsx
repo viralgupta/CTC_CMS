@@ -38,9 +38,6 @@ function EstimateTable() {
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const estimateId = row.original.id;
         return (
@@ -70,11 +67,7 @@ function EstimateTable() {
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No estimates found!"
     />

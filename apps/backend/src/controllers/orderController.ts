@@ -1240,7 +1240,7 @@ const getAllOrders = async (req: Request, res: Response) => {
               break;
           }
         },
-        orderBy: (order, { desc }) => [desc(order.updated_at)],
+        orderBy: (order, { desc }) => [desc(order.id)],
         columns: {
           id: true,
           status: true,

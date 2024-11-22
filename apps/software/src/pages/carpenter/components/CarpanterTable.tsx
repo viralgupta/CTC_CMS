@@ -26,11 +26,6 @@ function CarpenterTable({
 
   const columns: ColumnDef<CarpenterType>[] = [
     {
-      id: "id",
-      accessorKey: "id",
-      header: "ID",
-    },
-    {
       id: "name",
       accessorKey: "name",
       header: "Name",
@@ -55,7 +50,7 @@ function CarpenterTable({
       header: "Balance",
       cell: ({ row }) => {
         return (
-          <div
+          <span
             className={
               parseBalanceToFloat(row.original.balance) < 0
                 ? "text-red-500"
@@ -63,16 +58,13 @@ function CarpenterTable({
             }
           >
             {row.original.balance}
-          </div>
+          </span>
         );
       },
     },
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const carpenterId = row.original.id;
         return (
@@ -106,11 +98,7 @@ function CarpenterTable({
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No Carpenter Found!"
     />

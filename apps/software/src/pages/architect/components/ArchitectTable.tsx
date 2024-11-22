@@ -26,11 +26,6 @@ function ArchitectTable({
 
   const columns: ColumnDef<ArchitectType>[] = [
     {
-      id: "id",
-      accessorKey: "id",
-      header: "ID",
-    },
-    {
       id: "name",
       accessorKey: "name",
       header: "Name",
@@ -55,7 +50,7 @@ function ArchitectTable({
       header: "Balance",
       cell: ({ row }) => {
         return (
-          <div
+          <span
             className={
               parseBalanceToFloat(row.original.balance) < 0
                 ? "text-red-500"
@@ -63,16 +58,14 @@ function ArchitectTable({
             }
           >
             {row.original.balance}
-          </div>
+          </span>
         );
       },
     },
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
+
       cell: ({ row }) => {
         const architectId = row.original.id;
         return (
@@ -106,11 +99,7 @@ function ArchitectTable({
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No Architect Found!"
     />

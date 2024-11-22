@@ -9,6 +9,7 @@ import { viewItemIDAtom, itemType } from "@/store/Items";
 import { Button } from "@/components/ui/button";
 import { useSetRecoilState } from "recoil";
 import DataTable from "@/components/DataTable";
+import React from "react";
 
 interface DataTableProps {
   CompKey: string;
@@ -19,13 +20,13 @@ interface DataTableProps {
 
 function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTableProps) {
   const setViewItemIDAtom = useSetRecoilState(viewItemIDAtom);
+  const [showLowQuantityItems, setShowLowQuantityItems] = React.useState(false)
+
+  const lowQuantityItems = React.useMemo(() => {
+    return data.filter((item) => item.quantity < item.min_quantity);
+  }, [data])
 
   const columns: ColumnDef<itemType>[] = [
-    {
-      id: "id",
-      accessorKey: "id",
-      header: "ID",
-    },
     {
       id: "category",
       accessorKey: "category",
@@ -39,7 +40,26 @@ function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTab
     {
       id: "quantity",
       accessorKey: "quantity",
-      header: "Quantity",
+      header: () => {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setShowLowQuantityItems((slq) => !slq)}
+                  className={`px-2 ${showLowQuantityItems ? "text-primary hover:text-primary" : ""}`}
+                  variant={"outline"}
+                >
+                  Quantity
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{showLowQuantityItems ? "Show All Items" : "Show Low Quantity Items"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
       cell: ({ row }) => {
         const lessQuantity = row.original.quantity < row.original.min_quantity;
         return (
@@ -59,11 +79,6 @@ function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTab
       },
     },
     {
-      id: "min_quantity",
-      accessorKey: "min_quantity",
-      header: "Min Quantity",
-    },
-    {
       id: "sale_rate",
       accessorKey: "sale_rate",
       header: "Rate",
@@ -76,9 +91,6 @@ function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTab
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const itemId = row.original.id;
         return (
@@ -103,20 +115,15 @@ function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTab
 
   return (
     <DataTable
-      data={data}
+      data={showLowQuantityItems ? lowQuantityItems : data}
       key={key}
       columns={columns}
       columnFilters={columnFilters}
-      columnVisibility={{
-        id: false,
-        min_quantity: false,
-      }}
       defaultColumn={{
         meta: {
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
       }}
       message="No Items Found"

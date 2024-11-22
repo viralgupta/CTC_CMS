@@ -7,7 +7,7 @@ import LogButton from "@/components/log/LogButton";
 const AllCarpenterTable = () => {
   const { carpenters, loading, refetchCarpenters} = useAllCarpenter();
   return (
-    <div className="flex-1 flex flex-col">
+    <>
       <div className="text-3xl font-cubano mb-4 flex items-center justify-between mt-5 flex-none">
         <span>All Carpenters</span>
         <div className="flex gap-2">
@@ -24,7 +24,7 @@ const AllCarpenterTable = () => {
       ) : (
         <CarpenterTable CompKey="AllCarpenterTable" data={carpenters} />
       )}
-    </div>
+    </>
   );
 }
 

@@ -14,32 +14,34 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type FilterFn,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { rankItem } from "@tanstack/match-sorter-utils";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer, Virtualizer } from "@tanstack/react-virtual";
 import React from "react";
-import { cn } from "@/lib/utils";
 
 type DataTableProps = {
   message: string;
   data: any[];
   columns: ColumnDef<any, any>[];
   columnFilters: ColumnFiltersState | false;
+  columnVisibility?: VisibilityState | undefined;
   defaultColumn?: Partial<ColumnDef<any, unknown>> | undefined;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
 };
 
-declare module "@tanstack/react-table" {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>;
-  }
-}
-
-const DataTable = ({
+const PaginationDataTable = ({
   message,
   data,
   columns,
   columnFilters,
   defaultColumn,
+  columnVisibility,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
 }: DataTableProps) => {
   const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
     const itemRank = rankItem(row.getValue(columnId), value);
@@ -57,6 +59,7 @@ const DataTable = ({
       fuzzy: fuzzyFilter,
     },
     state: {
+      columnVisibility,
       columnFilters: columnFilters ? columnFilters : undefined,
     },
     getFilteredRowModel: columnFilters ? getFilteredRowModel() : undefined,
@@ -68,14 +71,37 @@ const DataTable = ({
   const { rows } = table.getRowModel();
 
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: hasNextPage ? rows.length + 1 : rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 60,
     overscan: 2,
   });
 
+  React.useEffect(() => {
+    const [lastItem] = [...virtualizer.getVirtualItems()].reverse();
+
+    if (!lastItem) {
+      return;
+    }
+
+    if (
+      lastItem.index >= rows.length - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    hasNextPage,
+    fetchNextPage,
+    rows.length,
+    isFetchingNextPage,
+    virtualizer.getVirtualItems(),
+  ]);
+
+
   return (
-    <div className="rounded-md border h-full overflow-auto hide-scroll bg-green" ref={parentRef}>
+    <div className="rounded-md border flex-1 overflow-y-scroll hide-scroll" ref={parentRef}>
       <Table className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -86,8 +112,7 @@ const DataTable = ({
                   style={{
                     width: `${header.getSize()}%`,
                     ...(header.column.columnDef.meta as any)?.headerStyle,
-                  }}
-                >
+                  }}                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -99,61 +124,56 @@ const DataTable = ({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody
-          className="w-full relative"
-          style={{ height: `${virtualizer.getTotalSize()}px` }}
+        <TableBody style={{ height: `${virtualizer.getTotalSize()}px` }} className="w-full relative"
         >
           {table.getRowModel().rows?.length ? (
             virtualizer.getVirtualItems().map((virtualRow) => {
+              const isLoaderRow = virtualRow.index > rows.length - 1;
               const row = rows[virtualRow.index];
               return (
                 <TableRow
                   className="absolute w-full flex"
-                  key={row.id}
+                  key={row?.id ?? "loader"}
                   style={{ top: `${virtualRow.start}px` }}
                 >
-                  {row.getVisibleCells().map((cell) => {
-                    const totalRowSize = row
-                      .getAllCells()
-                      .reduce((acc, cell) => {
-                        if (cell.column.getIsVisible()) {
-                          return acc + cell.column.getSize();
-                        } else {
-                          return acc;
-                        }
-                      }, 0);
-                    const cellSize =
-                      (cell.column.getSize() * 100) / totalRowSize;
-                    return (
-                      <div
-                        key={cell.id}
-                        className={
-                          ((cell.column.columnDef.meta as any)?.className ??
-                            "") == ""
-                            ? "py-0 flex items-center justify-center"
-                            : cn(
-                                "py-0 flex items-center justify-center",
-                                (cell.column.columnDef.meta as any)?.className
-                              )
-                        }
-                        style={{
-                          height: `${virtualRow.size - 1}px`,
-                          width: `${cellSize}%`,
-                        }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </div>
-                    );
-                  })}
+                  {!isLoaderRow ? (
+                    row.getVisibleCells().map((cell) => {
+                      const totalRowSize = row.getAllCells()
+                        .reduce((acc, cell) => {
+                          if (cell.column.getIsVisible()) {
+                            return acc + cell.column.getSize();
+                          } else {
+                            return acc;
+                          }
+                        }, 0);
+                      const cellSize = (cell.column.getSize() * 100) / totalRowSize;
+                      return (
+                        <div
+                          key={cell.id}
+                          className="py-0 flex items-center justify-center"
+                          style={{
+                            height: `${virtualRow.size - 1}px`,
+                            width: `${cellSize}%`,
+                          }}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <TableCell colSpan={columns.length} className="text-center w-full animate-pulse">
+                      {hasNextPage ? "Loading..." : "No more data available!"}
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="text-center align-middle">
                 {message}
               </TableCell>
             </TableRow>
@@ -164,4 +184,4 @@ const DataTable = ({
   );
 };
 
-export default DataTable;
+export default PaginationDataTable;

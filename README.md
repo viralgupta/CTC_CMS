@@ -1,10 +1,9 @@
 
 # TODO
 
+- add scroll pagination on table logs and estimates
 - convert maked tables to composite primary key
 
-- add scroll pagination on table
-- use Tanstack Virtual for rendering big tables
 - create rds in stack itself
 - add aws script to lock the db
 - add option to upload the signed recipt

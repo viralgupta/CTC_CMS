@@ -86,7 +86,13 @@ async function main() {
       priority: "Low",
       balance: "0.00",
       total_order_value: "0.00"
-    }
+    },
+    ...Array.from({ length: 100 }).map((_, i) => ({
+      name: "Customer " + (i + 4),
+      priority: "Low" as const,
+      balance: "0.00",
+      total_order_value: "0.00"
+    })),
   ]).returning({
     id: customer.id
   })
@@ -385,6 +391,15 @@ async function main() {
       quantity: 40,
     },
   ])
+  
+  const statuses = ["Pending", "Delivered"] as const;
+  const priorities = ["High", "Medium", "Low"] as const;
+  const paymentStatuses = ["UnPaid", "Partial", "Paid"] as const;
+
+  // Function to pick a random value from an array
+  function getRandomValue<T>(array: readonly T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
+  }
 
   // insert orders
   const orderIds = await db.insert(order).values([
@@ -416,6 +431,14 @@ async function main() {
       amount_paid: "5000.00",
       carpanter_commision: "100.00",
     },
+    ...Array.from({ length: 100 }).map(() => ({
+      status: getRandomValue(statuses),
+      priority: getRandomValue(priorities),
+      payment_status: getRandomValue(paymentStatuses),
+      total_order_amount: "0.00",
+      discount: "0.00",
+      amount_paid: "0.00",
+    })),
   ]).returning({
     id: order.id
   });

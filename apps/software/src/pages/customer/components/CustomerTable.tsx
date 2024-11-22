@@ -25,11 +25,6 @@ function CustomerTable({
 
   const columns: ColumnDef<CustomerType>[] = [
     {
-      id: "id",
-      accessorKey: "id",
-      header: "ID",
-    },
-    {
       id: "name",
       accessorKey: "name",
       header: "Name",
@@ -38,7 +33,7 @@ function CustomerTable({
     {
       id: "phone_number",
       accessorFn: (row) => {
-        return `${row.phone_numbers[0].phone_number ?? "--"}`;
+        return `${row.phone_numbers[0]?.phone_number ?? "--"}`;
       },
       header: "Phone Number",
       filterFn: "fuzzy",
@@ -78,9 +73,6 @@ function CustomerTable({
     {
       id: "actions",
       enableHiding: false,
-      meta: {
-        align: "right",
-      },
       cell: ({ row }) => {
         const customerId = row.original.id;
         return (
@@ -114,11 +106,7 @@ function CustomerTable({
           headerStyle: {
             textAlign: "center",
           },
-          align: "center",
         },
-      }}
-      columnVisibility={{
-        id: false,
       }}
       message="No Customers Found!"
     />
