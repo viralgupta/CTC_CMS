@@ -5,26 +5,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { useRecoilState } from "recoil";
 import request from "@/lib/request";
 import ItemCard from "./ItemCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useSetRecoilState } from "recoil";
 import { viewOrderIdAtom } from "@/store/order";
 import React from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { calculateCommissionFromTotalCommission } from "@/lib/utils";
+import { ColumnDef } from "@tanstack/react-table";
+import DataTable from "@/components/DataTable";
 
 const ViewItem = () => {
   const [itemId, setItemID] = useRecoilState(viewItemIDAtom);
@@ -40,14 +31,71 @@ const ViewItem = () => {
     }
   }, [itemId]);
 
-  const parentRef = React.useRef<HTMLDivElement>(null);
+  const columns: ColumnDef<viewItemType["order_items"][number]>[] = [
+    {
+      id: "customer_name",
+      accessorFn: (row) => row.order.customer?.name ?? "--",
+      header: "Customer Name",
+    },
+    {
+      id: "quantity",
+      accessorKey: "quantity",
+      header: "Quantity",
+    },
+    {
+      id: "rate",
+      accessorKey: "rate",
+      header: "Rate",
+      cell: ({ row }) => {
+        const rate = row.original.rate;
+        return `₹${rate.toFixed(2)} per ${viewItem?.rate_dimension ?? "unit"}`;
+      },
+    },
+    {
+      id: "total_value",
+      accessorKey: "total_value",
+      header: "Total Value",
+      cell: ({ row }) => `₹${row.original.total_value}`,
+    },
+    {
+      id: "architect_commission",
+      accessorKey: "architect_commission",
+      header: "Architect Commission",
+      cell: ({ row }) => {
+        const commission = row.original.architect_commision;
+        return commission
+          ? `₹${commission} ${calculateCommissionFromTotalCommission(commission, row.original.architect_commision_type, row.original.total_value, row.original.quantity).bracket}`
+          : "--";
+      },
+    },
+    {
+      id: "carpenter_commission",
+      accessorKey: "carpenter_commission",
+      header: "Carpenter Commission",
+      cell: ({ row }) => {
+        const commission = row.original.carpanter_commision;
+        return commission
+          ? `₹${commission} ${calculateCommissionFromTotalCommission(commission, row.original.carpanter_commision_type, row.original.total_value, row.original.quantity).bracket}`
+          : "--";
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => (
+        <Button
+          size={"sm"}
+          onClick={() => {
+            setVIewOrderID(row.original.order_id);
+          }}
+        >
+          View Order
+        </Button>
+      ),
+    },
+  ];
+  
 
-  const virtualizer = useVirtualizer({
-    count: (viewItem?.order_items ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
-  });
 
   return (
     <Dialog
@@ -68,74 +116,21 @@ const ViewItem = () => {
         </DialogHeader>
         <ItemCard item={viewItem} />
         <div
-          className="w-full max-h-96 overflow-y-auto hide-scroll"
-          ref={parentRef}
-        >
-          <Table style={{ height: `${virtualizer.getTotalSize()}px` }}>
-            <TableCaption>
-              A list of recent order's with this item.
-            </TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-center">Customer Name</TableHead>
-                <TableHead className="text-center">Quantity</TableHead>
-                <TableHead className="text-center">Rate</TableHead>
-                <TableHead className="text-center">Total Value</TableHead>
-                <TableHead className="text-center">
-                  Architect Commission
-                </TableHead>
-                <TableHead className="text-center">
-                  Carpenter Commission
-                </TableHead>
-                <TableHead className="text-center">View Order</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {viewItem &&
-                (viewItem?.order_items ?? []).length > 0 &&
-                virtualizer.getVirtualItems().map((virtualRow, index) => {
-                  const oi = viewItem.order_items[virtualRow.index];
-                  return (
-                    <TableRow
-                      key={oi.id}
-                      style={{
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
-                      }}
-                    >
-                      <TableCell className="text-center">
-                        {oi.order.customer?.name ?? "--"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {oi.quantity}
-                      </TableCell>
-                      <TableCell className="text-center">{`₹${oi.rate.toFixed(2)} per ${viewItem.rate_dimension}`}</TableCell>
-                      <TableCell className="text-center">{`₹${oi.total_value}`}</TableCell>
-                      <TableCell className="text-center">
-                        {oi.architect_commision
-                          ? `₹${oi.architect_commision} ${calculateCommissionFromTotalCommission(oi.architect_commision, oi.architect_commision_type, oi.total_value, oi.quantity).bracket}`
-                          : "--"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {oi.carpanter_commision
-                          ? `₹${oi.carpanter_commision} ${calculateCommissionFromTotalCommission(oi.carpanter_commision, oi.carpanter_commision_type, oi.total_value, oi.quantity).bracket}`
-                          : "--"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          size={"sm"}
-                          onClick={() => {
-                            setVIewOrderID(oi.order_id);
-                          }}
-                        >
-                          View Order
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+          className="w-full max-h-96 overflow-y-auto hide-scroll flex flex-col">
+          <DataTable
+            data={viewItem?.order_items ?? []}
+            key={"Order Items"}
+            columns={columns}
+            columnFilters={false}
+            defaultColumn={{
+              meta: {
+                headerStyle: {
+                  textAlign: "center",
+                },
+              },
+            }}
+            message="No Item's Orders Found!"
+          />
         </div>
       </DialogContent>
     </Dialog>

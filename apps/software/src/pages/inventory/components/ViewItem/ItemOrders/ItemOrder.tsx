@@ -16,21 +16,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAllItems } from "@/hooks/items";
-import { viewItemAtom, viewItemIDAtom } from "@/store/Items";
+import { viewItemAtom, viewItemIDAtom, viewItemType } from "@/store/Items";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -48,7 +39,8 @@ import DeleteItemOrder from "./DeleteItemOrder";
 import RecieveItemOrder from "./ReceiveItemOrder";
 import CreditWarehouseQuantity from "../../inputs/CreditWarehouseQuantity";
 import { ItemStoreQuantity } from "../ItemCard";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { ColumnDef } from "@tanstack/react-table";
+import DataTable from "@/components/DataTable";
 
 const ItemOrders = ({
   children,
@@ -60,15 +52,118 @@ const ItemOrders = ({
   const setViewItemID = useSetRecoilState(viewItemIDAtom);
   const { refetchItems } = useAllItems();
 
-  const parentRef = React.useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: (viewItem?.item_orders ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
-  });
-
+  const columns: ColumnDef<viewItemType["item_orders"][number]>[] = [
+    {
+      id: "vendor_name",
+      accessorKey: "vendor_name",
+      header: "Vendor Name",
+      cell: ({ row }) => {
+        if (row.original.vendor_name == "") {
+          return "--";
+        } else {
+          return row.original.vendor_name;
+        }
+      },
+    },
+    {
+      id: "ordered_quantity",
+      accessorKey: "ordered_quantity",
+      header: "Order Quantity",
+    },
+    {
+      id: "order_date",
+      accessorKey: "order_date",
+      header: "Order Date",
+      cell: ({ row }) => {
+        return parseDateToString(row.original.order_date);
+      },
+    },
+    {
+      id: "received_quantity",
+      accessorKey: "received_quantity",
+      header: "Receive Quantity",
+      cell: ({ row }) => {
+        if (row.original.received_quantity) {
+          return (
+            <ItemStoreQuantity
+              warehouseQuantities={row.original.i_o_w_q.map((iowq) => {
+                const foundWarehouseQuantity = viewItem?.warehouse_quantities.find(
+                  (wq) => wq.id == iowq.warehouse_quantity_id
+                );
+                if (foundWarehouseQuantity) {
+                  return {
+                    id: iowq.warehouse_quantity_id,
+                    warehouse: foundWarehouseQuantity.warehouse,
+                    quantity: iowq.quantity,
+                  };
+                } else {
+                  return {
+                    id: iowq.warehouse_quantity_id,
+                    warehouse: {
+                      name: "--",
+                    },
+                    quantity: iowq.quantity,
+                  };
+                }
+              })}
+            >
+              <span className="border p-2 rounded-md cursor-pointer">
+                {row.original.received_quantity}
+              </span>
+            </ItemStoreQuantity>
+          );
+        } else {
+          return "--";
+        }
+      },
+    },
+    {
+      id: "receive_date",
+      accessorKey: "receive_date",
+      header: "Receive Date",
+      cell: ({ row }) => {
+        return parseDateToString(row.original.receive_date);
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        return (
+          <Popover>
+            <PopoverTrigger>
+              <EllipsisVertical className="border rounded-md p-0.5 aspect-square" />
+            </PopoverTrigger>
+            <PopoverContent className="flex space-x-2">
+              <EditItemOrder itemOrder={row.original}>
+                <Button variant={"outline"} className="gap-2">
+                  <Pencil className="w-4 h-4" />
+                  Edit Item Order
+                </Button>
+              </EditItemOrder>
+              <RecieveItemOrder itemOrder={row.original}>
+                <Button
+                  disabled={(row.original.received_quantity ?? 0) > 0}
+                  variant={"outline"}
+                  className="gap-2"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Receive Item Order
+                </Button>
+              </RecieveItemOrder>
+              <DeleteItemOrder id={row.original.id}>
+                <Button variant={"outline"} className="gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Delete Item Order
+                </Button>
+              </DeleteItemOrder>
+            </PopoverContent>
+          </Popover>
+        );
+      },
+    },
+  ];
+  
   const CreateItemOrderForm = () => {
     const [open2, setOpen2] = React.useState(false);
     const form = useForm<z.infer<typeof createItemOrderType>>({
@@ -290,113 +385,21 @@ const ItemOrders = ({
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
         <CreateItemOrderForm />
-        <div className="max-h-96 overflow-y-auto hide-scroll" ref={parentRef}>
-          <Table style={{ height: `${virtualizer.getTotalSize()}px` }}>
-            <TableCaption>A list of item orders.</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-center">Vendor Name</TableHead>
-                <TableHead className="text-center">Order Quantity</TableHead>
-                <TableHead className="text-center">Order Date</TableHead>
-                <TableHead className="text-center">Receive Quantity</TableHead>
-                <TableHead className="text-center">Receive Date</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {viewItem &&
-                (viewItem.item_orders ?? []).length > 0 &&
-                virtualizer.getVirtualItems().map((virtualRow, index) => {
-                  const io = viewItem.item_orders[virtualRow.index];
-                  return (
-                    <TableRow
-                      key={io.id}
-                      style={{
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
-                      }}
-                    >
-                      <TableCell className="text-center">
-                        {io.vendor_name == "" ? "--" : io.vendor_name}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {io.ordered_quantity}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {parseDateToString(io.order_date)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {io.received_quantity ? (
-                          <ItemStoreQuantity
-                            warehouseQuantities={io.i_o_w_q.map((iowq) => {
-                              const foundWarehouseQuantity =
-                                viewItem?.warehouse_quantities.find(
-                                  (wq) => wq.id == iowq.warehouse_quantity_id
-                                );
-                              if (foundWarehouseQuantity) {
-                                return {
-                                  id: iowq.warehouse_quantity_id,
-                                  warehouse: foundWarehouseQuantity.warehouse,
-                                  quantity: iowq.quantity,
-                                };
-                              } else {
-                                return {
-                                  id: iowq.warehouse_quantity_id,
-                                  warehouse: {
-                                    name: "--",
-                                  },
-                                  quantity: iowq.quantity,
-                                };
-                              }
-                            })}
-                          >
-                            <span className="border p-2 rounded-md cursor-pointer">
-                              {io.received_quantity}
-                            </span>
-                          </ItemStoreQuantity>
-                        ) : (
-                          "--"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {parseDateToString(io.receive_date)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Popover>
-                          <PopoverTrigger>
-                            <EllipsisVertical className="border rounded-md p-0.5 aspect-square" />
-                          </PopoverTrigger>
-                          <PopoverContent className="flex space-x-2">
-                            <EditItemOrder itemOrder={io}>
-                              <Button variant={"outline"} className="gap-2">
-                                <Pencil className="w-4 h-4" />
-                                Edit Item Order
-                              </Button>
-                            </EditItemOrder>
-                            <RecieveItemOrder itemOrder={io}>
-                              <Button
-                                disabled={(io.received_quantity ?? 0) > 0}
-                                variant={"outline"}
-                                className="gap-2"
-                              >
-                                <CreditCard className="w-4 h-4" />
-                                Receive Item Order
-                              </Button>
-                            </RecieveItemOrder>
-                            <DeleteItemOrder id={io.id}>
-                              <Button variant={"outline"} className="gap-2">
-                                <Trash2 className="w-4 h-4" />
-                                Delete Item Order
-                              </Button>
-                            </DeleteItemOrder>
-                          </PopoverContent>
-                        </Popover>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+        <div className="max-h-96 overflow-y-auto hide-scroll flex flex-col">
+          <DataTable
+            data={viewItem?.item_orders ?? []}
+            key={"Item Orders"}
+            columns={columns}
+            columnFilters={false}
+            defaultColumn={{
+              meta: {
+                headerStyle: {
+                  textAlign: "center",
+                },
+              },
+            }}
+            message="No Item Orders Found!"
+          />
         </div>
       </DialogContent>
     </Dialog>
