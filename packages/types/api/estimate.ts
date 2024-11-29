@@ -20,7 +20,7 @@ export const createEstimateType = z.object({
 
 
 export const getEstimateType = z.object({
-  estimate_id: z.string(),
+  estimate_id: z.string().transform((val) => Number(val)),
 })
 .strict("Too many fields in the query")
 
@@ -29,12 +29,16 @@ export const deleteEstimateType = getEstimateType;
 export const editEstimateCustomerIdType = createEstimateType.omit({
   estimate_items: true
 }).extend({
-  estimate_id: z.string(),
+  estimate_id: z.string().transform((val) => Number(val)),
 })
 .strict("Too many fields in the body");
 
 export const editEstimateOrderItemsType = z.object({
-  estimate_id: z.string(),
+  estimate_id: z.string().transform((val) => Number(val)),
   estimate_items: z.array(estimateItem).min(1, "At least one item is required"),
 })
 .strict("Too many fields in the body")
+
+export const getAllEstimatesType = z.object({
+  cursor: z.string().transform((val) => Number(val)).optional()
+})

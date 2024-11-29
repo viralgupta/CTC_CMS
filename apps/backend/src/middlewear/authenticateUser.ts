@@ -13,7 +13,7 @@ export async function authenticatedUser(
 
   res.locals.session = session
 
-  if (session) {
+  if (session || process.env.SST_STAGE === "dev") {
     return next()
   }
 

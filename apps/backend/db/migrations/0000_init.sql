@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS "driver" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "estimate" (
-	"e_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"e_id" serial PRIMARY KEY NOT NULL,
 	"e_customer_id" uuid NOT NULL,
 	"e_total_estimate_amount" numeric(10, 2) NOT NULL,
 	"e_created_at" timestamp DEFAULT now() NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS "estimate" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "estimate_item" (
 	"ei_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"ei_estimate_id" uuid NOT NULL,
+	"ei_estimate_id" integer NOT NULL,
 	"ei_item_id" uuid NOT NULL,
 	"ei_quantity" real NOT NULL,
 	"ei_rate" real NOT NULL,

@@ -22,7 +22,7 @@ const DeleteAlert = ({
   children: React.ReactNode;
   type: "customer" | "architect" | "carpanter" | "driver" | "resource" | "estimate"
   viewObjectAtom: RecoilState<any | null>
-  viewObjectIdAtom: RecoilState<string | null>
+  viewObjectIdAtom: RecoilState<any | null>
 }) => {
   const setViewX = useSetRecoilState(viewObjectAtom);
   const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);

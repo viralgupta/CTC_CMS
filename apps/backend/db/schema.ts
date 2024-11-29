@@ -481,7 +481,7 @@ export const order_movement_item_warehouse_quantity_relation = relations(order_m
 }))
 
 export const estimate = pgTable("estimate", {
-  id: uuid("e_id").primaryKey().defaultRandom().notNull(),
+  id: serial("e_id").primaryKey().notNull(),
   customer_id: uuid("e_customer_id").references(() => customer.id, { onDelete: "cascade" }).notNull(),
 
   total_estimate_amount: numeric("e_total_estimate_amount", {
@@ -507,7 +507,7 @@ export const estimate_relation = relations(estimate, ({ one, many }) => ({
 
 export const estimate_item = pgTable("estimate_item", {
   id: uuid("ei_id").primaryKey().defaultRandom().notNull(),
-  estimate_id: uuid("ei_estimate_id")
+  estimate_id: integer("ei_estimate_id")
     .references(() => estimate.id, { onDelete: "cascade" })
     .notNull(),
   item_id: uuid("ei_item_id")

@@ -1,4 +1,4 @@
-import { viewAllLogAtom, viewLogButtonAtom, viewLogButtonType } from "@/store/log";
+import { viewAllLogAtom, viewAllLogType, viewLogButtonAtom, viewLogButtonType } from "@/store/log";
 import {
   Dialog,
   DialogContent,
@@ -6,43 +6,87 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import React from "react";
 import request from "@/lib/request";
 import { Eye } from "lucide-react";
 import { Button } from "../ui/button";
-import { convertTypeToHeading, parseDateToString } from "@/lib/utils";
+import { convertTypeToHeading, debounce, parseDateToString } from "@/lib/utils";
 import { useRecoilState } from "recoil";
 import { Skeleton } from "../ui/skeleton";
 import ViewLog from "./ViewLog";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { ColumnDef } from "@tanstack/react-table";
+import PaginationDataTable from "../PaginationDataTable";
+
+let hasNextPage = true;
 
 const ViewAllLogs = () => {
   const [viewLogButton, setViewLogButton] = useRecoilState(viewLogButtonAtom);
   const [viewAllLogs, setViewAllLogs] = useRecoilState(viewAllLogAtom);
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [cursor, setCursor] = React.useState(0);
 
-  const parentRef = React.useRef<HTMLDivElement>(null);
+  const columns: ColumnDef<viewAllLogType>[] = [
+    {
+      id: "heading",
+      accessorKey: "heading",
+      header: "Heading",
+      cell: ({ row }) => (
+        <span>
+          {row.original.heading
+            ? row.original.heading
+            : convertTypeToHeading(row.original.type, row.original.linked_to)}
+        </span>
+      ),
+    },
+    {
+      id: "type",
+      accessorKey: "type",
+      header: "Type",
 
-  const virtualizer = useVirtualizer({
-    count: (viewAllLogs ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
-  });
+    },
+    {
+      id: "linked_to",
+      accessorKey: "linked_to",
+      header: "Linked To",
+    },
+    {
+      id: "user",
+      accessorKey: "user",
+      header: "User",
+      cell: ({ row }) => (
+        <span>
+          {row.original.user.name}
+        </span>
+      ),
+    },
+    {
+      id: "created_at",
+      accessorKey: "created_at",
+      header: "Created At",
+      cell: ({ row }) => (
+        <span>
+          {parseDateToString(row.original.created_at)}
+        </span>
+      ),
+    },
+    {
+      id: "view",
+      accessorKey: "view",
+      header: "View",
+      cell: ({ row }) => (
+        <ViewLog logId={row.original.id}>
+          <Button>
+            <Eye />
+          </Button>
+        </ViewLog>
+      ),
+    },
+  ];
 
-  React.useEffect(() => {
-    if (viewLogButton) {
-      setOpen(true);
-        const queryParams = new URLSearchParams();
+  const getMoreLogs = debounce(() => {
+    if(viewLogButton){
+      const queryParams = new URLSearchParams();
       if (viewLogButton.type) {
         Object.entries(viewLogButton.type).forEach(([key, value]) => {
           if (value) {
@@ -54,12 +98,57 @@ const ViewAllLogs = () => {
           queryParams.append("linked_to", viewLogButton.linked_to);
         }
       }
-
+      queryParams.append("cursor", cursor.toString())
+      setLoading(true);
       request
-        .get(`/miscellaneous/getLog?${queryParams.toString()}`)
+        .get(`/miscellaneous/getAllLogs?${queryParams.toString()}`)
+        .then((res) => {
+          setViewAllLogs([...(viewAllLogs ?? []), ...res.data.data]);
+          if(res.data.data.length < 10) {
+            hasNextPage = false;
+          }
+          if(res.data.data.length > 0){
+            setCursor(res.data.data[res.data.data.length - 1].id);
+          }
+        }).catch((err) => {
+          console.log("Unable to fetch more logs", err);
+        }).finally(() => {
+          setLoading(false);
+        })
+    }
+  });
+
+  React.useEffect(() => {
+    if (viewLogButton) {
+      setOpen(true);
+      const queryParams = new URLSearchParams();
+      if (viewLogButton.type) {
+        Object.entries(viewLogButton.type).forEach(([key, value]) => {
+          if (value) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      } else {
+        if (viewLogButton.linked_to) {
+          queryParams.append("linked_to", viewLogButton.linked_to);
+        }
+      }
+      setLoading(true);
+      request
+        .get(`/miscellaneous/getAllLogs?${queryParams.toString()}`)
         .then((res) => {
           setViewAllLogs(res.data.data);
-        });
+          if(res.data.data.length < 10) {
+            hasNextPage = false;
+          }
+          if(res.data.data.length > 0){
+            setCursor(res.data.data[res.data.data.length - 1].id);
+          }
+        }).catch((err) => {
+          console.log("Unable to fetch logs", err);
+        }).finally(() => {
+          setLoading(false);
+        })
     }
   }, [viewLogButton]);
 
@@ -79,74 +168,33 @@ const ViewAllLogs = () => {
         if (!o) {
           setViewLogButton(null);
           setViewAllLogs(null);
+          hasNextPage = true;
         }
       }}
     >
-      <DialogContent size="5xl">
+      <DialogContent size="5xl" className="h-[80%] flex flex-col">
         <DialogHeader>
           <DialogTitle>View All Logs</DialogTitle>
           <DialogDescription className="hidden"></DialogDescription>
         </DialogHeader>
         {viewAllLogs ? (
-          <div
-            ref={parentRef}
-            className="overflow-y-auto hide-scroll w-full max-h-96"
-          >
-            <Table
-              style={{ height: `${virtualizer.getTotalSize()}px` }}
-            >
-              <TableCaption>A list of recent logs.</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center">Heading</TableHead>
-                  <TableHead className="text-center">Type</TableHead>
-                  <TableHead className="text-center">Linked To</TableHead>
-                  <TableHead className="text-center">User</TableHead>
-                  <TableHead className="text-center">Created At</TableHead>
-                  <TableHead className="text-center">View</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {viewAllLogs &&
-                  virtualizer.getVirtualItems().map((virtualRow, index) => {
-                    const log = viewAllLogs[virtualRow.index];
-                    return (
-                      <TableRow key={log.id}
-                        style={{
-                          height: `${virtualRow.size}px`,
-                          transform: `translateY(${
-                            virtualRow.start - index * virtualRow.size
-                          }px)`,
-                        }}
-                      >
-                        <TableCell className="text-center">
-                          {log.heading
-                            ? log.heading
-                            : convertTypeToHeading(log.type, log.linked_to)}
-                        </TableCell>
-                        <TableCell className="text-center">{log.type}</TableCell>
-                        <TableCell className="text-center">
-                          {log.linked_to}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {log.user.name}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {parseDateToString(log.created_at)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <ViewLog logId={log.id}>
-                            <Button>
-                              <Eye />
-                            </Button>
-                          </ViewLog>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-              </TableBody>
-            </Table>
-          </div>
+          <PaginationDataTable
+            data={viewAllLogs}
+            key={"viewAllLogs"}
+            columns={columns}
+            columnFilters={false}
+            defaultColumn={{
+              meta: {
+                headerStyle: {
+                  textAlign: "center",
+                },
+              },
+            }}
+            fetchNextPage={getMoreLogs}
+            hasNextPage={hasNextPage ?? false}
+            isFetchingNextPage={loading && viewAllLogs.length > 0 ? true : false}
+            message="No logs found for particular filter!"
+          />
         ) : (
           <Skeleton className="w-full h-96" />
         )}

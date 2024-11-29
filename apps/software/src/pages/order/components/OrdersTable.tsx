@@ -143,9 +143,6 @@ function OrdersTable() {
           },
         },
       }}
-      columnVisibility={{
-        id: false,
-      }}
       fetchNextPage={fetchMoreOrders}
       hasNextPage={hasNextPage ?? false}
       isFetchingNextPage={loading && orders[filter].length > 0 ? true : false}

@@ -1,17 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "../../../components/ui/button";
 import { useSetRecoilState } from "recoil";
-import DataTable from "../../../components/DataTable";
 import { parseDateToString } from "@/lib/utils";
 import { EstimateType, viewEstimateIdAtom } from "@/store/estimates";
 import { useAllEstimates } from "@/hooks/estimate";
 import { Skeleton } from "@/components/ui/skeleton";
+import PaginationDataTable from "@/components/PaginationDataTable";
 
 function EstimateTable() {
-  const { estimates , loading} = useAllEstimates();
+  const { estimates , loading, hasNextPage, fetchMoreEstimates } = useAllEstimates();
   const setViewEstimateIdAtom = useSetRecoilState(viewEstimateIdAtom);
 
-  if (loading) {
+  if (loading && estimates.length === 0) {
     return <Skeleton className="w-full flex-1"/>;
   }
 
@@ -57,7 +57,7 @@ function EstimateTable() {
   ];
 
   return (
-    <DataTable
+    <PaginationDataTable
       data={estimates}
       key={"AllEsimtateTable"}
       columns={columns}
@@ -69,6 +69,9 @@ function EstimateTable() {
           },
         },
       }}
+      fetchNextPage={fetchMoreEstimates}
+      hasNextPage={hasNextPage ?? false}
+      isFetchingNextPage={loading && estimates.length > 0 ? true : false}
       message="No estimates found!"
     />
   );

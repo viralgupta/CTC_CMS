@@ -29,9 +29,7 @@ app.get("/authcallbackoverride", (req, res) => {
 //   res.status(200);
 // });
 
-if(process.env.SST_STAGE !== "dev"){
-  app.use("/api/*", authenticatedUser);
-}
+app.use("/api/*", authenticatedUser);
 
 app.use("/api/*", allowedToken);
 

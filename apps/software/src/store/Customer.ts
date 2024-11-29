@@ -51,7 +51,7 @@ export interface viewCustomerType extends CustomerType {
     created_at: Date;
   }[];
   estimates: {
-    id: string;
+    id: number;
     created_at: Date;
     updated_at: Date;
     total_estimate_amount: string;

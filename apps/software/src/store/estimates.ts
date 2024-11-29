@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 export interface EstimateType {
-  id: string;
+  id: number;
   updated_at: Date;
   total_estimate_amount: string;
   customer: {
@@ -17,8 +17,8 @@ export const allEstimateAtom = atom<EstimateType[]>({
 });
 
 export interface ViewEstimateType {
+  id: number;
   customer_id: string;
-  id: string;
   created_at: Date;
   updated_at: Date;
   total_estimate_amount: string;
@@ -49,7 +49,7 @@ export const viewEstimateAtom = atom<ViewEstimateType | null>({
   default: null,
 });
 
-export const viewEstimateIdAtom = atom<string | null>({
+export const viewEstimateIdAtom = atom<number | null>({
   key: "viewEstimateIdAtom",
   default: null,
 });

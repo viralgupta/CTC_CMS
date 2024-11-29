@@ -1,6 +1,6 @@
 import db from "@db/db";
 import { phone_number, resource } from "@db/schema";
-import { createGetSignedURLType, createPhoneType, createPutSignedURLType, deletePhoneType, deleteResourceType, editResourceType, getLogType } from "@type/api/miscellaneous";
+import { createGetSignedURLType, createPhoneType, createPutSignedURLType, deletePhoneType, deleteResourceType, editResourceType, getAllLogsType, getLogType } from "@type/api/miscellaneous";
 import { Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
 import * as S3 from "@aws-sdk/client-s3"
@@ -348,63 +348,73 @@ const getLog = async (req: Request, res: Response) => {
   }
 
   try {
-    const logId = getLogTypeAnswer.data.id;
-    if(logId) {
-      const foundLog = await db.query.log.findFirst({
-        where: (log, { eq }) => eq(log.id, logId),
-        with: {
-          user: {
-            columns: {
-              name: true
-            }
+    const foundLog = await db.query.log.findFirst({
+      where: (log, { eq }) => eq(log.id, getLogTypeAnswer.data.id),
+      with: {
+        user: {
+          columns: {
+            name: true
           }
         }
-      });
+      }
+    });
 
-      return res.status(200).json({success: true, message: "Logs Fetched", data: foundLog});
-    } else {
-      const key = Object.keys(getLogTypeAnswer.data).length > 0 ? Object.keys(getLogTypeAnswer.data)[0] as "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id" : undefined;
-      const value = key ? getLogTypeAnswer.data[key] : undefined;
-      const foundLog = await db.query.log.findMany({
-        where: (log, { eq, and, lt }) => {
-          if(!key || !value){
-            if(getLogTypeAnswer.data.linked_to){
-              if (getLogTypeAnswer.data.cursor){
-                return and(eq(log.linked_to, getLogTypeAnswer.data.linked_to), lt(log.id, getLogTypeAnswer.data.cursor));
-              } else {
-                return eq(log.linked_to, getLogTypeAnswer.data.linked_to);
-              }
-            } else if(getLogTypeAnswer.data.cursor){
-              return lt(log.id, getLogTypeAnswer.data.cursor);
+    return res.status(200).json({success: true, message: "Log Fetched", data: foundLog});
+
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch log", error: error.message ? error.message : error});
+  }
+}
+
+const getAllLogs = async (req: Request, res: Response) => {
+  const getAllLogTypeAnswer = getAllLogsType.safeParse(req.query);
+
+  if (!getAllLogTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getAllLogTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const key = Object.keys(getAllLogTypeAnswer.data).length > 0 ? Object.keys(getAllLogTypeAnswer.data)[0] as "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id" : undefined;
+    const value = key ? getAllLogTypeAnswer.data[key] : undefined;
+    const foundLog = await db.query.log.findMany({
+      where: (log, { eq, and, lt }) => {
+        if(!key || !value){
+          if(getAllLogTypeAnswer.data.linked_to){
+            if (getAllLogTypeAnswer.data.cursor){
+              return and(eq(log.linked_to, getAllLogTypeAnswer.data.linked_to), lt(log.id, getAllLogTypeAnswer.data.cursor));
             } else {
-              return undefined;
+              return eq(log.linked_to, getAllLogTypeAnswer.data.linked_to);
             }
-          } else if(getLogTypeAnswer.data.cursor){
-            return and(eq(log[key], value), lt(log.id, getLogTypeAnswer.data.cursor));
+          } else if(getAllLogTypeAnswer.data.cursor){
+            return lt(log.id, getAllLogTypeAnswer.data.cursor);
           } else {
-            return eq(log[key], value);
+            return undefined;
           }
-        },
-        columns: {
-          id: true,
-          heading: true,
-          type: true,
-          linked_to: true,
-          created_at: true
-        },
-        with: {
-          user: {
-            columns: {
-              name: true
-            }
+        } else if(getAllLogTypeAnswer.data.cursor){
+          return and(eq(log[key], value), lt(log.id, getAllLogTypeAnswer.data.cursor));
+        } else {
+          return eq(log[key], value);
+        }
+      },
+      columns: {
+        id: true,
+        heading: true,
+        type: true,
+        linked_to: true,
+        created_at: true
+      },
+      with: {
+        user: {
+          columns: {
+            name: true
           }
-        },
-        orderBy: (log, { desc }) => desc(log.created_at),
-        limit: 20
-      });
+        }
+      },
+      orderBy: (log, { desc }) => desc(log.id),
+      limit: 10
+    });
 
-      return res.status(200).json({success: true, message: "Logs Fetched", data: foundLog});
-    }
+    return res.status(200).json({success: true, message: "Logs Fetched", data: foundLog});
 
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch log", error: error.message ? error.message : error});
@@ -419,5 +429,6 @@ export {
   createGetSignedURL,
   deleteResource,
   getAllResources,
-  getLog
+  getAllLogs,
+  getLog,
 }

@@ -92,7 +92,10 @@ export const deleteResourceType = z.object({
 })
 
 export const getLogType = z.object({
-  id:z.string().transform((val) => Number(val)).optional(),
+  id:z.string().transform((val) => Number(val)),
+})
+
+export const getAllLogsType = z.object({
   user_id: z.string().optional(),
   customer_id: z.string().optional(),
   architect_id: z.string().optional(),

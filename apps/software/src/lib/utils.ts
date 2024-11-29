@@ -128,3 +128,16 @@ export function convertTypeToHeading(
   }
   return `${firstLetterUpperCase(linked_to)} Was ${firstLetterUpperCase(type)}`;
 }
+
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  delay: number = 100
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+
+  return (...args: Parameters<T>): void => {
+    if (timeout) return;
+    func(...args);
+    timeout = setTimeout(() => (timeout = null), delay);
+  };
+}

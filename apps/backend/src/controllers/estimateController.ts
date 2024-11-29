@@ -1,6 +1,6 @@
 import db from '@db/db';
 import { estimate, estimate_item } from '@db/schema';
-import { createEstimateType, deleteEstimateType, editEstimateCustomerIdType, editEstimateOrderItemsType, getEstimateType } from '@type/api/estimate';
+import { createEstimateType, deleteEstimateType, editEstimateCustomerIdType, editEstimateOrderItemsType, getAllEstimatesType, getEstimateType } from '@type/api/estimate';
 import { Request, Response } from "express";
 import { eq } from 'drizzle-orm';
 
@@ -241,26 +241,38 @@ const editEstimateItems = async (req: Request, res: Response ) => {
   }
 }
 
-const getAllEstimates = async (_req: Request, res: Response ) => {
+const getAllEstimates = async (req: Request, res: Response ) => {
+  const getAllEstimatesTypeAnswer = getAllEstimatesType.safeParse(req.query);
+
+  if(!getAllEstimatesTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getAllEstimatesTypeAnswer.error.flatten()})
+  }
+
   try {
-    const allEstimates = await db.transaction(async (tx) => {
-      return tx.query.estimate.findMany({
-        columns: {
-          id: true,
-          updated_at: true,
-          total_estimate_amount: true
-        },
-        with: {
-          customer: {
-            columns: {
-              id: true,
-              name: true
-            }
+    const allEstimates = await db.query.estimate.findMany({
+      columns: {
+        id: true,
+        updated_at: true,
+        total_estimate_amount: true
+      },
+      with: {
+        customer: {
+          columns: {
+            id: true,
+            name: true
           }
-        },
-        orderBy: (estimate, { desc }) => [desc(estimate.updated_at)],
-      })
-    })
+        }
+      },
+      orderBy: (estimate, { desc }) => [desc(estimate.id)],
+      limit: 10,
+      where: (estimate, { lt }) => {
+        if(getAllEstimatesTypeAnswer.data.cursor){
+          return lt(estimate.id, getAllEstimatesTypeAnswer.data.cursor);
+        } else {
+          return undefined;
+        }
+      }
+    });
 
     return res.status(200).json({success: true, message: "Estimates Found!", data: allEstimates});
   } catch (error: any) {

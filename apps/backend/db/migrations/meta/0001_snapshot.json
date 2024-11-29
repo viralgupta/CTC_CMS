@@ -1,6 +1,6 @@
 {
-  "id": "9b7a5034-3827-4ff5-991e-e989dc2b9205",
-  "prevId": "73246913-a116-442e-bebb-1a5cda206ee6",
+  "id": "7b4abf98-c30d-4a3e-b9a5-82d09e0f8adb",
+  "prevId": "707ebc66-a348-4bc8-a956-175ff4f912ed",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -314,10 +314,9 @@
       "columns": {
         "e_id": {
           "name": "e_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "e_customer_id": {
           "name": "e_customer_id",
@@ -394,7 +393,7 @@
         },
         "ei_estimate_id": {
           "name": "ei_estimate_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

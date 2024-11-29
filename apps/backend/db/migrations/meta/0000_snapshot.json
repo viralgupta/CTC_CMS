@@ -1,5 +1,5 @@
 {
-  "id": "73246913-a116-442e-bebb-1a5cda206ee6",
+  "id": "707ebc66-a348-4bc8-a956-175ff4f912ed",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -314,10 +314,9 @@
       "columns": {
         "e_id": {
           "name": "e_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "e_customer_id": {
           "name": "e_customer_id",
@@ -394,7 +393,7 @@
         },
         "ei_estimate_id": {
           "name": "ei_estimate_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

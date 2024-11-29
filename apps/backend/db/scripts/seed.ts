@@ -17,9 +17,10 @@ import {
   order_movement,
   order_movement_item,
   order_movement_item_warehouse_quantity,
-  // estimate,
+  estimate,
   // estimate_item,
   // resource,
+  log
 } from "../schema";
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -35,7 +36,7 @@ const db = drizzle(seedClient, { schema });
 async function main() {
   
   // insert users
-  await db.insert(user).values([
+  const userIds = await db.insert(user).values([
     {
       name: "User 1",
       phone_number: "1234567890",
@@ -47,7 +48,9 @@ async function main() {
       phone_number: "1234567891",
       isAdmin: false,
     }
-  ])
+  ]).returning({
+    id: user.id
+  })
 
   // insert addressAreas
   const addressAreaIds = await db.insert(address_area).values([
@@ -551,8 +554,28 @@ async function main() {
   ]);
   
   // insert estimates
+  const estimateIds = await db.insert(estimate).values([
+    ...Array.from({ length: 100 }).map(() => ({
+      customer_id: customerIds[0].id,
+      total_estimate_amount: "0.00",
+    })),
+  ]);
+  
   // insert estimate_items
   // insert resources
+
+  // insert logs
+  const logsIds = await db.insert(log).values([
+    ...Array.from({ length: 100 }).map(() => (
+      {
+        type: "CREATE" as const,
+        linked_to: "CUSTOMER" as const,
+        customer_id: customerIds[0].id,
+        user_id: userIds[0].id,
+        message: "Customer created",
+      }
+    )),
+  ]);
 
   console.log("All Tables Seeded!!!");
   process.exit(0);
