@@ -23,11 +23,11 @@ export const addAddressAreaType = z.object({
 }).strict("Too many fields in request body");
 
 export const deleteAddressAreaType = z.object({
-  address_area_id: z.string().uuid(),
+  address_area_id: z.number(),
 }).strict("Too many fields in request body");
 
 export const addAddressType = addressType.extend({
-  customer_id: z.string()
+  customer_id: z.number()
 })
 
 export const editAddressType = addressType
@@ -41,26 +41,22 @@ export const editAddressType = addressType
     cordinates: true
   })
   .extend({
-    address_id: z.string(),
-    customer_id: z.string(),
+    address_id: z.number(),
+    customer_id: z.number(),
   });
 
 export const getAddressType = z.object({
-  address_id: z.string(),
+  address_id: z.string().transform((val) => Number(val)),
 });
 
 export const deleteAddressType = getAddressType;
-
-export const getCustomerAddressesType = z.object({
-  customer_id: z.string().uuid()
-})
 
 export const editCustomerType = createCustomerType.omit({
   phone_numbers: true,
   addresses: true,
   balance: true
 }).extend({
-  customer_id: z.string()
+  customer_id: z.number()
 }).partial({
   name: true,
   profileUrl: true
@@ -73,7 +69,7 @@ export const editCustomerType = createCustomerType.omit({
 }, "At least one field is required to update customer")
 
 export const settleBalanceType = z.object({
-  customer_id: z.string(),
+  customer_id: z.number(),
   amount: z
     .string()
     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
@@ -85,7 +81,7 @@ export const settleBalanceType = z.object({
 
 export const getCustomerType = z
   .object({
-    customer_id: z.string().optional(),
+    customer_id: z.string().transform((val) => Number(val)).optional(),
     phone_number: z.string().optional(),
   })
   .superRefine((vals, ctx) => {
@@ -100,6 +96,6 @@ export const getCustomerType = z
 
 export const deleteCustomerType = z
   .object({
-    customer_id: z.string(),
+    customer_id: z.number(),
   })
   .strict("Too many fields in request body");

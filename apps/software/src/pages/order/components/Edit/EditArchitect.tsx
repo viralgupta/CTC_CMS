@@ -8,7 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 
 const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
-  const [architect_id, setArchitect_id] = React.useState(viewOrder?.architect_id ?? "");
+  const [architect_id, setArchitect_id] = React.useState(viewOrder?.architect_id);
   const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
@@ -24,7 +24,7 @@ const EditArchitect = ({ closeDialog }: { closeDialog?: () => void }) => {
   return (
     <div className="space-y-4 flex flex-col">
       <SearchArchitect
-        value={architect_id}
+        value={architect_id ?? undefined}
         onChange={setArchitect_id}
         className="rounded-lg"
       />

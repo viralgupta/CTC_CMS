@@ -18,7 +18,7 @@ const ViewAllAddresses = ({
 }: {
   children: React.ReactNode;
   values: viewCustomerType["addresses"];
-  customer_id: string,
+  customer_id: number,
 }) => {
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const setViewCustomer = useSetRecoilState(viewCustomerAtom);

@@ -13,8 +13,8 @@ const Address = ({
   onChange,
   filterCustomerId
 }: {
-  onChange?: (addId: string) => void;
-  filterCustomerId?: string;
+  onChange?: (addId: number) => void;
+  filterCustomerId?: number;
 }) => {
   const { addresses, loading, refetchAddresses } = useAllAddresses();
   const defaultColumnFilterValue = [
@@ -22,7 +22,7 @@ const Address = ({
     { id: "address", value: "" },
   ];
   const [columnFilter, setColumnFilter] = React.useState<ColumnFiltersState>(defaultColumnFilterValue);
-  const [areaId, setAreaId] = React.useState("")
+  const [areaId, setAreaId] = React.useState<number>()
 
   const setCustomerSearchFilterValue = (
     key: "house_number" | "address",
@@ -75,8 +75,8 @@ const Address = ({
           value={areaId}
           className="h-full w-1/4"
         />
-        {areaId !== "" && <Button className="h-full" variant={"outline"} onClick={(e) => {
-          return setAreaId("");
+        {areaId != 0 && <Button className="h-full" variant={"outline"} onClick={() => {
+          setAreaId(undefined);
         }}>
           Clear Area
         </Button>}

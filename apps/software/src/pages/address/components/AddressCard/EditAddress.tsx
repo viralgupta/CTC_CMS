@@ -31,8 +31,8 @@ import { useSetRecoilState } from "recoil";
 import { viewAddressAtom, viewAddressIdAtom } from "@/store/address";
 
 const addressType = originalAddressType.extend({
-  address_id: z.string(),
-  customer_id: z.string()
+  address_id: z.number(),
+  customer_id: z.number()
 })
 
 type EditAddressProps = {
@@ -174,7 +174,7 @@ const EditAddress = ({ address, children }: EditAddressProps) => {
                       <CordinatesInput
                         disabled={
                           form.getValues("address") == "" ||
-                          form.getValues("address_area_id") == "" ||
+                          !form.getValues("address_area_id") ||
                           form.getValues("city") == ""
                         }
                         onCordinateSelect={field.onChange}

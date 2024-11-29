@@ -144,7 +144,7 @@ const AddNewItem = ({
     }
   }
 
-  async function getItemRate(item_id: string) {
+  async function getItemRate(item_id: number) {
     setLoading(true);
     const res = await request(`/inventory/getItemRates?item_id=${item_id}`);
     if(res.status == 200){

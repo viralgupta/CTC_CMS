@@ -19,8 +19,8 @@ const SearchDriver = ({
   value,
   className
 }: {
-  onChange?: (drivId: string) => void;
-  value?: string;
+  onChange?: (drivId: number) => void;
+  value?: number;
   className?: string;
 }) => {
   const { drivers, loading, refetchDrivers } = useAllDrivers();
@@ -62,7 +62,7 @@ const SearchDriver = ({
       <DialogTrigger className="w-full">
         <Input
           className={cn("border border-border rounded-full w-full h-12", className)}
-          placeholder={value ? drivers.find(c => c.id == value)?.name ?? value ?? "--" : "Search for drivers..."}
+          placeholder={value ? drivers.find(c => c.id == value)?.name ?? value.toString() ?? "--" : "Search for drivers..."}
         />
       </DialogTrigger>
       <DialogContent size="6xl">

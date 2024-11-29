@@ -14,10 +14,10 @@ import MovementCard from "./MovementCard";
 import OrderMovementItemTable from "./OrderMovementItemTable";
 
 export interface viewMovementType {
-  id: string;
+  id: number;
   type: "DELIVERY" | "RETURN";
   status: "Pending" | "Completed";
-  driver_id: string | null;
+  driver_id: number | null;
   order_id: number;
   created_at: Date;
   delivery_at: Date | null;
@@ -31,14 +31,14 @@ export interface viewMovementType {
     }[]; // only one
   } | null | undefined;
   order: {
-    id: string;
+    id: number;
     customer: {
-      id: string;
+      id: number;
       name: string;
       profileUrl: string | null;
     } | null;
     delivery_address: {
-      id: string;
+      id: number;
       address: string;
       house_number: string;
       address_area: {
@@ -47,7 +47,7 @@ export interface viewMovementType {
     } | null;
   } | undefined
   order_movement_items: {
-    id: string;
+    id: number;
     quantity: number;
     order_item: {
         quantity: number;
@@ -57,11 +57,11 @@ export interface viewMovementType {
     };
     o_m_i_w_q: {
       quantity: number;
-      warehouse_quantity_id: string;
+      warehouse_quantity_id: number;
     }[];
   }[] | undefined
   warehouse_quantities?: {
-    id: string;
+    id: number;
     warehouse: {
         name: string;
     };

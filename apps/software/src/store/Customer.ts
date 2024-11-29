@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 export interface CustomerType {
-  id: string;
+  id: number;
   name: string;
   balance: string | null;
   addresses: {
@@ -19,7 +19,7 @@ export interface viewCustomerType extends CustomerType {
   profileUrl: string | null;
   priority: "Low" | "Mid" | "High" | null;
   addresses: {
-    id: string;
+    id: number;
     customer_id: string;
     isPrimary: boolean | undefined;
     address: string;
@@ -30,12 +30,12 @@ export interface viewCustomerType extends CustomerType {
     latitude: number | undefined;
     longitude: number | undefined;
     address_area: {
-      id: string;
+      id: number;
       area: string;
     };
   }[];
   phone_numbers: {
-    id: string;
+    id: number;
     phone_number: string;
     country_code?: string | undefined;
     whatsappChatId?: string | undefined;
@@ -68,7 +68,7 @@ export const viewCustomerAtom = atom<viewCustomerType | null>({
   default: null,
 });
 
-export const viewCustomerIDAtom = atom<string | null>({
+export const viewCustomerIDAtom = atom<number | null>({
   key: "viewCustomerIDAtom",
   default: null,
 });

@@ -23,24 +23,24 @@ import { Warehouse } from "lucide-react";
 
 type DebitWarehouseQuantityPropsType = {
   totalQuantity: number;
-  item_id: string;
+  item_id: number;
   onChange: (
     quantity:
       | {
-          warehouse_quantity_id: string;
+          warehouse_quantity_id: number;
           quantity: number;
         }[]
       | undefined
   ) => void;
   existingQuantities?: {
-    warehouse_quantity_id: string;
+    warehouse_quantity_id: number;
     quantity: number;
   }[]
   disabled: boolean;
 };
 
 type foundWarehouseQuantity = {
-  id: string;
+  id: number;
   quantity: number;
   warehouse: {
     name: string;
@@ -57,7 +57,7 @@ const DebitWarehouseQuantity = ({
   const [open, setOpen] = React.useState(false);
   const [remainingQuantity, setRemainingQuantity] = React.useState(totalQuantity);
   const [warehouseQuantity, setWarehouseQuantity] = React.useState<{
-      warehouse_quantity_id: string;
+      warehouse_quantity_id: number;
       name: string;
       current_quantity: number;
       quantity: number;

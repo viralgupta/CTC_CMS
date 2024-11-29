@@ -1,23 +1,23 @@
 import { atom } from "recoil";
 
 export interface AddressType {
-  id: string;
+  id: number;
   isPrimary: boolean | null;
   address: string;
   house_number: string;
   city: string;
   customer: {
       name: string;
-      id: string;
+      id: number;
   };
   address_area: {
-      id: string;
+      id: number;
       area: string;
   };
 };
 
 export interface ViewAddressType {
-  id: string;
+  id: number;
   isPrimary: boolean | null;
   address: string;
   house_number: string;
@@ -26,11 +26,11 @@ export interface ViewAddressType {
   latitude: number | null;
   longitude: number | null;
   customer: {
-    id: string;
+    id: number;
     name: string;
   };
   address_area: {
-    id: string;
+    id: number;
     area: string;
   };
   orders: {
@@ -48,7 +48,7 @@ export const allAddressAtom = atom<AddressType[]>({
   default: [],
 });
 
-export const viewAddressIdAtom = atom<string | null>({
+export const viewAddressIdAtom = atom<number | null>({
   key: "viewAddressIdAtom",
   default: null,
 })

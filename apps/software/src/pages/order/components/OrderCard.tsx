@@ -159,7 +159,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
             <div className="w-full flex items-start h-32 space-x-1">
               <DivButton
                 onClick={() => {
-                  setViewAddressId(order.delivery_address_id ?? "");
+                  setViewAddressId(order.delivery_address_id);
                 }}
                 className="flex items-start space-x-1 w-1/2 h-full rounded-md overflow-y-scroll hide-scroll"
               >
@@ -216,7 +216,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
               </Popover>
               <DivButton
                 onClick={() => {
-                  setViewCustomerID(order.customer_id ?? "");
+                  setViewCustomerID(order.customer_id);
                 }}
                 className="flex items-center space-x-4 w-1/2 h-full"
               >
@@ -247,7 +247,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
             <div className="flex items-center h-16 gap-2">
               <DivButton
                 onClick={() => {
-                  setViewArchitectID(order.architect_id ?? "");
+                  setViewArchitectID(order.architect_id);
                 }}
                 className="flex items-center space-x-4 w-1/2 h-full"
               >
@@ -271,7 +271,7 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
               </DivButton>
               <DivButton
                 onClick={() => {
-                  setViewCarpenterID(order.carpanter_id ?? "");
+                  setViewCarpenterID(order.carpanter_id);
                 }}
                 className="flex items-center space-x-4 w-1/2 h-full"
               >

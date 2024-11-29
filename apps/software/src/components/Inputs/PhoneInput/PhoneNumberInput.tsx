@@ -46,7 +46,7 @@ import { FakeButton } from "@/components/ui/fake-button";
 import { viewCustomerType } from "@/store/customer";
 
 const PhoneNumberArray = z.array(phone_numberType.extend({
-  id: z.string().optional()
+  id: z.number().optional()
 }));
 
 type PhoneNumberInputProps = {
@@ -255,7 +255,7 @@ const PhoneNumberInput = ({
             </div>
           </form>
         </Form>
-        <PhoneNumberTable value={value.map((phone) => {return {...phone, id: phone.id ? phone.id : ""}})} action={{
+        <PhoneNumberTable value={value.map((phone) => {return {...phone, id: phone.id ? phone.id : 0}})} action={{
           message: "Delete",
           Icon: Trash2,
           fun: removeNumber,

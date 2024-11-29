@@ -35,22 +35,21 @@ import { useSetRecoilState } from "recoil";
 import { viewItemIDAtom } from "@/store/Items";
 import request from "@/lib/request";
 import { useAllWarehouse } from "@/hooks/warehouse";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ViewWarehouse = ({
   warehouse_id,
   children,
 }: {
-  warehouse_id: string;
+  warehouse_id: number;
   children: React.ReactNode;
 }) => {
   const [open, setOpen] = React.useState(false);
   const [warehouse, setWarehouse] = React.useState<null | {
     name: string;
-    id: string;
+    id: number;
     warehouse_quantities: {
-      item_id: string;
+      item_id: number;
       quantity: number;
       item: {
         name: string;

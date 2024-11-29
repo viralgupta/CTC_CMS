@@ -26,8 +26,8 @@ import Fuse from "fuse.js";
 import { cn } from "@/lib/utils";
 
 type AddressAreaInputProps = {
-  onChange: (value: string) => void;
-  value: string;
+  onChange: (value: number) => void;
+  value?: number;
   className?: string;
 };
 

@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS "address" (
-	"a_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"a_customer_id" uuid NOT NULL,
+	"a_id" serial PRIMARY KEY NOT NULL,
+	"a_customer_id" integer NOT NULL,
 	"a_house_number" varchar(15) NOT NULL,
-	"a_area_id" uuid NOT NULL,
+	"a_area_id" integer NOT NULL,
 	"a_address" varchar(255) NOT NULL,
 	"a_city" varchar(30) NOT NULL,
 	"a_state" varchar(20) NOT NULL,
@@ -12,12 +12,12 @@ CREATE TABLE IF NOT EXISTS "address" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "address_area" (
-	"aa_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"aa_id" serial PRIMARY KEY NOT NULL,
 	"aa_area" varchar(50) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "architect" (
-	"ar_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"ar_id" serial PRIMARY KEY NOT NULL,
 	"ar_name" varchar(30) NOT NULL,
 	"ar_profileUrl" text,
 	"ar_area" varchar(20) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "architect" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "carpanter" (
-	"ca_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"ca_id" serial PRIMARY KEY NOT NULL,
 	"ca_name" varchar(30) NOT NULL,
 	"ca_profileUrl" text,
 	"ca_area" varchar(20) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS "carpanter" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "customer" (
-	"c_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"c_id" serial PRIMARY KEY NOT NULL,
 	"c_name" varchar(50) NOT NULL,
 	"c_profileUrl" text,
 	"c_priority" varchar DEFAULT 'Low',
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "customer" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "driver" (
-	"d_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"d_id" serial PRIMARY KEY NOT NULL,
 	"d_name" varchar(30) NOT NULL,
 	"d_profileUrl" text,
 	"d_vehicle_number" varchar(20),
@@ -52,23 +52,23 @@ CREATE TABLE IF NOT EXISTS "driver" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "estimate" (
 	"e_id" serial PRIMARY KEY NOT NULL,
-	"e_customer_id" uuid NOT NULL,
+	"e_customer_id" integer NOT NULL,
 	"e_total_estimate_amount" numeric(10, 2) NOT NULL,
 	"e_created_at" timestamp DEFAULT now() NOT NULL,
 	"e_updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "estimate_item" (
-	"ei_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"ei_id" serial PRIMARY KEY NOT NULL,
 	"ei_estimate_id" integer NOT NULL,
-	"ei_item_id" uuid NOT NULL,
+	"ei_item_id" integer NOT NULL,
 	"ei_quantity" real NOT NULL,
 	"ei_rate" real NOT NULL,
 	"ei_total_value" numeric(10, 2) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "item" (
-	"i_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"i_id" serial PRIMARY KEY NOT NULL,
 	"i_name" varchar(255) NOT NULL,
 	"i_multiplier" real DEFAULT 1 NOT NULL,
 	"i_category" varchar NOT NULL,
@@ -80,32 +80,32 @@ CREATE TABLE IF NOT EXISTS "item" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "item_order" (
-	"io_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"io_id" serial PRIMARY KEY NOT NULL,
 	"io_vendor_name" varchar(255),
 	"io_ordered_quantity" real,
 	"io_date" timestamp NOT NULL,
 	"io_received_quantity" real,
 	"io_receive_date" timestamp,
-	"io_item_id" uuid NOT NULL
+	"io_item_id" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "iowq" (
-	"iowq_io_id" uuid NOT NULL,
-	"iowq_wq_id" uuid NOT NULL,
+	"iowq_io_id" integer NOT NULL,
+	"iowq_wq_id" integer NOT NULL,
 	"iowq_quantity" real NOT NULL,
 	CONSTRAINT "iowq_pk" PRIMARY KEY("iowq_io_id","iowq_wq_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "log" (
 	"l_id" serial PRIMARY KEY NOT NULL,
-	"l_user_id" uuid NOT NULL,
+	"l_user_id" integer NOT NULL,
 	"l_linked_to" varchar NOT NULL,
 	"l_type" varchar NOT NULL,
-	"l_customer_id" uuid,
-	"l_architect_id" uuid,
-	"l_carpanter_id" uuid,
-	"l_driver_id" uuid,
-	"l_item_id" uuid,
+	"l_customer_id" integer,
+	"l_architect_id" integer,
+	"l_carpanter_id" integer,
+	"l_driver_id" integer,
+	"l_item_id" integer,
 	"l_order_id" integer,
 	"l_heading" varchar(50),
 	"l_message" text NOT NULL,
@@ -115,14 +115,14 @@ CREATE TABLE IF NOT EXISTS "log" (
 CREATE TABLE IF NOT EXISTS "order" (
 	"o_id" serial PRIMARY KEY NOT NULL,
 	"o_note" text,
-	"o_customer_id" uuid,
-	"o_carpanter_id" uuid,
-	"o_architect_id" uuid,
+	"o_customer_id" integer,
+	"o_carpanter_id" integer,
+	"o_architect_id" integer,
 	"o_status" varchar DEFAULT 'Pending' NOT NULL,
 	"o_priority" varchar DEFAULT 'Low' NOT NULL,
 	"o_payment_status" varchar DEFAULT 'UnPaid' NOT NULL,
 	"o_delivery_date" timestamp,
-	"o_delivery_address_id" uuid,
+	"o_delivery_address_id" integer,
 	"o_total_order_amount" numeric(10, 2) NOT NULL,
 	"o_discount" numeric(10, 2) DEFAULT '0.00',
 	"amount_paid" numeric(10, 2) DEFAULT '0.00',
@@ -133,9 +133,9 @@ CREATE TABLE IF NOT EXISTS "order" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "order_item" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"oi_order_id" integer NOT NULL,
-	"oi_item_id" uuid NOT NULL,
+	"oi_item_id" integer NOT NULL,
 	"oi_quantity" real NOT NULL,
 	"oi_delivered_quantity" real NOT NULL,
 	"oi_rate" real NOT NULL,
@@ -149,9 +149,9 @@ CREATE TABLE IF NOT EXISTS "order_item" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "order_movement" (
-	"om_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"om_id" serial PRIMARY KEY NOT NULL,
 	"om_order_id" integer NOT NULL,
-	"om_driver_id" uuid,
+	"om_driver_id" integer,
 	"om_type" varchar NOT NULL,
 	"om_status" varchar DEFAULT 'Pending' NOT NULL,
 	"om_labour_frate_cost" real NOT NULL,
@@ -160,25 +160,25 @@ CREATE TABLE IF NOT EXISTS "order_movement" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "omi" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"omi_order_movement_id" uuid NOT NULL,
-	"omi_order_item_id" uuid NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"omi_order_movement_id" integer NOT NULL,
+	"omi_order_item_id" integer NOT NULL,
 	"omi_quantity" real NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "omiwq" (
-	"omiwq_omi_id" uuid NOT NULL,
-	"omiwq_wq_id" uuid NOT NULL,
+	"omiwq_omi_id" integer NOT NULL,
+	"omiwq_wq_id" integer NOT NULL,
 	"omiwq_quantity" real NOT NULL,
 	CONSTRAINT "omiwq_pk" PRIMARY KEY("omiwq_omi_id","omiwq_wq_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "phone_number" (
-	"pn_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"pn_customer_id" uuid,
-	"pn_architect_id" uuid,
-	"pn_carpanter_id" uuid,
-	"pn_driver_id" uuid,
+	"pn_id" serial PRIMARY KEY NOT NULL,
+	"pn_customer_id" integer,
+	"pn_architect_id" integer,
+	"pn_carpanter_id" integer,
+	"pn_driver_id" integer,
 	"pn_country_code" varchar(5),
 	"pn_phone_number" varchar(10) NOT NULL,
 	"pn_whatsappChatId" varchar(20),
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS "phone_number" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "resource" (
-	"r_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"r_id" serial PRIMARY KEY NOT NULL,
 	"r_extension" varchar(10),
 	"r_key" text NOT NULL,
 	"r_previewKey" text,
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS "resource" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
-	"u_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"u_id" serial PRIMARY KEY NOT NULL,
 	"u_name" varchar(30) NOT NULL,
 	"u_phone_number" varchar(10) NOT NULL,
 	"u_isAdmin" boolean DEFAULT false,
@@ -206,14 +206,14 @@ CREATE TABLE IF NOT EXISTS "user" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "warehouse" (
-	"w_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"w_id" serial PRIMARY KEY NOT NULL,
 	"w_name" varchar(255) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "warehouse_quantity" (
-	"wq_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"wq_item_id" uuid NOT NULL,
-	"wq_warehouse_id" uuid NOT NULL,
+	"wq_id" serial PRIMARY KEY NOT NULL,
+	"wq_item_id" integer NOT NULL,
+	"wq_warehouse_id" integer NOT NULL,
 	"wq_quantity" real NOT NULL
 );
 --> statement-breakpoint

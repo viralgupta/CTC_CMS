@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 export interface ResourceType {
-  id: string;
+  id: number;
   name: string;
   previewUrl?: string;
   extension: string | null;
@@ -23,7 +23,7 @@ export const viewResourceAtom = atom<ViewResourceType | null>({
   default: null
 });
 
-export const viewResourceIdAtom = atom<string | null>({
+export const viewResourceIdAtom = atom<number | null>({
   key: "viewResourceIdAtom",
   default: null
 });

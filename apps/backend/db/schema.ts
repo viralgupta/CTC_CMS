@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  uuid,
+  serial,
   text,
   pgTable,
   boolean,
@@ -11,12 +11,11 @@ import {
   real,
   doublePrecision,
   index,
-  serial,
   primaryKey,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: uuid("u_id").defaultRandom().notNull().primaryKey(),
+  id: serial("u_id").notNull().primaryKey(),
   name: varchar("u_name", { length: 30 }).notNull(),
   phone_number: varchar("u_phone_number", { length: 10 }).unique().notNull(),
   isAdmin: boolean("u_isAdmin").default(false),
@@ -24,7 +23,7 @@ export const user = pgTable("user", {
 });
 
 export const customer = pgTable("customer", {
-  id: uuid("c_id").defaultRandom().notNull().primaryKey(),
+  id: serial("c_id").notNull().primaryKey(),
   name: varchar("c_name", { length: 50 }).notNull(),
   profileUrl: text("c_profileUrl"),
   priority: varchar("c_priority", {
@@ -48,7 +47,7 @@ export const customer_relation = relations(customer, ({ many }) => ({
 }));
 
 export const address_area = pgTable("address_area", {
-  id: uuid("aa_id").defaultRandom().notNull().primaryKey(),
+  id: serial("aa_id").notNull().primaryKey(),
   area: varchar("aa_area", { length: 50 }).notNull(),
 })
 
@@ -57,12 +56,12 @@ export const address_area_relation = relations(address_area, ({ many }) => ({
 }));
 
 export const address = pgTable("address", {
-  id: uuid("a_id").defaultRandom().notNull().primaryKey(),
-  customer_id: uuid("a_customer_id")
+  id: serial("a_id").notNull().primaryKey(),
+  customer_id: integer("a_customer_id")
     .references(() => customer.id, { onDelete: "cascade" })
     .notNull(),
   house_number: varchar("a_house_number", { length: 15 }).notNull(),
-  address_area_id: uuid("a_area_id")
+  address_area_id: integer("a_area_id")
     .references(() => address_area.id)
     .notNull(),
   address: varchar("a_address", { length: 255 }).notNull(),
@@ -89,7 +88,7 @@ export const address_relation = relations(
 );
 
 export const architect = pgTable("architect", {
-  id: uuid("ar_id").defaultRandom().notNull().primaryKey(),
+  id: serial("ar_id").notNull().primaryKey(),
   name: varchar("ar_name", { length: 30 }).notNull(),
   profileUrl: text("ar_profileUrl"),
   area: varchar("ar_area", { length: 20 }).notNull(),
@@ -103,7 +102,7 @@ export const architect_relation = relations(architect, ({ many }) => ({
 }));
 
 export const carpanter = pgTable("carpanter", {
-  id: uuid("ca_id").defaultRandom().notNull().primaryKey(),
+  id: serial("ca_id").notNull().primaryKey(),
   name: varchar("ca_name", { length: 30 }).notNull(),
   profileUrl: text("ca_profileUrl"),
   area: varchar("ca_area", { length: 20 }).notNull(),
@@ -117,7 +116,7 @@ export const carpanter_relation = relations(carpanter, ({ many }) => ({
 }));
 
 export const driver = pgTable("driver", {
-  id: uuid("d_id").defaultRandom().notNull().primaryKey(),
+  id: serial("d_id").notNull().primaryKey(),
   name: varchar("d_name", { length: 30 }).notNull(),
   profileUrl: text("d_profileUrl"),
   vehicle_number: varchar("d_vehicle_number", { length: 20 }),
@@ -133,11 +132,11 @@ export const driver_relation = relations(driver, ({ many }) => ({
 }));
 
 export const phone_number = pgTable("phone_number", {
-  id: uuid("pn_id").defaultRandom().notNull().primaryKey(),
-  customer_id: uuid("pn_customer_id").references(() => customer.id, { onDelete: "cascade" }),
-  architect_id: uuid("pn_architect_id").references(() => architect.id, { onDelete: "cascade" }),
-  carpanter_id: uuid("pn_carpanter_id").references(() => carpanter.id, { onDelete: "cascade" }),
-  driver_id: uuid("pn_driver_id").references(() => driver.id, { onDelete: "cascade" }),
+  id: serial("pn_id").notNull().primaryKey(),
+  customer_id: integer("pn_customer_id").references(() => customer.id, { onDelete: "cascade" }),
+  architect_id: integer("pn_architect_id").references(() => architect.id, { onDelete: "cascade" }),
+  carpanter_id: integer("pn_carpanter_id").references(() => carpanter.id, { onDelete: "cascade" }),
+  driver_id: integer("pn_driver_id").references(() => driver.id, { onDelete: "cascade" }),
   country_code: varchar("pn_country_code", { length: 5 }),
   phone_number: varchar("pn_phone_number", { length: 10 }).notNull().unique(),
   whatsappChatId: varchar("pn_whatsappChatId", { length: 20 }).unique(),
@@ -164,7 +163,7 @@ export const phone_number_relation = relations(phone_number, ({ one }) => ({
 }));
 
 export const item = pgTable("item", {
-  id: uuid("i_id").primaryKey().defaultRandom().notNull(),
+  id: serial("i_id").primaryKey().notNull(),
   name: varchar("i_name", { length: 255 }).notNull(),
   multiplier: real("i_multiplier").notNull().default(1.00),
   category: varchar("i_category", {
@@ -197,7 +196,7 @@ export const item_relation = relations(item, ({ many }) => ({
 }));
 
 export const warehouse = pgTable("warehouse", {
-  id: uuid("w_id").primaryKey().defaultRandom().notNull(),
+  id: serial("w_id").primaryKey().notNull(),
   name: varchar("w_name", { length: 255 }).notNull(),
 });
 
@@ -206,9 +205,9 @@ export const warehouse_relation = relations(warehouse, ({ many }) => ({
 }));
 
 export const warehouse_quantity = pgTable("warehouse_quantity", {
-  id: uuid("wq_id").primaryKey().defaultRandom().notNull(),
-  item_id: uuid("wq_item_id").references(() => item.id, { onDelete: "cascade" }).notNull(),
-  warehouse_id: uuid("wq_warehouse_id").references(() => warehouse.id, { onDelete: "cascade" }).notNull(),
+  id: serial("wq_id").primaryKey().notNull(),
+  item_id: integer("wq_item_id").references(() => item.id, { onDelete: "cascade" }).notNull(),
+  warehouse_id: integer("wq_warehouse_id").references(() => warehouse.id, { onDelete: "cascade" }).notNull(),
   quantity: real("wq_quantity").notNull(),
 });
 
@@ -226,13 +225,13 @@ export const warehouse_quantity_relation = relations(warehouse_quantity, ({ one,
 }));
 
 export const item_order = pgTable("item_order", {
-  id: uuid("io_id").primaryKey().defaultRandom().notNull(),
+  id: serial("io_id").primaryKey().notNull(),
   vendor_name: varchar("io_vendor_name", { length: 255 }),
   ordered_quantity: real("io_ordered_quantity"),
   order_date: timestamp("io_date", { mode: "date" }).notNull(),
   received_quantity: real("io_received_quantity"),
   receive_date: timestamp("io_receive_date", { mode: "date" }),
-  item_id: uuid("io_item_id")
+  item_id: integer("io_item_id")
     .references(() => item.id, { onDelete: "cascade" })
     .notNull(),
 }, (table) => {
@@ -250,10 +249,10 @@ export const item_order_relation = relations(item_order, ({ one, many }) => ({
 }));
 
 export const item_order_warehouse_quantity = pgTable("iowq", {
-  item_order_id: uuid("iowq_io_id")
+  item_order_id: integer("iowq_io_id")
     .references(() => item_order.id, { onDelete: "cascade" })
     .notNull(),
-  warehouse_quantity_id: uuid("iowq_wq_id")
+  warehouse_quantity_id: integer("iowq_wq_id")
     .references(() => warehouse_quantity.id)
     .notNull(),
   quantity: real("iowq_quantity").notNull(),
@@ -279,9 +278,9 @@ export const order = pgTable("order", {
 
   note: text("o_note"),
 
-  customer_id: uuid("o_customer_id").references(() => customer.id),
-  carpanter_id: uuid("o_carpanter_id").references(() => carpanter.id),
-  architect_id: uuid("o_architect_id").references(() => architect.id),
+  customer_id: integer("o_customer_id").references(() => customer.id),
+  carpanter_id: integer("o_carpanter_id").references(() => carpanter.id),
+  architect_id: integer("o_architect_id").references(() => architect.id),
 
   status: varchar("o_status", {
     enum: ["Pending", "Delivered"],
@@ -300,7 +299,7 @@ export const order = pgTable("order", {
     .default("UnPaid"),
 
   delivery_date: timestamp("o_delivery_date", { mode: "date" }),
-  delivery_address_id: uuid("o_delivery_address_id").references(
+  delivery_address_id: integer("o_delivery_address_id").references(
     () => address.id
   ),
 
@@ -353,12 +352,12 @@ export const order_relation = relations(order, ({ one, many }) => ({
 }));
 
 export const order_item = pgTable("order_item", {
-  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  id: serial("id").primaryKey().notNull(),
 
   order_id: integer("oi_order_id")
     .references(() => order.id)
     .notNull(),
-  item_id: uuid("oi_item_id")
+  item_id: integer("oi_item_id")
     .references(() => item.id)
     .notNull(),
 
@@ -401,11 +400,11 @@ export const order_item_relation = relations(order_item, ({ one }) => ({
 }));
 
 export const order_movement = pgTable("order_movement", {
-  id: uuid("om_id").primaryKey().defaultRandom().notNull(),
+  id: serial("om_id").primaryKey().notNull(),
   order_id: integer("om_order_id")
     .references(() => order.id)
     .notNull(),
-  driver_id: uuid("om_driver_id")
+  driver_id: integer("om_driver_id")
     .references(() => driver.id),
   type: varchar("om_type", {
     enum: ["DELIVERY", "RETURN"],
@@ -433,11 +432,11 @@ export const order_movement_relation = relations(order_movement, ({ one, many })
 }));
 
 export const order_movement_item = pgTable("omi", {
-  id: uuid("id").primaryKey().defaultRandom().notNull(),
-  order_movement_id: uuid("omi_order_movement_id")
+  id: serial("id").primaryKey().notNull(),
+  order_movement_id: integer("omi_order_movement_id")
     .references(() => order_movement.id, { onDelete: "cascade" })
     .notNull(),
-  order_item_id: uuid("omi_order_item_id")
+  order_item_id: integer("omi_order_item_id")
     .references(() => order_item.id)
     .notNull(),
   quantity: real("omi_quantity").notNull(),
@@ -456,10 +455,10 @@ export const order_movement_item_relation = relations(order_movement_item, ({ on
 }))
 
 export const order_movement_item_warehouse_quantity = pgTable("omiwq", {
-  order_movement_item_id: uuid("omiwq_omi_id")
+  order_movement_item_id: integer("omiwq_omi_id")
     .references(() => order_movement_item.id, { onDelete: "cascade" })
     .notNull(),
-  warehouse_quantity_id: uuid("omiwq_wq_id")
+  warehouse_quantity_id: integer("omiwq_wq_id")
     .references(() => warehouse_quantity.id)
     .notNull(),
   quantity: real("omiwq_quantity").notNull(),
@@ -482,7 +481,7 @@ export const order_movement_item_warehouse_quantity_relation = relations(order_m
 
 export const estimate = pgTable("estimate", {
   id: serial("e_id").primaryKey().notNull(),
-  customer_id: uuid("e_customer_id").references(() => customer.id, { onDelete: "cascade" }).notNull(),
+  customer_id: integer("e_customer_id").references(() => customer.id, { onDelete: "cascade" }).notNull(),
 
   total_estimate_amount: numeric("e_total_estimate_amount", {
     precision: 10,
@@ -506,11 +505,11 @@ export const estimate_relation = relations(estimate, ({ one, many }) => ({
 }));
 
 export const estimate_item = pgTable("estimate_item", {
-  id: uuid("ei_id").primaryKey().defaultRandom().notNull(),
+  id: serial("ei_id").primaryKey().notNull(),
   estimate_id: integer("ei_estimate_id")
     .references(() => estimate.id, { onDelete: "cascade" })
     .notNull(),
-  item_id: uuid("ei_item_id")
+  item_id: integer("ei_item_id")
     .references(() => item.id)
     .notNull(),
   
@@ -534,7 +533,7 @@ export const estimate_item_relation = relations(estimate_item, ({ one }) => ({
 }));
 
 export const resource = pgTable("resource", {
-  id: uuid("r_id").primaryKey().defaultRandom().notNull(),
+  id: serial("r_id").primaryKey().notNull(),
   extension: varchar("r_extension", { length: 10 }),
   key: text("r_key").notNull(),
   previewKey: text("r_previewKey"),
@@ -544,7 +543,7 @@ export const resource = pgTable("resource", {
 
 export const log = pgTable("log", {
   id: serial("l_id").primaryKey(),
-  user_id: uuid("l_user_id")
+  user_id: integer("l_user_id")
   .references(() => user.id)
   .notNull(),
   linked_to: varchar("l_linked_to", {
@@ -553,11 +552,11 @@ export const log = pgTable("log", {
   type: varchar("l_type", {
     enum: ["CREATE", "UPDATE", "DELETE"],
   }).notNull(),
-  customer_id: uuid("l_customer_id"),
-  architect_id: uuid("l_architect_id"),
-  carpanter_id: uuid("l_carpanter_id"),
-  driver_id: uuid("l_driver_id"),
-  item_id: uuid("l_item_id"),
+  customer_id: integer("l_customer_id"),
+  architect_id: integer("l_architect_id"),
+  carpanter_id: integer("l_carpanter_id"),
+  driver_id: integer("l_driver_id"),
+  item_id: integer("l_item_id"),
   order_id: integer("l_order_id"),
   heading: varchar("l_heading", { length: 50 }),
   message: text("l_message").notNull(),

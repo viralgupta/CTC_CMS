@@ -12,7 +12,7 @@ export const createCarpanterType = z
   .strict("Too many fields in request body");
 
 export const editCarpanterType = z.object({
-    carpanter_id: z.string(),
+    carpanter_id: z.number(),
     name: z.string().optional(),
     profileUrl: z.string().optional(),
     area: z.string().optional(),
@@ -21,7 +21,7 @@ export const editCarpanterType = z.object({
 
 export const settleBalanceType = z
   .object({
-    carpanter_id: z.string(),
+    carpanter_id: z.number(),
     amount: z
       .string()
       .refine(
@@ -38,7 +38,7 @@ export const settleBalanceType = z
   .strict("Too many fields in request body");
 
 export const getCarpanterType = z.object({
-  carpanter_id: z.string()
+  carpanter_id: z.string().transform((val) => Number(val))
 }).strict("Too many fields in request params");
 
 export const deleteCarpanterType = getCarpanterType;

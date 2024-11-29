@@ -13,7 +13,7 @@ interface DataTableProps {
   CompKey: string;
   data: AddressType[];
   columnFilters?: ColumnFiltersState;
-  onChange?: (addId: string) => void;
+  onChange?: (addId: number) => void;
 }
 
 function AddressTable({ CompKey: key, data, columnFilters = [], onChange }: DataTableProps) {

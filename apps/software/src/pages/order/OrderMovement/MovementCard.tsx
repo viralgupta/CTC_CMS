@@ -69,9 +69,9 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
                 <div className="w-1/2 h-full">
                   <DivButton
                     onClick={() => {
-                      setViewAddressId(
-                        movement?.order?.delivery_address?.id ?? ""
-                      );
+                      if(movement?.order?.delivery_address){
+                        setViewAddressId(movement?.order?.delivery_address?.id);
+                      }
                     }}
                     className="flex items-start space-x-1 h-1/2 rounded-md overflow-y-scroll hide-scroll"
                   >
@@ -153,7 +153,9 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
               <div className="flex items-center h-16 gap-2">
                 <DivButton
                   onClick={() => {
-                    setViewCustomerId(movement.order?.customer?.id ?? "");
+                    if(movement.order?.customer){
+                      setViewCustomerId(movement.order?.customer?.id);
+                    }
                   }}
                   className="flex items-center space-x-4 w-1/2 h-full"
                 >
@@ -173,7 +175,7 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
                 </DivButton>
                 <DivButton
                   onClick={() => {
-                    setViewDriverId(movement.driver_id ?? "");
+                    setViewDriverId(movement.driver_id);
                   }}
                   className="flex items-center space-x-4 w-1/2 h-full"
                 >

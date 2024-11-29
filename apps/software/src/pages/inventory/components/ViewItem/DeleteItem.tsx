@@ -21,7 +21,7 @@ const DeleteItem = ({
   itemId,
 }: {
   children: React.ReactNode;
-  itemId: string;
+  itemId: number;
 }) => {
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
 

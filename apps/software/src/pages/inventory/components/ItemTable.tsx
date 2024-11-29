@@ -15,7 +15,7 @@ interface DataTableProps {
   CompKey: string;
   data: itemType[];
   columnFilters?: ColumnFiltersState;
-  onChange?: (val: string) => void;
+  onChange?: (val: number) => void;
 }
 
 function ItemTable({ CompKey: key, data, columnFilters = [], onChange }: DataTableProps) {

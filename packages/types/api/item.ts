@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const createWarehouseQuantityType = z.object({
-  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+  warehouse_id: z.number(),
   quantity: z.number().nonnegative("Quantity needs to be greater than equal to 0"),
 });
 
 export const recieveWarehouseQuantityType = z.object({
-  warehouse_quantity_id: z.string().uuid("Invalid Warehouse Quantity ID"),
+  warehouse_quantity_id: z.number(),
   quantity: z.number().nonnegative("Quantity needs to be greater than equal to 0"),
 });
 
@@ -45,16 +45,16 @@ export const createItemType = z
   .strict("Too many fields in request body");
 
 export const getItemType = z.object({
-  item_id: z.string().uuid("Invalid Item ID"),
+  item_id: z.string().transform((val) => Number(val)),
 })
 
 export const getItemRatesType = getItemType.extend({
-  customer_id: z.string().uuid().optional()
+  customer_id: z.string().transform((val) => Number(val)).optional()
 });
 
 export const editItemType = createItemType
   .extend({
-    item_id: z.string().uuid("Invalid Item ID"),
+    item_id: z.number(),
   })
   .omit({
     quantity: true,
@@ -71,7 +71,7 @@ export const editItemType = createItemType
   .strict("Too many fields in request body");
 
 export const createItemOrderType = z.object({
-  item_id: z.string().uuid("Invalid Item ID"),
+  item_id: z.number(),
   vendor_name: z.string().max(255).optional(),
   ordered_quantity: z.number().optional(),
   order_date: z.string()
@@ -85,7 +85,7 @@ export const createItemOrderType = z.object({
 });
 
 export const editItemOrderType = z.object({
-  id: z.string().uuid(),
+  id: z.number(),
   vendor_name: z.string().max(255).optional(),
   ordered_quantity: z.number().optional(),
   order_date: z.string()
@@ -94,7 +94,7 @@ export const editItemOrderType = z.object({
 });
 
 export const receiveItemOrderType = z.object({
-  id: z.string().uuid(),
+  id: z.number(),
   received_quantity: z.number(),
   warehouse_quantities: z.array(recieveWarehouseQuantityType).min(1),
   receive_date: z.string()
@@ -103,11 +103,11 @@ export const receiveItemOrderType = z.object({
 });
 
 export const deleteItemOrderType = z.object({
-  id: z.string().uuid(),
+  id: z.number(),
 });
 
 export const deleteItemType = z.object({
-  item_id: z.string().uuid("Invalid Item ID"),
+  item_id: z.number(),
 })
 
 export const createWarehouseType = z.object({
@@ -115,15 +115,15 @@ export const createWarehouseType = z.object({
 });
 
 export const editWarehouseType = createWarehouseType.extend({
-  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+  warehouse_id: z.number(),
 })
 
 export const getWarehouseType = z.object({
-  warehouse_id: z.string().uuid("Invalid Warehouse ID"),
+  warehouse_id: z.string().transform((val) => Number(val)),
 });
 
 export const deleteWarehouseType = getWarehouseType;
 
 export const getWarehouseItemQuantitiesType = z.object({
-  item_id: z.string().uuid("Invalid Item ID"),
+  item_id: z.string().transform((val) => Number(val)),
 });

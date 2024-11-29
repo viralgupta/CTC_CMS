@@ -19,8 +19,8 @@ const SearchArchitect = ({
   value,
   className
 }: {
-  onChange?: (arcId: string) => void;
-  value?: string;
+  onChange?: (arcId: number) => void;
+  value?: number;
   className?: string;
 }) => {
   const { architects, loading, refetchArchitects } = useAllArchitect();
@@ -62,7 +62,7 @@ const SearchArchitect = ({
       <DialogTrigger className="w-full">
         <Input
           className={cn("border border-border rounded-full w-full h-12", className)}
-          placeholder={value ? architects.find(c => c.id == value)?.name ?? value ?? "--" : "Search for architect..."}
+          placeholder={value ? architects.find(c => c.id == value)?.name ?? value.toString() ?? "--" : "Search for architect..."}
         />
       </DialogTrigger>
       <DialogContent size="6xl">

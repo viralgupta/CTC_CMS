@@ -31,7 +31,7 @@ const SelectEstimateItems = ({
     onChange(estimateItems);
   }, [estimateItems]);
 
-  const removeItem = (item_id: string) => {
+  const removeItem = (item_id: number) => {
     setEstimateItems((ei) => ei.filter((i) => i.item_id !== item_id));
   };
 

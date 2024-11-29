@@ -6,9 +6,9 @@ export enum CommissionType {
 }
 
 export interface OrderItem {
-  id: string;
+  id: number;
   order_id: number;
-  item_id: string;
+  item_id: number;
 
   quantity: number;
   rate: number;
@@ -76,14 +76,14 @@ export const currentFilterAtom = atom<keyof allOrdersType>({
 export type ViewOrderType = {
   id: number;
   status: "Pending" | "Delivered";
-  customer_id: string | null;
+  customer_id: number | null;
   priority: "Low" | "High" | "Medium";
-  architect_id: string | null;
-  carpanter_id: string | null;
+  architect_id: number | null;
+  carpanter_id: number | null;
   note: string | null;
   payment_status: "UnPaid" | "Partial" | "Paid";
   delivery_date: Date | null;
-  delivery_address_id: string | null;
+  delivery_address_id: number | null;
   total_order_amount: string;
   discount: string | null;
   amount_paid: string | null;
@@ -93,7 +93,7 @@ export type ViewOrderType = {
   updated_at: Date;
   customer: {
     name: string;
-    id: string;
+    id: number;
     profileUrl: string | null;
     balance: string | null;
     phone_numbers: {
@@ -127,7 +127,7 @@ export type ViewOrderType = {
     | undefined;
   order_items:
     | {
-        id: string;
+        id: number;
         carpanter_commision: string | null;
         architect_commision: string | null;
         quantity: number;
@@ -136,7 +136,7 @@ export type ViewOrderType = {
         total_value: string;
         carpanter_commision_type: "percentage" | "perPiece" | null;
         architect_commision_type: "percentage" | "perPiece" | null;
-        item_id: string;
+        item_id: number;
         item:
           | {
               name: string;
@@ -147,8 +147,8 @@ export type ViewOrderType = {
     | undefined;
   order_movements:
     | {
-        id: string;
-        driver_id: string | null;
+        id: number;
+        driver_id: number | null;
         status: "Pending" | "Completed";
         created_at: Date;
         type: "DELIVERY" | "RETURN";
@@ -169,7 +169,7 @@ export const viewOrderIdAtom = atom<number | null>({
   default: null,
 });
 
-export const viewOrderMovementIdAtom = atom<string | null>({
+export const viewOrderMovementIdAtom = atom<number | null>({
   key: "viewOrderMovementIdAtom",
   default: null,
 });

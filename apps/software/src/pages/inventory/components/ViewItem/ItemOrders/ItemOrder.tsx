@@ -170,7 +170,7 @@ const ItemOrders = ({
       resolver: zodResolver(createItemOrderType),
       reValidateMode: "onChange",
       defaultValues: {
-        item_id: viewItem?.id ?? '',
+        item_id: viewItem?.id,
         vendor_name: "",
         ordered_quantity: 0,
         received_quantity: 0,

@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 export type AddressArea = {
-  id: string;
+  id: number;
   area: string;
 }[];
 

@@ -2,7 +2,7 @@ import { atom } from "recoil";
 
 export interface ArchitectType {
   name: string;
-  id: string;
+  id: number;
   balance: string | null;
   area: string;
   phone_numbers: {
@@ -13,7 +13,7 @@ export interface ArchitectType {
 export interface ViewArchitectType extends ArchitectType {
   profileUrl: string | null;
   phone_numbers: {
-    id: string;
+    id: number;
     phone_number: string;
     country_code: string | null;
     whatsappChatId: string | null;
@@ -39,7 +39,7 @@ export const allArchitectAtom = atom<ArchitectType[]>({
   default: [],
 });
 
-export const viewArchitectIdAtom = atom<string | null>({
+export const viewArchitectIdAtom = atom<number | null>({
   key: "viewArchitectIdAtom",
   default: null,
 });

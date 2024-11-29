@@ -19,7 +19,7 @@ const DeleteItemOrder = ({
   id
 }: {
   children: React.ReactNode;
-  id: string;
+  id: number;
 }) => {
   const setViewItem = useSetRecoilState(viewItemAtom);
   const setViewItemId = useSetRecoilState(viewItemIDAtom);

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const estimateItem = z.object({
-  item_id: z.string(),
+  item_id: z.number(),
   quantity: z.number(),
   rate: z.number(),
   total_value: z.string()
@@ -12,7 +12,7 @@ const estimateItem = z.object({
 })
 
 export const createEstimateType = z.object({
-  customer_id: z.string(),
+  customer_id: z.number(),
   estimate_items: z.array(estimateItem).min(1, "At least one item is required"),
 })
 .strict("Too many fields in the body")
@@ -29,12 +29,12 @@ export const deleteEstimateType = getEstimateType;
 export const editEstimateCustomerIdType = createEstimateType.omit({
   estimate_items: true
 }).extend({
-  estimate_id: z.string().transform((val) => Number(val)),
+  estimate_id: z.number(),
 })
 .strict("Too many fields in the body");
 
 export const editEstimateOrderItemsType = z.object({
-  estimate_id: z.string().transform((val) => Number(val)),
+  estimate_id: z.number(),
   estimate_items: z.array(estimateItem).min(1, "At least one item is required"),
 })
 .strict("Too many fields in the body")

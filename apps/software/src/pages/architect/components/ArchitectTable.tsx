@@ -13,7 +13,7 @@ interface DataTableProps {
   CompKey: string;
   data: ArchitectType[];
   columnFilters?: ColumnFiltersState;
-  onChange?: (cusId: string) => void;
+  onChange?: (cusId: number) => void;
 }
 
 function ArchitectTable({

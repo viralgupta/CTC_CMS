@@ -295,14 +295,14 @@ const createGetSignedURL = async (req: Request, res: Response) => {
 }
 
 type Resource = {
-  id: string;
+  id: number;
   name: string;
   previewKey: string | null | undefined;
   previewUrl?: string;
 };
 
 type ReturnResource = {
-  id: string;
+  id: number;
   name: string;
   previewUrl?: string;
 };

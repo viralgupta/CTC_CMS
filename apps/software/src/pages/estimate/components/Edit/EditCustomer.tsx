@@ -8,9 +8,7 @@ import { viewEstimateAtom, viewEstimateIdAtom } from "@/store/estimates";
 const EditCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
   const [viewEstimate, setViewEstimate] = useRecoilState(viewEstimateAtom);
   const setViewEstimateId = useSetRecoilState(viewEstimateIdAtom);
-  const [customer_id, setCustomer_id] = React.useState(
-    viewEstimate?.customer_id ?? ""
-  );
+  const [customer_id, setCustomer_id] = React.useState(viewEstimate?.customer_id);
 
   const onSubmit = async () => {
     await request.put("/estimate/editEstimateCustomerId", {

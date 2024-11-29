@@ -13,7 +13,7 @@ interface DataTableProps {
   CompKey: string;
   data: CarpenterType[];
   columnFilters?: ColumnFiltersState;
-  onChange?: (cusId: string) => void;
+  onChange?: (cusId: number) => void;
 }
 
 function CarpenterTable({

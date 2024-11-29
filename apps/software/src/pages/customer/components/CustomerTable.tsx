@@ -12,7 +12,7 @@ interface DataTableProps {
   CompKey: string;
   data: CustomerType[];
   columnFilters?: ColumnFiltersState;
-  onChange?: (cusId: string) => void;
+  onChange?: (cusId: number) => void;
 }
 
 function CustomerTable({

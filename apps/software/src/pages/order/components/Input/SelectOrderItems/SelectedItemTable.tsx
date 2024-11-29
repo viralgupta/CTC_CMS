@@ -23,7 +23,7 @@ const SelectedItemTable = ({
 }: {
   delivered: boolean
   items: z.infer<typeof createOrderType>["order_items"];
-  removeItem: (item_id: string) => void;
+  removeItem: (item_id: number) => void;
   editItem: (
     value: z.infer<typeof createOrderType>["order_items"][number]
   ) => void;

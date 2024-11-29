@@ -26,7 +26,7 @@ const ViewAllPhoneNumbers = ({
   values: viewCustomerType["phone_numbers"];
   type: "customer" | "architect" | "carpanter" | "driver"
   viewObjectAtom: RecoilState<any | null>
-  viewObjectIdAtom: RecoilState<string | null>
+  viewObjectIdAtom: RecoilState<number | null>
 }) => {
   const setViewX = useSetRecoilState(viewObjectAtom);
   const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);
@@ -40,7 +40,7 @@ const ViewAllPhoneNumbers = ({
   }) => {
     const [open, setOpen] = React.useState(false);
 
-    async function handleDelete(id: string) {
+    async function handleDelete(id: number) {
       const res = await request.delete("/miscellaneous/deletePhone", {
         data: {
           phone_number_id: id,

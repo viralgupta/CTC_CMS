@@ -22,7 +22,7 @@ const DeleteAddress = ({
   resetViewCustomer = true
 }: {
   children: React.ReactNode;
-  addressId: string;
+  addressId: number;
   onDelete?: () => void;
   resetViewCustomer?: boolean;
 }) => {
@@ -31,7 +31,7 @@ const DeleteAddress = ({
   const setViewCustomerId = useSetRecoilState(viewCustomerIDAtom);
   const setViewCustomer = useSetRecoilState(viewCustomerAtom);
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: number) {
     const res = await request.delete("/customer/deleteAddress", {
       data: {
         address_id: id

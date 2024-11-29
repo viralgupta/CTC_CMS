@@ -10,7 +10,7 @@ import Spinner from "@/components/ui/Spinner";
 const AddCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
   const { refetchOrders } = useAllOrders();
-  const [customer_id, setCustomer_id] = React.useState(viewOrder?.customer_id ?? "");
+  const [customer_id, setCustomer_id] = React.useState(viewOrder?.customer_id);
   const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
@@ -27,7 +27,7 @@ const AddCustomer = ({ closeDialog }: { closeDialog?: () => void }) => {
   return (
     <div className="space-y-4 flex flex-col">
       <SearchCustomer
-        value={customer_id}
+        value={customer_id ?? undefined}
         onChange={setCustomer_id}
         className="rounded-lg"
       />

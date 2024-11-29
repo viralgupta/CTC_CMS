@@ -16,9 +16,9 @@ const SearchAddressInput = ({
   onChange,
   filterCustomerId,
 }: {
-  value?: string;
-  onChange: (id: string) => void;
-  filterCustomerId?: string;
+  value?: number;
+  onChange: (id: number) => void;
+  filterCustomerId?: number;
 }) => {
   const { addresses } = useAllAddresses();
   const [open, setOpen] = React.useState(false);

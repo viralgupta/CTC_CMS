@@ -20,7 +20,7 @@ const SelectedItemTable = ({
   editItem,
 }: {
   items: z.infer<typeof createEstimateType>["estimate_items"];
-  removeItem: (item_id: string) => void;
+  removeItem: (item_id: number) => void;
   editItem: (
     value: z.infer<typeof createEstimateType>["estimate_items"][number]
   ) => void;

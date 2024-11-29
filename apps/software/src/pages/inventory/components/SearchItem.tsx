@@ -21,8 +21,8 @@ const SearchItem = ({
   onChange,
   className,
 }: {
-  value?: string;
-  onChange?: (val: string) => void;
+  value?: number;
+  onChange?: (val: number) => void;
   className?: string;
 }) => {
   const { items, loading, refetchItems } = useAllItems();

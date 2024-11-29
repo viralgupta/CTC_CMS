@@ -37,7 +37,7 @@ import CordinatesInput from "./CordinatesInput";
 import { useAddressAreas } from "@/hooks/addressArea";
 
 const addressTypeWithOptionals = addressType.extend({
-  id: z.string().optional(),
+  id: z.number().optional(),
   address_area: z.string().optional()
 })
 
@@ -46,7 +46,7 @@ const AddressArrayWithOptionals = z.array(addressTypeWithOptionals);
 type AddressInputProps = {
   AddAddress: (data: z.infer<typeof addressTypeWithOptionals>) => void;
   removeAddress?: (value: string) => void;
-  viewAddress?: (id: string) => void;
+  viewAddress?: (id: number) => void;
   values: z.infer<typeof AddressArrayWithOptionals>;
   children?: React.ReactNode
 };
@@ -198,7 +198,7 @@ const AddressInput = ({
                         <CordinatesInput
                           disabled={
                             form.getValues("address") == "" ||
-                            form.getValues("address_area_id") == "" ||
+                            form.getValues("address_area_id") == null ||
                             form.getValues("city") == ""
                           }
                           onCordinateSelect={field.onChange}
@@ -279,8 +279,8 @@ const AddressInput = ({
                       <Button
                         size={"icon"}
                         onClick={() => {
-                          if (viewAddress) {
-                            viewAddress(v.id ?? "");
+                          if (viewAddress && v.id) {
+                            viewAddress(v.id);
                           } else if (removeAddress) {
                             removeAddress(v.address);
                           }

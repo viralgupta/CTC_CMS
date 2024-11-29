@@ -44,7 +44,7 @@ const SelectOrderItems = ({
     );
   }, [orderItems]);
 
-  const removeItem = (item_id: string) => {
+  const removeItem = (item_id: number) => {
     setOrderItems((oi) => oi.filter((i) => i.item_id !== item_id));
   };
 

@@ -2,7 +2,7 @@ import { atom } from "recoil";
 import { OrderItem } from "./order";
 
 export interface itemType {
-  id: string;
+  id: number;
   name: string;
   category: "Adhesives" | "Plywood" | "Laminate" | "Veneer" | "Decorative" | "Moulding" | "Miscellaneous" | "Door";
   quantity: number;
@@ -13,7 +13,7 @@ export interface itemType {
 
 type viewItemOrderItems = Omit<OrderItem, "item_id">  & {
   order: {
-    customer_id: string | null;
+    customer_id: number | null;
     customer: {
       name: string;
     } | null;
@@ -25,7 +25,7 @@ export interface viewItemType extends itemType {
   min_rate: number | null;
   order_items: viewItemOrderItems[];
   item_orders: {
-    id: string;
+    id: number;
     vendor_name: string | null;
     ordered_quantity: number | null;
     order_date: Date;
@@ -33,11 +33,11 @@ export interface viewItemType extends itemType {
     receive_date: Date | null;
     i_o_w_q: {
       quantity: number;
-      warehouse_quantity_id: string;
+      warehouse_quantity_id: number;
     }[]
   }[];
   warehouse_quantities: {
-    id: string;
+    id: number;
     quantity: number;
     warehouse: {
         name: string;
@@ -68,7 +68,7 @@ export const viewItemAtom = atom<viewItemType | null>({
   default: null
 });
 
-export const viewItemIDAtom = atom<string | null>({
+export const viewItemIDAtom = atom<number | null>({
   key: "viewItemIDAtom",
   default: null
 });

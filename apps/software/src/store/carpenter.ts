@@ -2,7 +2,7 @@ import { atom } from "recoil";
 
 export interface CarpenterType {
   name: string;
-  id: string;
+  id: number;
   balance: string | null;
   area: string;
   phone_numbers: {
@@ -13,7 +13,7 @@ export interface CarpenterType {
 export interface ViewCarpenterType extends CarpenterType {
   profileUrl: string | null;
   phone_numbers: {
-    id: string;
+    id: number;
     phone_number: string;
     country_code: string | null;
     whatsappChatId: string | null;
@@ -39,7 +39,7 @@ export const allCarpenterAtom = atom<CarpenterType[]>({
   default: [],
 });
 
-export const viewCarpenterIdAtom = atom<string | null>({
+export const viewCarpenterIdAtom = atom<number | null>({
   key: "viewCarpenterIdAtom",
   default: null,
 });

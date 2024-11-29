@@ -8,7 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 
 const EditCarpenter = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
-  const [carpenter_id, setCarpenter_id] = React.useState(viewOrder?.carpanter_id ?? "");
+  const [carpenter_id, setCarpenter_id] = React.useState(viewOrder?.carpanter_id);
   const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
@@ -24,7 +24,7 @@ const EditCarpenter = ({ closeDialog }: { closeDialog?: () => void }) => {
   return (
     <div className="space-y-4 flex flex-col">
       <SearchCustomer
-        value={carpenter_id}
+        value={carpenter_id ?? undefined}
         onChange={setCarpenter_id}
         className="rounded-lg"
       />

@@ -25,7 +25,7 @@ type WarehouseCreditItemQuantityProps = {
   onChange: (
     quantity:
       | {
-          warehouse_id: string;
+          warehouse_id: number;
           quantity: number;
         }[]
       | undefined
@@ -41,7 +41,7 @@ const CreateCreditWarehouseQuantity: React.FC<
     React.useState(totalQuantity);
   const [warehouseQuantity, setWarehouseQuantity] = React.useState<
     | {
-        warehouse_id: string;
+        warehouse_id: number;
         name: string;
         quantity: number;
       }[]

@@ -19,8 +19,8 @@ const SearchCustomer = ({
   value,
   className
 }: {
-  onChange?: (cusId: string) => void;
-  value?: string;
+  onChange?: (cusId: number) => void;
+  value?: number;
   className?: string;
 }) => {
   const { customers, loading, refetchCustomers } = useAllCustomer();
@@ -62,7 +62,7 @@ const SearchCustomer = ({
       <DialogTrigger className="w-full">
         <Input
           className={cn("border border-border rounded-full w-full h-12", className)}
-          placeholder={value ? customers.find(c => c.id == value)?.name ?? value ?? "--" : "Search for customers..."}
+          placeholder={value ? customers.find(c => c.id == value)?.name ?? value.toString() ?? "--" : "Search for customers..."}
         />
       </DialogTrigger>
       <DialogContent size="6xl">

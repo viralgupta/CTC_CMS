@@ -51,7 +51,7 @@ const createOrder = async (req: Request, res: Response) => {
     await db.transaction(async (tx) => {
 
       // check if duplicate items in order_items array
-      let order_item_id: string[] = [];
+      let order_item_id: number[] = [];
       createOrderTypeAnswer.data.order_items.forEach((order_item) => order_item_id.push(order_item.item_id))
       const hasDuplicate = new Set(order_item_id).size !== createOrderTypeAnswer.data.order_items.length;
       if(hasDuplicate) {
@@ -933,7 +933,7 @@ const editOrderItems = async (req: Request, res: Response) => {
 
   try {
     // check if duplicate items in order_items array
-    let new_order_item_ids: string[] = [];
+    let new_order_item_ids: number[] = [];
     editOrderItemsTypeAnswer.data.order_items.forEach((order_item) => new_order_item_ids.push(order_item.item_id))
     const hasDuplicate = new Set(new_order_item_ids).size !== editOrderItemsTypeAnswer.data.order_items.length;
     if(hasDuplicate) {
@@ -974,7 +974,7 @@ const editOrderItems = async (req: Request, res: Response) => {
         throw new Error("Unable to find the order!!!");
       }
 
-      let old_order_item_ids: string[] = [];
+      let old_order_item_ids: number[] = [];
       oldOrder.order_items.forEach((oldItem) => old_order_item_ids.push(oldItem.item_id))
 
       const sameItems = oldOrder.order_items.filter((oldItem) => new_order_item_ids.includes(oldItem.item_id));
@@ -2246,7 +2246,7 @@ const getMovement = async (req: Request, res: Response) => {
 
       type MovementWithQuantities = typeof tMovement & {
         warehouse_quantities?: Array<{
-          id: string;
+          id: number;
           warehouse: {
             name: string;
           };

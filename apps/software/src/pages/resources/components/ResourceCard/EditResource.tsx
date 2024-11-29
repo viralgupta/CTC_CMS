@@ -39,7 +39,7 @@ const EditResource = ({ children }: { children: React.ReactNode }) => {
       resolver: zodResolver(editResourceType),
       reValidateMode: "onChange",
       defaultValues: {
-        resource_id: viewResource?.id ?? "",
+        resource_id: viewResource?.id,
         name: viewResource?.name ?? "",
         description: viewResource?.description ?? ""
       },

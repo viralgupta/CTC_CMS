@@ -13,7 +13,7 @@ export const createArchitectType = z
 
 export const editArchitectType = z
   .object({
-    architect_id: z.string(),
+    architect_id: z.number(),
     name: z.string().optional(),
     profileUrl: z.string().optional(),
     area: z.string().optional(),
@@ -22,7 +22,7 @@ export const editArchitectType = z
 
 export const settleBalanceType = z
   .object({
-    architect_id: z.string(),
+    architect_id: z.number(),
     amount: z
       .string()
       .refine(
@@ -39,7 +39,7 @@ export const settleBalanceType = z
   .strict("Too many fields in request body");
 
 export const getArchitectType = z.object({
-  architect_id: z.string()
+  architect_id: z.string().transform((val) => Number(val)),
 }).strict("Too many fields in request params");
 
 export const deleteArchitectType = getArchitectType;

@@ -19,8 +19,8 @@ const SearchCarpenter = ({
   value,
   className
 }: {
-  onChange?: (arcId: string) => void;
-  value?: string;
+  onChange?: (arcId: number) => void;
+  value?: number;
   className?: string;
 }) => {
   const { carpenters, loading, refetchCarpenters } = useAllCarpenter();
@@ -62,7 +62,7 @@ const SearchCarpenter = ({
       <DialogTrigger className="w-full">
         <Input
           className={cn("border border-border rounded-full w-full h-12", className)}
-          placeholder={value ? carpenters.find(c => c.id == value)?.name ?? value ?? "--" : "Search for carpenter..."}
+          placeholder={value ? carpenters.find(c => c.id == value)?.name ?? value.toString() ?? "--" : "Search for carpenter..."}
         />
       </DialogTrigger>
       <DialogContent size="6xl">

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 type WarehouseCreditItemQuantityProps = {
   totalQuantity: number;
   currentQuantity: {
-    id: string;
+    id: number;
     quantity: number;
     warehouse: {
       name: string;
@@ -31,7 +31,7 @@ type WarehouseCreditItemQuantityProps = {
   onChange: (
     quantity:
       | {
-          warehouse_quantity_id: string;
+          warehouse_quantity_id: number;
           quantity: number;
         }[]
       | undefined
@@ -51,7 +51,7 @@ const CreditWarehouseQuantity = ({
   const [warehouseQuantity, setWarehouseQuantity] = React.useState<
     {
       name: string;
-      warehouse_quantity_id: string;
+      warehouse_quantity_id: number;
       current_quantity: number;
       quantity: number;
     }[]

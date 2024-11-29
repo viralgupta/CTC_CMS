@@ -6,7 +6,7 @@ export interface EstimateType {
   total_estimate_amount: string;
   customer: {
     name: string;
-    id: string;
+    id: number;
   };
 }
 [];
@@ -18,12 +18,12 @@ export const allEstimateAtom = atom<EstimateType[]>({
 
 export interface ViewEstimateType {
   id: number;
-  customer_id: string;
+  customer_id: number;
   created_at: Date;
   updated_at: Date;
   total_estimate_amount: string;
   estimate_items: {
-    item_id: string;
+    item_id: number;
     quantity: number;
     rate: number;
     total_value: string;
@@ -34,7 +34,7 @@ export interface ViewEstimateType {
   }[];
   customer: {
     name: string;
-    id: string;
+    id: number;
     profileUrl: string | null;
     balance: string | null;
     phone_numbers: {

@@ -35,12 +35,12 @@ export const viewAllLogAtom = atom<viewAllLogType[] | null>({
 });
 
 export interface viewLogType extends viewAllLogType {
-  user_id: string;
-  customer_id: string | null;
-  architect_id: string | null;
-  carpanter_id: string | null;
-  driver_id: string | null;
-  item_id: string | null;
+  user_id: number;
+  customer_id: number | null;
+  architect_id: number | null;
+  carpanter_id: number | null;
+  driver_id: number | null;
+  item_id: number | null;
   order_id: number | null;
   message: string;
 }

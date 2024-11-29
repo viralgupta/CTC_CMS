@@ -2,10 +2,10 @@ import { z } from "zod";
 
 const base_phone_numberType = z
   .object({
-    customer_id: z.string().optional(),
-    architect_id: z.string().optional(),
-    carpanter_id: z.string().optional(),
-    driver_id: z.string().optional(),
+    customer_id: z.number().optional(),
+    architect_id: z.number().optional(),
+    carpanter_id: z.number().optional(),
+    driver_id: z.number().optional(),
     country_code: z
       .string()
       .min(1, "Country code too short")
@@ -32,7 +32,7 @@ export const addressAreaType = z.object({
 export const addressType = z
   .object({
     house_number: z.string().max(15, "House number too long"),
-    address_area_id: z.string(),
+    address_area_id: z.number(),
     address: z.string().max(255, "Address too long"),
     city: z.string().max(30, "City too long"),
     state: z.string().max(20, "State too long"),
@@ -67,7 +67,7 @@ export const createPhoneType = base_phone_numberType
 
 export const deletePhoneType = z
   .object({
-    phone_number_id: z.string(),
+    phone_number_id: z.number(),
   })
 
 export const createPutSignedURLType = z.object({
@@ -78,31 +78,31 @@ export const createPutSignedURLType = z.object({
 })
 
 export const editResourceType = z.object({
-  resource_id: z.string(),
+  resource_id: z.number(),
   name: z.string().optional(),
   description: z.string().optional(),
 })
 
 export const createGetSignedURLType = z.object({
-  resource_id: z.string(),
+  resource_id: z.string().transform((val) => Number(val)),
 })
 
 export const deleteResourceType = z.object({
-  resource_id: z.string(),
+  resource_id: z.number(),
 })
 
 export const getLogType = z.object({
-  id:z.string().transform((val) => Number(val)),
+  id: z.string().transform((val) => Number(val)),
 })
 
 export const getAllLogsType = z.object({
-  user_id: z.string().optional(),
-  customer_id: z.string().optional(),
-  architect_id: z.string().optional(),
-  carpanter_id: z.string().optional(),
-  driver_id: z.string().optional(),
-  item_id: z.string().optional(),
+  user_id: z.string().transform((val) => Number(val)).optional(),
+  customer_id: z.string().transform((val) => Number(val)).optional(),
+  architect_id: z.string().transform((val) => Number(val)).optional(),
+  carpanter_id: z.string().transform((val) => Number(val)).optional(),
+  driver_id: z.string().transform((val) => Number(val)).optional(),
+  item_id: z.string().transform((val) => Number(val)).optional(),
   order_id: z.string().transform((val) => Number(val)).optional(),
   linked_to: z.enum(["ARCHITECT", "CARPANTER", "CUSTOMER", "DRIVER", "ITEM", "ORDER"]).optional(),
-  cursor: z.string().transform((val) => Number(val)).optional(),
+  cursor: z.number().optional(),
 })

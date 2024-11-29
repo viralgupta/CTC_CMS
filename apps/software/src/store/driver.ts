@@ -2,7 +2,7 @@ import { atom } from "recoil";
 
 export interface DriverType {
   name: string;
-  id: string;
+  id: number;
   size_of_vehicle: "rickshaw" | "tempo" | "chota-hathi" | "tata" | "truck";
   activeDeliveries: number | null;
   phone_numbers: {
@@ -14,7 +14,7 @@ export interface ViewDriverType extends DriverType {
   profileUrl: string | null;
   vehicle_number: string | null;
   phone_numbers: {
-    id: string;
+    id: number;
     phone_number: string;
     country_code: string | null;
     whatsappChatId: string | null;
@@ -23,7 +23,7 @@ export interface ViewDriverType extends DriverType {
   order_movements: {
     type: "DELIVERY" | "RETURN";
     status: "Pending" | "Completed";
-    id: string;
+    id: number;
     order_id: number;
     created_at: Date;
     labour_frate_cost: number;
@@ -45,7 +45,7 @@ export const allDriverAtom = atom<DriverType[]>({
   default: [],
 });
 
-export const viewDriverIdAtom = atom<string | null>({
+export const viewDriverIdAtom = atom<number | null>({
   key: "viewDriverIdAtom",
   default: null,
 });

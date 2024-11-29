@@ -33,7 +33,7 @@ const AuthConfig = {
 
         if (!user) return null;
         else return {
-          id: user.id,
+          id: user.id.toString(),
           name: user.name,
           isAdmin: user.isAdmin
         }

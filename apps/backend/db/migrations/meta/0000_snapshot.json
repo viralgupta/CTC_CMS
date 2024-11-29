@@ -1,5 +1,5 @@
 {
-  "id": "707ebc66-a348-4bc8-a956-175ff4f912ed",
+  "id": "ac355b11-defc-453a-ac48-9e8dc3f1ade4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,14 +10,13 @@
       "columns": {
         "a_id": {
           "name": "a_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "a_customer_id": {
           "name": "a_customer_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -29,7 +28,7 @@
         },
         "a_area_id": {
           "name": "a_area_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -109,10 +108,9 @@
       "columns": {
         "aa_id": {
           "name": "aa_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "aa_area": {
           "name": "aa_area",
@@ -132,10 +130,9 @@
       "columns": {
         "ar_id": {
           "name": "ar_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "ar_name": {
           "name": "ar_name",
@@ -174,10 +171,9 @@
       "columns": {
         "ca_id": {
           "name": "ca_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "ca_name": {
           "name": "ca_name",
@@ -216,10 +212,9 @@
       "columns": {
         "c_id": {
           "name": "c_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "c_name": {
           "name": "c_name",
@@ -266,10 +261,9 @@
       "columns": {
         "d_id": {
           "name": "d_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "d_name": {
           "name": "d_name",
@@ -320,7 +314,7 @@
         },
         "e_customer_id": {
           "name": "e_customer_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -386,10 +380,9 @@
       "columns": {
         "ei_id": {
           "name": "ei_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "ei_estimate_id": {
           "name": "ei_estimate_id",
@@ -399,7 +392,7 @@
         },
         "ei_item_id": {
           "name": "ei_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -460,10 +453,9 @@
       "columns": {
         "i_id": {
           "name": "i_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "i_name": {
           "name": "i_name",
@@ -526,10 +518,9 @@
       "columns": {
         "io_id": {
           "name": "io_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "io_vendor_name": {
           "name": "io_vendor_name",
@@ -563,7 +554,7 @@
         },
         "io_item_id": {
           "name": "io_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
@@ -609,13 +600,13 @@
       "columns": {
         "iowq_io_id": {
           "name": "iowq_io_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "iowq_wq_id": {
           "name": "iowq_wq_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -678,7 +669,7 @@
         },
         "l_user_id": {
           "name": "l_user_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -696,31 +687,31 @@
         },
         "l_customer_id": {
           "name": "l_customer_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "l_architect_id": {
           "name": "l_architect_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "l_carpanter_id": {
           "name": "l_carpanter_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "l_driver_id": {
           "name": "l_driver_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "l_item_id": {
           "name": "l_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -803,19 +794,19 @@
         },
         "o_customer_id": {
           "name": "o_customer_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "o_carpanter_id": {
           "name": "o_carpanter_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "o_architect_id": {
           "name": "o_architect_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -848,7 +839,7 @@
         },
         "o_delivery_address_id": {
           "name": "o_delivery_address_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -1042,10 +1033,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "oi_order_id": {
           "name": "oi_order_id",
@@ -1055,7 +1045,7 @@
         },
         "oi_item_id": {
           "name": "oi_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -1160,10 +1150,9 @@
       "columns": {
         "om_id": {
           "name": "om_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "om_order_id": {
           "name": "om_order_id",
@@ -1173,7 +1162,7 @@
         },
         "om_driver_id": {
           "name": "om_driver_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -1248,20 +1237,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "omi_order_movement_id": {
           "name": "omi_order_movement_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "omi_order_item_id": {
           "name": "omi_order_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -1310,13 +1298,13 @@
       "columns": {
         "omiwq_omi_id": {
           "name": "omiwq_omi_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "omiwq_wq_id": {
           "name": "omiwq_wq_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -1373,32 +1361,31 @@
       "columns": {
         "pn_id": {
           "name": "pn_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "pn_customer_id": {
           "name": "pn_customer_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "pn_architect_id": {
           "name": "pn_architect_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "pn_carpanter_id": {
           "name": "pn_carpanter_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "pn_driver_id": {
           "name": "pn_driver_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -1507,10 +1494,9 @@
       "columns": {
         "r_id": {
           "name": "r_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "r_extension": {
           "name": "r_extension",
@@ -1554,10 +1540,9 @@
       "columns": {
         "u_id": {
           "name": "u_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "u_name": {
           "name": "u_name",
@@ -1604,10 +1589,9 @@
       "columns": {
         "w_id": {
           "name": "w_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "w_name": {
           "name": "w_name",
@@ -1627,20 +1611,19 @@
       "columns": {
         "wq_id": {
           "name": "wq_id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "wq_item_id": {
           "name": "wq_item_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "wq_warehouse_id": {
           "name": "wq_warehouse_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
