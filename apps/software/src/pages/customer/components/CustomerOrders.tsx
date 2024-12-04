@@ -14,68 +14,68 @@ const CustomerOrders = () => {
   if (!viewCustomer) return <Skeleton className="w-full h-46" />;
 
   const columns: ColumnDef<viewCustomerType["orders"][number]>[] = [
-  {
-    id: "total_order_amount",
-    accessorKey: "total_order_amount",
-    header: "Total Amount",
-  },
-  {
-    id: "priority",
-    accessorKey: "priority",
-    header: "Priority",
-  },
-  {
-    id: "status",
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      return (
-        <span className={status == "Pending" ? "text-red-500" : "text-green-500"}>
-          {status}
-        </span>
-      );
-    }
-  },
-  {
-    id: "payment_status",
-    accessorKey: "payment_status",
-    header: "Payment Status",
-    cell: ({ row }) => {
-      const paymentStatus = row.original.payment_status;
-      return (
-        <span className={paymentStatus == "UnPaid" ? "text-red-500" : paymentStatus == "Partial" ? "text-yellow-300" : "text-green-500"}>
-          {paymentStatus}
-        </span>
-      );
-    }
-  },
-  {
-    id: "created_at",
-    accessorKey: "created_at",
-    header: "Date Created",
-    cell: ({ row }) => {
-      const createdAt = row.original.created_at;
-      return parseDateToString(createdAt);
-    }
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const orderId = row.original.id;
-      return (
-        <Button
-          size={"sm"}
-          onClick={() => {
-            setViewOrderId(orderId);
-          }}
-        >
-          View Order
-        </Button>
-      );
-    }
-  },
+    {
+      id: "total_order_amount",
+      accessorKey: "total_order_amount",
+      header: "Total Amount",
+    },
+    {
+      id: "priority",
+      accessorKey: "priority",
+      header: "Priority",
+    },
+    {
+      id: "status",
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status;
+        return (
+          <span className={status == "Pending" ? "text-red-500" : "text-green-500"}>
+            {status}
+          </span>
+        );
+      }
+    },
+    {
+      id: "payment_status",
+      accessorKey: "payment_status",
+      header: "Payment Status",
+      cell: ({ row }) => {
+        const paymentStatus = row.original.payment_status;
+        return (
+          <span className={paymentStatus == "UnPaid" ? "text-red-500" : paymentStatus == "Partial" ? "text-yellow-300" : "text-green-500"}>
+            {paymentStatus}
+          </span>
+        );
+      }
+    },
+    {
+      id: "created_at",
+      accessorKey: "created_at",
+      header: "Date Created",
+      cell: ({ row }) => {
+        const createdAt = row.original.created_at;
+        return parseDateToString(createdAt);
+      }
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const orderId = row.original.id;
+        return (
+          <Button
+            size={"sm"}
+            onClick={() => {
+              setViewOrderId(orderId);
+            }}
+          >
+            View Order
+          </Button>
+        );
+      }
+    },
   ];
 
   return (

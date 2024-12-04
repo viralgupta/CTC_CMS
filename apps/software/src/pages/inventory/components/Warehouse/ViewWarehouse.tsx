@@ -21,21 +21,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { editWarehouseType } from "@type/api/item";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useSetRecoilState } from "recoil";
 import { viewItemIDAtom } from "@/store/Items";
 import request from "@/lib/request";
 import { useAllWarehouse } from "@/hooks/warehouse";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { ColumnDef } from "@tanstack/react-table";
+import DataTable from "@/components/DataTable";
 
 const ViewWarehouse = ({
   warehouse_id,
@@ -44,30 +37,23 @@ const ViewWarehouse = ({
   warehouse_id: number;
   children: React.ReactNode;
 }) => {
+  type WarehouseQuantities = {
+    item_id: number;
+    quantity: number;
+    item: {
+      name: string;
+    };
+  };
+
   const [open, setOpen] = React.useState(false);
   const [warehouse, setWarehouse] = React.useState<null | {
     name: string;
     id: number;
-    warehouse_quantities: {
-      item_id: number;
-      quantity: number;
-      item: {
-        name: string;
-      };
-    }[];
+    warehouse_quantities: WarehouseQuantities[];
   }>(null);
   const setViewItemId = useSetRecoilState(viewItemIDAtom);
   const { refetchWarehouses } = useAllWarehouse();
   const [deleteLoading, setDeleteLoading] = React.useState(false);
-
-  const parentRef = React.useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: (warehouse?.warehouse_quantities ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
-  });
 
   const deleteWarehouse = async () => {
     setDeleteLoading(true);
@@ -148,6 +134,32 @@ const ViewWarehouse = ({
     );
   };
 
+
+  const columns: ColumnDef<WarehouseQuantities>[] = [
+    {
+      id: "item_name",
+      accessorKey: "item.name",
+      header: "Item Name",
+    },
+    {
+      id: "quantity",
+      accessorKey: "quantity",
+      header: "Quantity",
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const itemId = row.original.item_id;
+        return (
+          <Button size={"icon"} onClick={() => setViewItemId(itemId)}>
+            <Eye />
+          </Button>
+        );
+      },
+    },
+  ];
+
   return (
     <Dialog
       open={open}
@@ -187,45 +199,21 @@ const ViewWarehouse = ({
               )}
             </Button>
           </div>
-          <div className="max-h-96 overflow-y-auto hide-scroll" ref={parentRef}>
-            <Table style={{ height: `${virtualizer.getTotalSize()}px` }}>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center">Item Name</TableHead>
-                  <TableHead className="text-center">Quantity</TableHead>
-                  <TableHead className="text-center w-[100px]">View</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {virtualizer.getVirtualItems().map((virtualRow, index) => {
-                  const wq = warehouse.warehouse_quantities[virtualRow.index];
-                  return (
-                    <TableRow
-                      key={wq.item_id}
-                      style={{
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
-                      }}
-                    >
-                      <TableCell className="text-center py-1">
-                        {wq.item.name}
-                      </TableCell>
-                      <TableCell className="text-center py-1">
-                        {wq.quantity}
-                      </TableCell>
-                      <TableCell className="text-center py-1">
-                        <Button
-                          size={"icon"}
-                          onClick={() => setViewItemId(wq.item_id)}
-                        >
-                          <Eye />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+          <div className="max-h-96 overflow-y-auto hide-scroll flex flex-col">
+            <DataTable
+              data={warehouse.warehouse_quantities}
+              key={"Warehouse Items"}
+              columns={columns}
+              columnFilters={false}
+              defaultColumn={{
+                meta: {
+                  headerStyle: {
+                    textAlign: "center",
+                  },
+                },
+              }}
+              message="No Items Found In This Warehouse!"
+            />
           </div>
         </DialogContent>
       )}
