@@ -19,6 +19,7 @@ export interface viewMovementType {
   status: "Pending" | "Completed";
   driver_id: number | null;
   order_id: number;
+  recipt_key: string | null;
   created_at: Date;
   delivery_at: Date | null;
   labour_frate_cost: number;
@@ -68,7 +69,7 @@ export interface viewMovementType {
   }[]
 }
 
-const ViewDriver = () => {
+const ViewOrderMovement = () => {
   const [viewOrderMovement, setViewOrderMovement] = React.useState<viewMovementType | null>(null);
   const [viewOrderMovementId, setViewOrderMovementId] = useRecoilState(viewOrderMovementIdAtom);
   const [loading, setLoading] = React.useState(false);
@@ -121,4 +122,4 @@ const ViewDriver = () => {
   );
 };
 
-export default ViewDriver;
+export default ViewOrderMovement;

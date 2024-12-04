@@ -36,7 +36,7 @@ const ViewResource = () => {
         }
       }}
     >
-      <DialogContent size="4xl">
+      <DialogContent size="7xl">
         <DialogHeader className="hidden">
           <DialogDescription></DialogDescription>
           <DialogTitle></DialogTitle>

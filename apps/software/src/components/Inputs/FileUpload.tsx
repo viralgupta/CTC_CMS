@@ -7,10 +7,11 @@ type FileUploadProps = {
   id: string;
   onChange: (fileName: string, extension: string) => void;
   fileName?: string;
+  onlyImages?: boolean;
 };
 
 const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
-  ({ id, onChange, fileName }, ref) => {
+  ({ id, onChange, fileName, onlyImages }, ref) => {
     const [IsDragging, setIsDragging] = React.useState(false);
 
     const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +77,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           ref={ref}
           id={id}
           type="file"
+          accept={onlyImages ? "image/*" : "*"}
           className="hidden cursor-not-allowed"
           defaultValue={undefined}
           onChange={onFileChange}

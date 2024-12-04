@@ -20,6 +20,8 @@ import EditMovement from "./Edit/EditMovement";
 import DeleteMovement from "./Edit/DeleteMovement";
 import ChangeStatus from "./Edit/ChangeStatus";
 import printInfoAtom from "@/store/print";
+import UploadSignedRecipt from "./Input/UploadSignedRecipt";
+import UploadedRecipt from "./Edit/UploadedRecipt";
 
 const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
   if (!movement) return <Skeleton className="w-full h-44" />;
@@ -88,13 +90,15 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
                     </div>
                   </DivButton>
                   <Separator />
-                  <DivButton
-                    onClick={() => {}}
-                    className="flex items-center space-x-1 h-1/2 rounded-md overflow-y-scroll hide-scroll"
-                  >
-                    <ReceiptText className="h-12 min-w-10 text-muted-foreground" />
-                    <div>View Uploaded Recipt</div>
-                  </DivButton>
+                  <UploadedRecipt order_movement_id={movement.id}>
+                    <DivButton
+                      disabled={movement.recipt_key === null}
+                      className="flex items-center space-x-1 h-1/2 rounded-md overflow-y-scroll hide-scroll"
+                      >
+                      <ReceiptText className="h-12 min-w-10 text-muted-foreground" />
+                      <div>View Uploaded Recipt</div>
+                    </DivButton>
+                  </UploadedRecipt>
                 </div>
                 <Separator orientation="vertical" />
                 <div className="w-1/2 h-full">
@@ -218,9 +222,11 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
         <Button className="w-full" variant={"outline"} onClick={setPrint}>
           Print Recipt
         </Button>
-        <Button className="w-full" variant={"outline"}>
-          Upload Signed Recipt
-        </Button>
+        <UploadSignedRecipt order_movement_id={movement.id}>
+          <Button className="w-full" variant={"outline"} disabled={movement.recipt_key !== null}>
+            Upload Signed Recipt
+          </Button>
+        </UploadSignedRecipt>
       </div>
     </div>
   );

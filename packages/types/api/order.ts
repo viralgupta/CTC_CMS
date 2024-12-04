@@ -196,3 +196,15 @@ export const editOrderMovementStatusType = z.object({
 export const deleteOrderMovementType = z.object({
   id: z.number()
 });
+
+export const createPutSignedURLOrderMovementReciptType = z.object({
+  order_movement_id: z.number(),
+  file_name: z.string().min(1),
+  extension: z.string().min(1).max(5),
+});
+
+export const createGetSignedURLOrderMovementReciptType = z.object({
+  id: z.string().transform((val) => Number(val))
+});
+
+export const deleteOrderMovementReciptType = deleteOrderMovementType;

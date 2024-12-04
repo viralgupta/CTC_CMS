@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS "order_movement" (
 	"om_type" varchar NOT NULL,
 	"om_status" varchar DEFAULT 'Pending' NOT NULL,
 	"om_labour_frate_cost" real NOT NULL,
+	"om_recipt_key" text,
 	"om_created_at" timestamp DEFAULT now() NOT NULL,
 	"om_delivery_at" timestamp
 );

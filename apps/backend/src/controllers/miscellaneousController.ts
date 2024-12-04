@@ -8,6 +8,7 @@ import { Bucket } from "sst/node/bucket";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import { Config } from "sst/node/config";
+import mime from "mime";
 
 const createPhone = async (req: Request, res: Response) => {
   const createPhoneTypeAnswer = createPhoneType.safeParse(req.body);
@@ -176,6 +177,7 @@ const createPutSignedURL = async (req: Request, res: Response) => {
       ACL: "private",
       Key: key,
       Bucket: Bucket.ResourceBucket.bucketName,
+      ContentType: mime.getType(createPutSignedURLTypeAnswer.data.extension.toLowerCase()) ?? "application/octet-stream",
       Metadata: {
         "Name": createPutSignedURLTypeAnswer.data.name,
         "Description": createPutSignedURLTypeAnswer.data.description ?? "",

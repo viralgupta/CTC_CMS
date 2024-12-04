@@ -36,7 +36,7 @@ const AllResources = () => {
             return (
               <Card
                 key={resource.id}
-                className="cursor-pointer hover:bg-accent duration-300"
+                className="cursor-pointer hover:bg-accent duration-300 h-min"
                 onClick={() => {
                   setViewResourceId(resource.id);
                 }}
@@ -53,9 +53,9 @@ const AllResources = () => {
                       resource.previewUrl
                     )}
                     alt={resource.name}
-                    className="w-full aspect-video border"
+                    className="h-60 mx-auto border"
                   />
-                  <div className="pt-4 p-2 flex justify-between items-center">
+                  <div className="p-2 flex justify-between items-center">
                     {resource.name}
                   </div>
                 </CardContent>

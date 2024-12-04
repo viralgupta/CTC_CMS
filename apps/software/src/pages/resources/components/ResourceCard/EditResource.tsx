@@ -91,7 +91,7 @@ const EditResource = ({ children }: { children: React.ReactNode }) => {
           </div>
           <Button disabled={form.formState.isSubmitting} type="submit">
             {form.formState.isSubmitting && <Spinner />}
-            {!form.formState.isSubmitting && "Edit Driver"}
+            {!form.formState.isSubmitting && "Edit Resource"}
           </Button>
         </form>
       </Form>

@@ -1,5 +1,5 @@
 import express from "express"
-import { createOrder, editOrderNote, addOrderCustomerId, editOrderCarpanterId, editOrderArchitectId, editOrderPriority, editOrderDeliveryDate, editOrderDeliveryAddressId, editOrderDiscount, settleBalance, editOrderItems, getAllOrders, getOrder, getMovement, createMovement, editMovement, deleteMovement, editMovementStatus } from "../controllers/orderController"
+import { createOrder, editOrderNote, addOrderCustomerId, editOrderCarpanterId, editOrderArchitectId, editOrderPriority, editOrderDeliveryDate, editOrderDeliveryAddressId, editOrderDiscount, settleBalance, editOrderItems, getAllOrders, getOrder, getMovement, createMovement, editMovement, deleteMovement, editMovementStatus, createPutSignedURLOrderMovementRecipt, deleteOrderMovementRecipt, createGetSignedURLOrderMovementRecipt } from "../controllers/orderController"
 
 const orderRouter = express.Router()
 
@@ -21,5 +21,8 @@ orderRouter.route('/editMovement').put(editMovement)
 orderRouter.route('/editMovementStatus').put(editMovementStatus)
 orderRouter.route('/getMovement').get(getMovement)
 orderRouter.route('/deleteMovement').delete(deleteMovement)
+orderRouter.route('/createPutSignedURLOrderMovementRecipt').post(createPutSignedURLOrderMovementRecipt)
+orderRouter.route('/createGetSignedURLOrderMovementRecipt').get(createGetSignedURLOrderMovementRecipt)
+orderRouter.route('/deleteOrderMovementRecipt').delete(deleteOrderMovementRecipt)
 
 export default orderRouter;

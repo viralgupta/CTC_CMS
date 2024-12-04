@@ -89,11 +89,9 @@ const CreateResourceForm = () => {
         toast.error("No file selected");
         return;
       }
-      const formData = new FormData();
-      formData.append("file", file);
-
+      
       await axios
-        .put(url, formData, {
+        .put(url, file, {
           onUploadProgress: (progressEvent) => {
             if (progressEvent?.total) {
               const percentCompleted = Math.round(

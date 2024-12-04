@@ -1,5 +1,5 @@
 {
-  "id": "ac355b11-defc-453a-ac48-9e8dc3f1ade4",
+  "id": "b92c76f8-5413-4e15-886e-e34e7dfa5a9a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1184,6 +1184,12 @@
           "type": "real",
           "primaryKey": false,
           "notNull": true
+        },
+        "om_recipt_key": {
+          "name": "om_recipt_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "om_created_at": {
           "name": "om_created_at",

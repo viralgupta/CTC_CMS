@@ -32,10 +32,18 @@ import {
   editOrderMovementType,
   deleteOrderMovementType,
   editOrderMovementStatusType,
+  createPutSignedURLOrderMovementReciptType,
+  deleteOrderMovementReciptType,
+  createGetSignedURLOrderMovementReciptType,
 } from "@type/api/order";
+import * as S3 from "@aws-sdk/client-s3"
+import mime from 'mime';
 import { Request, Response } from "express";
 import { calculatePaymentStatus, omit } from '../lib/utils';
 import { eq, sql } from "drizzle-orm"
+import { Bucket } from 'sst/node/bucket';
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Config } from 'sst/node/config';
 
 const createOrder = async (req: Request, res: Response) => {
   const createOrderTypeAnswer = createOrderType.safeParse(req.body);
@@ -2266,6 +2274,116 @@ const getMovement = async (req: Request, res: Response) => {
   }
 }
 
+const createPutSignedURLOrderMovementRecipt = async (req: Request, res: Response) => {
+  const createPutSignedURLOrderMovementReciptTypeAnswer = createPutSignedURLOrderMovementReciptType.safeParse(req.body);
+
+  if (!createPutSignedURLOrderMovementReciptTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createPutSignedURLOrderMovementReciptTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const key = `${createPutSignedURLOrderMovementReciptTypeAnswer.data.order_movement_id}.${createPutSignedURLOrderMovementReciptTypeAnswer.data.extension.toLowerCase()}`;
+
+    const command = new S3.PutObjectCommand({
+      ACL: "private",
+      Key: key,
+      Bucket: Bucket.ReciptBucket.bucketName,
+      ContentType: mime.getType(createPutSignedURLOrderMovementReciptTypeAnswer.data.extension.toLowerCase()) || "application/octet-stream",
+      Metadata: {
+        "id": createPutSignedURLOrderMovementReciptTypeAnswer.data.order_movement_id.toString(),
+        "key": key
+      }
+    });
+
+    const url = await getSignedUrl(new S3.S3Client({}), command, {
+      expiresIn: Config.STAGE == 'dev' ? 60 * 60 : 60 * 5, // 60 / 5 minutes
+    });
+
+    return res.status(200).json({success: true, message: "Signed URL created", data: url});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create signed URL", error: error.message ? error.message : error});
+  }
+}
+
+const createGetSignedURLOrderMovementRecipt = async (req: Request, res: Response) => {
+  const createGetSignedURLOrderMovementReciptTypeAnswer = createGetSignedURLOrderMovementReciptType.safeParse(req.query);
+
+  if (!createGetSignedURLOrderMovementReciptTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createGetSignedURLOrderMovementReciptTypeAnswer.error.flatten()})
+  }
+
+  try {
+
+    const foundMovement = await db.query.order_movement.findFirst({
+      where: (order_movement, { eq }) => eq(order_movement.id, createGetSignedURLOrderMovementReciptTypeAnswer.data.id),
+      columns: {
+        recipt_key: true
+      }
+    });
+
+    if(!foundMovement){
+      return res.status(400).json({success: false, message: "Order Movement not found"});
+    }
+
+    if(!foundMovement.recipt_key){
+      return res.status(400).json({success: false, message: "Order Movement Recipt not found"});
+    }
+
+    const command = new S3.GetObjectCommand({
+      Bucket: Bucket.ReciptBucket.bucketName,
+      Key: foundMovement.recipt_key,
+    });
+
+    const url = await getSignedUrl(new S3.S3Client({}), command, {
+      expiresIn: Config.STAGE == 'dev' ? 60 * 60 : 60 * 10, // 60 / 10 minutes
+    });
+
+    return res.status(200).json({success: true, message: "Get Url Created", data: url});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to get url for recipt!", error: error.message ? error.message : error});
+  }
+}
+
+const deleteOrderMovementRecipt = async (req: Request, res: Response) => {
+  const deleteOrderMovementReciptTypeAnswer = deleteOrderMovementReciptType.safeParse(req.body);
+
+  if (!deleteOrderMovementReciptTypeAnswer.success) {
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteOrderMovementReciptTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async(tx) => {
+      const reciptKey = await tx.query.order_movement.findFirst({
+        where: (order_movement, { eq }) => eq(order_movement.id, deleteOrderMovementReciptTypeAnswer.data.id),
+        columns: {
+          recipt_key: true
+        }
+      });
+
+      if(!reciptKey || !reciptKey.recipt_key) throw new Error("Unable to find the recipt key!");
+        
+      const s3 = new S3.S3Client({});
+
+      const deleteObjectCommand = new S3.DeleteObjectCommand({
+        Bucket: Bucket.ReciptBucket.bucketName,
+        Key: reciptKey.recipt_key,
+      });
+
+      const deleteObjectRes = await s3.send(deleteObjectCommand);
+
+      if(deleteObjectRes.$metadata.httpStatusCode !== 204) throw new Error("Unable to delete the recipt key!");
+        
+      await tx.update(order_movement).set({
+        recipt_key: null
+      }).where(eq(order_movement.id, deleteOrderMovementReciptTypeAnswer.data.id));
+    })
+    
+    return res.status(200).json({success: true, message: "Recipt Deleted!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to delete recipt Linked to Order Movement!", error: error.message ? error.message : error});
+  }
+}
+
 export {
   createOrder,
   editOrderNote,
@@ -2284,7 +2402,10 @@ export {
   editMovement,
   editMovementStatus,
   getMovement,
-  deleteMovement
+  deleteMovement,
+  createPutSignedURLOrderMovementRecipt,
+  createGetSignedURLOrderMovementRecipt,
+  deleteOrderMovementRecipt
 }
 
 /*

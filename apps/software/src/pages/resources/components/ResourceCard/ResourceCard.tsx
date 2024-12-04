@@ -20,37 +20,35 @@ export default function ResourceCard({
   resource: ViewResourceType | null;
 }) {
   const { theme } = useTheme();
-  const { resources, refetchResources } = useAllResources();
+  const { resources } = useAllResources();
 
   if (!resource) {
-    return (
-      <Card className="w-full p-6">
-        <Skeleton className="w-full h-40" />
-      </Card>
-    );
+    return <Skeleton className="w-full h-96" />;
   }
 
   return (
     <Card className="w-full">
       <CardContent className="p-2 flex gap-2">
-        <img
-          src={getImageUrlFromExtension(
-            theme,
-            resource.extension ?? undefined,
-            resources.filter((res) => res.id == resource.id)[0].previewUrl
-          )}
-          alt={resource.name}
-          className="aspect-video w-1/2"
-        />
-        <div className="w-1/2 h-full relative aspect-video">
+        <div className="w-1/2 max-h-[80svh] overflow-y-auto hide-scroll">
+          <img
+            src={getImageUrlFromExtension(
+              theme,
+              resource.extension ?? undefined,
+              resources.filter((res) => res.id == resource.id)[0].previewUrl
+            )}
+            alt={resource.name}
+            className="mx-auto "
+            />
+        </div>
+        <div className="w-1/2 h-full">
           <div className="font-sofiapro">
             Name:
             <Input className="w-full mt-1" disabled defaultValue={resource.name} />
           </div>
-          <div className="absolute bottom-0 w-full font-sofiapro">
+          <div className="w-full h-full font-sofiapro">
             Description:
             <Textarea
-              className="mt-1 resize-none"
+              className="mt-1 resize-none h-full"
               defaultValue={resource.description ?? ""}
               disabled
             />

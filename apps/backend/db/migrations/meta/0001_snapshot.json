@@ -1,6 +1,6 @@
 {
-  "id": "e616ceab-239c-4679-ae55-2f734c393748",
-  "prevId": "ac355b11-defc-453a-ac48-9e8dc3f1ade4",
+  "id": "1b2fb3e1-73a9-43aa-9e0d-3ff4a379beb6",
+  "prevId": "b92c76f8-5413-4e15-886e-e34e7dfa5a9a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1184,6 +1184,12 @@
           "type": "real",
           "primaryKey": false,
           "notNull": true
+        },
+        "om_recipt_key": {
+          "name": "om_recipt_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "om_created_at": {
           "name": "om_created_at",

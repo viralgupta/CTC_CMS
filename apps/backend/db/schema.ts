@@ -415,6 +415,7 @@ export const order_movement = pgTable("order_movement", {
     .notNull()
     .default("Pending"),
   labour_frate_cost: real("om_labour_frate_cost").notNull(),
+  recipt_key: text("om_recipt_key"),
   created_at: timestamp("om_created_at", { mode: "date" }).defaultNow().notNull(),
   delivery_at: timestamp("om_delivery_at", { mode: "date" }),
 })

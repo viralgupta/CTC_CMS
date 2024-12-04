@@ -407,12 +407,7 @@ async function clearAppData(deep = false, lockdb = false) {
 
 function lockDb() {
   return new Promise(async (resolve) => {
-    const res = await net.fetch(import.meta.env.VITE_API_BASE_URL + "/api/lockDB")
-    if(res.status == 200){
-      resolve(true);
-    } else {
-      // send notification to lock manually;
-      resolve(false);
-    }
+    await net.fetch(import.meta.env.VITE_API_BASE_URL + "/api/lockDB")
+    resolve(true)
   })
 }
