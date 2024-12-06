@@ -1,6 +1,6 @@
 import db from '@db/db';
 import { carpanter, log, phone_number } from '@db/schema';
-import { createCarpanterType, deleteCarpanterType, editCarpanterType, getCarpanterType, settleBalanceType } from '@type/api/carpanter';
+import { createCarpanterType, deleteCarpanterType, editCarpanterType, getCarpanterOrderType, getCarpanterType, settleBalanceType } from '@type/api/carpanter';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
 import { omit } from '../lib/utils';
@@ -240,7 +240,8 @@ const getCarpanter = async (req: Request, res: Response) => {
           }
         },
         orders: {
-          orderBy: (order, { desc }) => [desc(order.created_at)],
+          orderBy: (order, { desc }) => [desc(order.id)],
+          limit: 10,
           columns: {
             id: true,
             carpanter_commision: true,
@@ -271,6 +272,57 @@ const getCarpanter = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Carpanter found", data: tCarpanter});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to get Carpanter", error: error.message ? error.message : error});
+  }
+};
+
+const getCarpanterOrders = async (req: Request, res: Response) => {
+  const getCarpanterOrderTypeAnswer = getCarpanterOrderType.safeParse(req.query);
+
+  if (!getCarpanterOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getCarpanterOrderTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const tCarpanter = await db.query.carpanter.findFirst({
+      where: (carpanter, { eq }) => eq(carpanter.id, getCarpanterOrderTypeAnswer.data.carpanter_id),
+      columns: {
+        id: true,
+      },
+      with: {
+        orders: {
+          where: (order, { lt }) => lt(order.id, getCarpanterOrderTypeAnswer.data.cursor),
+          orderBy: (order, { desc }) => [desc(order.id)],
+          limit: 10,
+          columns: {
+            id: true,
+            carpanter_commision: true,
+            status: true,
+            created_at: true
+          },
+          with: {
+            delivery_address: {
+               columns: {
+                 house_number: true,
+                 address: true,
+               }
+            },
+            customer: {
+              columns: {
+                name: true
+              }
+            }
+          },
+        }
+      }
+    });
+
+    if(!tCarpanter){
+      return res.status(400).json({ success: false, message: "Carpanter not found" });
+    }
+
+    return res.status(200).json({success: true, message: "More Carpenter Orders Fetched", data: tCarpanter.orders});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch more Carpenter Orders", error: error.message ? error.message : error});
   }
 };
 
@@ -359,6 +411,7 @@ export {
   editCarpanter,
   settleBalance,
   getCarpanter,
+  getCarpanterOrders,
   deleteCarpanter,
   getAllCarpanters,
 };

@@ -48,6 +48,11 @@ export const getItemType = z.object({
   item_id: z.string().transform((val) => Number(val)),
 })
 
+export const getMoreItemOrderItemsType = z.object({
+  item_id: z.string().transform((val) => Number(val)),
+  cursor: z.string().transform((val) => Number(val)),
+})
+
 export const getItemRatesType = getItemType.extend({
   customer_id: z.string().transform((val) => Number(val)).optional()
 });
@@ -120,6 +125,11 @@ export const editWarehouseType = createWarehouseType.extend({
 
 export const getWarehouseType = z.object({
   warehouse_id: z.string().transform((val) => Number(val)),
+});
+
+export const getMoreWarehouseQuantitiesType = z.object({
+  warehouse_id: z.string().transform((val) => Number(val)),
+  cursor: z.string().transform((val) => Number(val)),
 });
 
 export const deleteWarehouseType = getWarehouseType;

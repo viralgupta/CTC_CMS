@@ -42,4 +42,9 @@ export const getArchitectType = z.object({
   architect_id: z.string().transform((val) => Number(val)),
 }).strict("Too many fields in request params");
 
+export const getArchitectOrdersType = z.object({
+  architect_id: z.string().transform((val) => Number(val)),
+  cursor: z.string().transform((val) => Number(val)),
+}).strict("Too many fields in request params");
+
 export const deleteArchitectType = getArchitectType;

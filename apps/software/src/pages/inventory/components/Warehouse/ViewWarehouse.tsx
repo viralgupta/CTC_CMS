@@ -28,7 +28,22 @@ import { viewItemIDAtom } from "@/store/Items";
 import request from "@/lib/request";
 import { useAllWarehouse } from "@/hooks/warehouse";
 import { ColumnDef } from "@tanstack/react-table";
-import DataTable from "@/components/DataTable";
+import PaginationDataTable from "@/components/PaginationDataTable";
+import usePagination from "@/hooks/pagination";
+
+type WarehouseQuantities = {
+  item_id: number;
+  quantity: number;
+  item: {
+    name: string;
+  };
+};
+
+type ViewWarehouseType = {
+  id: number;
+  name: string;
+  warehouse_quantities: WarehouseQuantities[];
+}
 
 const ViewWarehouse = ({
   warehouse_id,
@@ -37,21 +52,9 @@ const ViewWarehouse = ({
   warehouse_id: number;
   children: React.ReactNode;
 }) => {
-  type WarehouseQuantities = {
-    item_id: number;
-    quantity: number;
-    item: {
-      name: string;
-    };
-  };
 
   const [open, setOpen] = React.useState(false);
-  const [warehouse, setWarehouse] = React.useState<null | {
-    name: string;
-    id: number;
-    warehouse_quantities: WarehouseQuantities[];
-  }>(null);
-  const setViewItemId = useSetRecoilState(viewItemIDAtom);
+  const [warehouse, setWarehouse] = React.useState<null | ViewWarehouseType>(null);
   const { refetchWarehouses } = useAllWarehouse();
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
@@ -134,32 +137,6 @@ const ViewWarehouse = ({
     );
   };
 
-
-  const columns: ColumnDef<WarehouseQuantities>[] = [
-    {
-      id: "item_name",
-      accessorKey: "item.name",
-      header: "Item Name",
-    },
-    {
-      id: "quantity",
-      accessorKey: "quantity",
-      header: "Quantity",
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const itemId = row.original.item_id;
-        return (
-          <Button size={"icon"} onClick={() => setViewItemId(itemId)}>
-            <Eye />
-          </Button>
-        );
-      },
-    },
-  ];
-
   return (
     <Dialog
       open={open}
@@ -200,25 +177,87 @@ const ViewWarehouse = ({
             </Button>
           </div>
           <div className="max-h-96 overflow-y-auto hide-scroll flex flex-col">
-            <DataTable
-              data={warehouse.warehouse_quantities}
-              key={"Warehouse Items"}
-              columns={columns}
-              columnFilters={false}
-              defaultColumn={{
-                meta: {
-                  headerStyle: {
-                    textAlign: "center",
-                  },
-                },
-              }}
-              message="No Items Found In This Warehouse!"
-            />
+            <WarehouseQuantitiesTable viewWarehouse={warehouse} />
           </div>
         </DialogContent>
       )}
     </Dialog>
   );
 };
+
+const WarehouseQuantitiesTable = ({ viewWarehouse }: { viewWarehouse: ViewWarehouseType }) => {
+  const setViewItemId = useSetRecoilState(viewItemIDAtom);
+  const [loading, setLoading] = React.useState(false);
+
+  const fetchMoreWarehouseQuantities = async (cursor: number) => {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("warehouse_id", viewWarehouse.id.toString());
+      queryParams.append("cursor", cursor.toString());
+      const res = await request.get('/inventory/getMoreWarehouseQuantities?' + queryParams.toString());
+      return (res.data.data ?? []) as WarehouseQuantities[];
+    } catch (error) {
+      console.error("Error while fetching more warehouse quantitites!", error);
+      return [];
+    }
+  };
+
+  const {data, hasNextPage, loadingMap, fetchMore} = usePagination({
+    key: viewWarehouse.id,
+    fetchNextPage: fetchMoreWarehouseQuantities,
+    initialData: viewWarehouse.warehouse_quantities,
+    uniqueKey: "item_id",
+    pageSize: 20
+  });
+
+  React.useEffect(() => {
+    setLoading(loadingMap.get(viewWarehouse.id) ?? false);
+  }, [loadingMap, viewWarehouse.id]);
+
+  const columns: ColumnDef<WarehouseQuantities>[] = [
+    {
+      id: "item_name",
+      accessorKey: "item.name",
+      header: "Item Name",
+    },
+    {
+      id: "quantity",
+      accessorKey: "quantity",
+      header: "Quantity",
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const itemId = row.original.item_id;
+        return (
+          <Button size={"icon"} onClick={() => setViewItemId(itemId)}>
+            <Eye />
+          </Button>
+        );
+      },
+    },
+  ];
+
+  return (
+    <PaginationDataTable
+      data={data ?? []}
+      key={"warehouse-quantities"}
+      columns={columns}
+      columnFilters={false}
+      defaultColumn={{
+        meta: {
+          headerStyle: {
+            textAlign: "center",
+          },
+        },
+      }}
+      message="No Items Found In This Warehouse!"
+      fetchNextPage={fetchMore}
+      hasNextPage={hasNextPage ?? false}
+      isFetchingNextPage={loading && data.length > 0 ? true : false}
+    />
+  );
+}
 
 export default ViewWarehouse;

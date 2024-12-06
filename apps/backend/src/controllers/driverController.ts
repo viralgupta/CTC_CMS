@@ -1,6 +1,6 @@
 import db from '@db/db';
 import { driver, log, phone_number } from '@db/schema';
-import { createDriverType, deleteDriverType, editDriverType, getDriverType } from '@type/api/driver';
+import { createDriverType, deleteDriverType, editDriverType, getDriverOrderMovementsType, getDriverType } from '@type/api/driver';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
 import { omit } from '../lib/utils';
@@ -172,8 +172,8 @@ const getDriver = async (req: Request, res: Response) => {
           },
         },
         order_movements: {
-          orderBy: (order_movement, { desc }) => desc(order_movement.created_at),
-          limit: 15,
+          orderBy: (order_movement, { desc }) => desc(order_movement.id),
+          limit: 10,
           columns: {
             driver_id: false,
             delivery_at: false
@@ -209,6 +209,56 @@ const getDriver = async (req: Request, res: Response) => {
     return res.status(200).json({success: true, message: "Driver fetched", data: foundDriver});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch driver", error: error.message ? error.message : error});
+  }
+}
+
+const getDriverOrderMovements = async (req: Request, res: Response) => {
+  const getDriverOrderMovementsTypeAnswer = getDriverOrderMovementsType.safeParse(req.query);
+
+  if (!getDriverOrderMovementsTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getDriverOrderMovementsTypeAnswer.error?.flatten()})
+  }
+
+  try {
+    const foundMovements = await db.query.order_movement.findMany({
+      where: (order_movement, { and, eq, lt }) =>
+        and(
+          eq(
+            order_movement.driver_id,
+            getDriverOrderMovementsTypeAnswer.data.driver_id
+          ),
+          lt(order_movement.id, getDriverOrderMovementsTypeAnswer.data.cursor)
+        ),
+      limit: 10,
+      columns: {
+        driver_id: false,
+        delivery_at: false,
+      },
+      with: {
+        order: {
+          columns: {
+            id: true,
+          },
+          with: {
+            delivery_address: {
+              columns: {
+                house_number: true,
+                address: true,
+              },
+            },
+            customer: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({success: true, message: "More Driver's Order Movements fetched", data: foundMovements});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch more driver's order movemnts!", error: error.message ? error.message : error});
   }
 }
 
@@ -288,6 +338,7 @@ export {
   createDriver,
   editDriver,
   getDriver,
+  getDriverOrderMovements,
   deleteDriver,
   getAllDrivers  
 }

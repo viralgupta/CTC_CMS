@@ -11,6 +11,7 @@ import DriverCard from "./DriverCard/DriverCard";
 import React from "react";
 import DriverOrderMovements from "./DriverOrderMovements";
 import { viewDriverAtom, viewDriverIdAtom, ViewDriverType } from "@/store/driver";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ViewDriver = () => {
   const [viewDriverId, setViewDriverId] = useRecoilState(viewDriverIdAtom);
@@ -43,7 +44,7 @@ const ViewDriver = () => {
           <DialogTitle></DialogTitle>
         </DialogHeader>
           <DriverCard driver={viewDriver}/>
-          <DriverOrderMovements />
+          {viewDriver ? <DriverOrderMovements viewDriver={viewDriver}/> : <Skeleton className="w-full h-46" />}
       </DialogContent>
     </Dialog>
   );

@@ -441,6 +441,7 @@ async function main() {
       total_order_amount: "0.00",
       discount: "0.00",
       amount_paid: "0.00",
+      architect_id: architectIds[0].id,
     })),
   ]).returning({
     id: order.id

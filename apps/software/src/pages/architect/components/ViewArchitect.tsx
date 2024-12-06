@@ -11,6 +11,7 @@ import ArchitectCard from "./ArchitectCard/ArchitectCard";
 import React from "react";
 import ArchitectOrders from "./ArchitectOrders";
 import { viewArchitectAtom, viewArchitectIdAtom, ViewArchitectType } from "@/store/architect";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ViewArchitect = () => {
   const [viewArchitectId, setViewArchitectId] = useRecoilState(viewArchitectIdAtom);
@@ -37,13 +38,13 @@ const ViewArchitect = () => {
         }
       }}
     >
-      <DialogContent size="4xl">
+      <DialogContent size="5xl">
         <DialogHeader className="hidden">
           <DialogDescription></DialogDescription>
           <DialogTitle></DialogTitle>
         </DialogHeader>
           <ArchitectCard architect={viewArchitect}/>
-          <ArchitectOrders />
+          {viewArchitect ? <ArchitectOrders viewArchitect={viewArchitect}/> : <Skeleton className="w-full h-46" />}
       </DialogContent>
     </Dialog>
   );

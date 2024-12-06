@@ -1,101 +1,125 @@
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useSetRecoilState } from "recoil";
 import { Button } from "@/components/ui/button";
 import { viewOrderIdAtom } from "@/store/order";
 import { parseDateToString } from "@/lib/utils";
-import { viewArchitectAtom } from "@/store/architect";
+import { ViewArchitectType } from "@/store/architect";
+import { ColumnDef } from "@tanstack/react-table";
+import PaginationDataTable from "@/components/PaginationDataTable";
+import request from "@/lib/request";
 import React from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import usePagination from "@/hooks/pagination";
 
-const ArchitectOrders = () => {
-  const viewArchitect = useRecoilValue(viewArchitectAtom);
+const ArchitectOrders = ({ viewArchitect }: { viewArchitect: ViewArchitectType }) => {
   const setViewOrderId = useSetRecoilState(viewOrderIdAtom);
-  const parentRef = React.useRef<HTMLDivElement>(null);
-  
-  const virtualizer = useVirtualizer({
-    count: (viewArchitect?.orders ?? []).length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 2,
+  const [loading, setLoading] = React.useState(false);
+
+  const fetchMoreOrders = async (cursor: number) => {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("architect_id", viewArchitect.id.toString());
+      queryParams.append("cursor", cursor.toString());
+      const res = await request.get('/architect/getArchitectOrders?' + queryParams.toString());
+      return (res.data.data ?? []) as ViewArchitectType["orders"];
+    } catch (error) {
+      console.error("Error while fetching more architect orders", error);
+      return [];
+    }
+  };
+
+  const {data, hasNextPage, loadingMap, fetchMore} = usePagination({
+    key: viewArchitect.id,
+    fetchNextPage: fetchMoreOrders,
+    initialData: viewArchitect.orders,
+    uniqueKey: "id",
+    pageSize: 10
   });
 
-  if (!viewArchitect) return <Skeleton className="w-full h-46" />;
+  React.useEffect(() => {
+    setLoading(loadingMap.get(viewArchitect.id) ?? false);
+  }, [loadingMap, viewArchitect.id]);
+
+  const columns: ColumnDef<ViewArchitectType["orders"][number]>[] = [
+    {
+      id: "customer_name",
+      accessorFn: (row) => {
+        return `${row.customer?.name ?? "--"}`;
+      },
+      header: "Customer Name",
+    },
+    {
+      id: "house_no",
+      accessorFn: (row) => {
+        return `${row.delivery_address?.house_number ?? "--"}`;
+      },
+      header: "House No",
+    },
+    {
+      id: "address",
+      accessorFn: (row) => {
+        return `${row.delivery_address?.address ?? "--"}`;
+      },
+      header: "Address",
+    },
+    {
+      id: "status",
+      accessorFn: (row) => {
+        return `${row.status}`;
+      },
+      header: "Status",
+    },
+    {
+      id: "architect_commision",
+      accessorFn: (row) => {
+        return `₹${row.architect_commision ?? "0.00"}`;
+      },
+      header: "Architect Comm.",
+    },
+    {
+      id: "created_at",
+      accessorFn: (row) => {
+        return `${parseDateToString(row.created_at)}`;
+      },
+      header: "Date Created",
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        return (
+          <Button
+            size={"sm"}
+            onClick={() => {
+              setViewOrderId(row.original.id);
+            }}
+          >
+            View Order
+          </Button>
+        );
+      },
+      header: "View Order",
+    },
+  ];
 
   return (
-    <div className="mt-2 max-h-96 overflow-y-auto hide-scroll" ref={parentRef}>
-      <span className="font-sofiapro font-bold text-xl">Orders</span>
-      <Table
-        style={{ height: `${virtualizer.getTotalSize()}px` }}
-      >
-        <TableCaption>A list of Architect's orders.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className={`text-center`}>Customer</TableHead>
-            <TableHead className={`text-center`}>House No.</TableHead>
-            <TableHead className={`text-center`}>Address</TableHead>
-            <TableHead className={`text-center`}>Status</TableHead>
-            <TableHead className={`text-center`}>Architect Comm.</TableHead>
-            <TableHead className={`text-center`}>Date Created</TableHead>
-            <TableHead className={`text-center`}>View Order</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="max-h-72 overflow-y-scroll hide-scroll">
-          {(viewArchitect.orders ?? []).length > 0 &&
-            virtualizer.getVirtualItems().map((virtualRow, index) => {
-              const order = viewArchitect.orders[virtualRow.index];
-              return (
-                <TableRow key={order.id}
-                  style={{
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${
-                      virtualRow.start - index * virtualRow.size
-                    }px)`,
-                  }}
-                >
-                  <TableCell className={`text-center`}>
-                    {order.customer?.name ?? "--"}
-                  </TableCell>
-                  <TableCell className={`text-center`}>
-                    {order.delivery_address?.house_number ?? "--"}
-                  </TableCell>
-                  <TableCell className={`text-center`}>
-                    {order.delivery_address?.address ?? "--"}
-                  </TableCell>
-                  <TableCell
-                    className={`text-center ${order.status == "Pending" ? "text-red-500" : "text-green-500"}`}
-                  >
-                    {order.status}
-                  </TableCell>
-                  <TableCell className={`text-center`}>
-                    ₹{order.architect_commision ?? "0.00"}
-                  </TableCell>
-                  <TableCell className={`text-center`}>
-                    {parseDateToString(order.created_at)}
-                  </TableCell>
-                  <TableCell className={`text-center`}>
-                    <Button
-                      size={"sm"}
-                      onClick={() => {
-                        setViewOrderId(order.id);
-                      }}
-                    >
-                      View Order
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-        </TableBody>
-      </Table>
+    <div className="max-h-96 overflow-y-auto hide-scroll flex flex-col">
+      <span className="font-sofiapro font-bold text-xl pb-4">Architect Orders</span>
+      <PaginationDataTable
+        data={data ?? []}
+        key={"architect-orders"}
+        columns={columns}
+        columnFilters={false}
+        defaultColumn={{
+          meta: {
+            headerStyle: {
+              textAlign: "center",
+            },
+          },
+        }}
+        fetchNextPage={fetchMore}
+        hasNextPage={hasNextPage ?? false}
+        isFetchingNextPage={loading && data.length > 0 ? true : false}
+        message="No orders found for Architect!"
+      />
     </div>
   );
 };

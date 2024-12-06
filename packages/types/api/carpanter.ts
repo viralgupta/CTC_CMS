@@ -41,4 +41,9 @@ export const getCarpanterType = z.object({
   carpanter_id: z.string().transform((val) => Number(val))
 }).strict("Too many fields in request params");
 
+export const getCarpanterOrderType = z.object({
+  carpanter_id: z.string().transform((val) => Number(val)),
+  cursor: z.string().transform((val) => Number(val)),
+}).strict("Too many fields in request params");
+
 export const deleteCarpanterType = getCarpanterType;

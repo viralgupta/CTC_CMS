@@ -1,6 +1,6 @@
 import db from '@db/db';
-import { item, item_order, item_order_warehouse_quantity, log, warehouse, warehouse_quantity } from '@db/schema';
-import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType } from '@type/api/item';
+import { item, item_order, item_order_warehouse_quantity, log, order, warehouse, warehouse_quantity } from '@db/schema';
+import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType, getMoreItemOrderItemsType, getMoreWarehouseQuantitiesType } from '@type/api/item';
 import { Request, Response } from "express";
 import { eq, sql } from "drizzle-orm";
 import { omit } from '../lib/utils';
@@ -99,6 +99,8 @@ const getItem = async (req: Request, res: Response) => {
       where: (item, { eq }) => eq(item.id, getItemTypeAnswer.data.item_id),
       with: {
         order_items: {
+          orderBy: (order_item, { desc }) => [desc(order_item.id)],
+          limit: 10,
           columns: {
             item_id: false,
           },
@@ -116,8 +118,6 @@ const getItem = async (req: Request, res: Response) => {
               }
             }
           },
-          orderBy: (item, { desc }) => [desc(item.created_at)],
-          limit: 20
         },
         item_orders: {
           orderBy: (item_order, { desc }) => [desc(item_order.order_date)],
@@ -158,6 +158,48 @@ const getItem = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log("error", error)
     return res.status(400).json({success: false, message: "Unable to fetch item", error: error.message ? error.message : error});
+  }
+}
+
+const getMoreItemOrderItems = async (req: Request, res: Response) => {
+  const getMoreItemOrderItemsTypeAnswer = getMoreItemOrderItemsType.safeParse(req.query);
+
+  if (!getMoreItemOrderItemsTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getMoreItemOrderItemsTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const foundOrderItems = await db.query.order_item.findMany({
+      where: (order_item, { and, eq, lt }) =>
+        and(
+          eq(order_item.item_id, getMoreItemOrderItemsTypeAnswer.data.item_id),
+          lt(order_item.id, getMoreItemOrderItemsTypeAnswer.data.cursor)
+        ),
+      orderBy: (order_item, { desc }) => [desc(order_item.id)],
+      limit: 10,
+      columns: {
+        item_id: false,
+      },
+      with: {
+        order: {
+          with: {
+            customer: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+          columns: {
+            customer_id: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({success: true, message: "More Order Items fetched", data: foundOrderItems});
+  } catch (error: any) {
+    console.log("error", error)
+    return res.status(400).json({success: false, message: "Unable to fetch more order items!", error: error.message ? error.message : error});
   }
 }
 
@@ -628,6 +670,8 @@ const createWarehouse = async (req: Request, res: Response) => {
           id: true
         }
       });
+
+      if(items.length == 0) return;
       
       let insertWarehouseQuantity: {
         item_id: number,
@@ -667,8 +711,9 @@ const getWarehouse = async (req: Request, res: Response) => {
       where: (warehouse, { eq }) => eq(warehouse.id, getWarehouseTypeAnswer.data.warehouse_id),
       with: {
         warehouse_quantities: {
-          orderBy: (warehouse_quantity, { desc }) => [desc(warehouse_quantity.quantity)],
-          limit: 20, // add cursor pagination
+          orderBy: (warehouse_quantity, { desc }) => desc(warehouse_quantity.id),
+          where: (warehouse_quantity, { ne }) => ne(warehouse_quantity.quantity, 0),
+          limit: 20,
           columns: {
             item_id: true,
             quantity: true,
@@ -688,11 +733,51 @@ const getWarehouse = async (req: Request, res: Response) => {
       return res.status(400).json({success: false, message: "Unable to find warehouse"})
     }
 
-    FoundWarehouse.warehouse_quantities = FoundWarehouse.warehouse_quantities.filter(wq => wq.quantity !== 0);
-
     return res.status(200).json({success: true, message: "All Warehouse Quantiites Fetched!", data: FoundWarehouse});
   } catch (error: any) {
     return res.status(400).json({success: false, message: "Unable to fetch warehouse quantitiy", error: error.message ? error.message : error});
+  }
+}
+
+const getMoreWarehouseQuantities = async (req: Request, res: Response) => {
+  const getMoreWarehouseQuantitiesTypeAnswer = getMoreWarehouseQuantitiesType.safeParse(req.query);
+
+  if (!getMoreWarehouseQuantitiesTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getMoreWarehouseQuantitiesTypeAnswer.error.flatten()})
+  }
+
+  try {
+    let FoundWarehouse = await db.query.warehouse_quantity.findMany({
+      orderBy: (warehouse_quantity, { desc }) => desc(warehouse_quantity.id),
+      where: (warehouse_quantity, { and, eq, lt, ne }) =>
+        and(
+          eq(
+            warehouse_quantity.warehouse_id,
+            getMoreWarehouseQuantitiesTypeAnswer.data.warehouse_id
+          ),
+          lt(
+            warehouse_quantity.id,
+            getMoreWarehouseQuantitiesTypeAnswer.data.cursor
+          ),
+          ne(warehouse_quantity.quantity, 0)
+        ),
+      limit: 20,
+      columns: {
+        item_id: true,
+        quantity: true,
+      },
+      with: {
+        item: {
+          columns: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({success: true, message: "More Warehouse Quantities Fetched!", data: FoundWarehouse});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to fetch more warehouse quantities!", error: error.message ? error.message : error});
   }
 }
 
@@ -824,6 +909,7 @@ export {
   createItem,
   getAllItems,
   getItem,
+  getMoreItemOrderItems,
   getItemRates,
   editItem,
   createItemOrder,
@@ -833,6 +919,7 @@ export {
   deleteItem,
   createWarehouse,
   getWarehouse,
+  getMoreWarehouseQuantities,
   getAllWarehouse,
   editWarehouse,
   deleteWarehouse,

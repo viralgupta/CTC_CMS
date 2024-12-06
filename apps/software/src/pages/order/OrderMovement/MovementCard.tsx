@@ -91,13 +91,14 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
                   </DivButton>
                   <Separator />
                   <UploadedRecipt order_movement_id={movement.id}>
-                    <DivButton
+                    <Button
+                      variant={"outline"}
                       disabled={movement.recipt_key === null}
-                      className="flex items-center space-x-1 h-1/2 rounded-md overflow-y-scroll hide-scroll"
+                      className="flex items-center space-x-1 h-1/2 rounded-md overflow-y-scroll hide-scroll border-0"
                       >
                       <ReceiptText className="h-12 min-w-10 text-muted-foreground" />
                       <div>View Uploaded Recipt</div>
-                    </DivButton>
+                    </Button>
                   </UploadedRecipt>
                 </div>
                 <Separator orientation="vertical" />

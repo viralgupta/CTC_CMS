@@ -1,6 +1,6 @@
 import db from '@db/db';
 import { architect, log, phone_number } from '@db/schema';
-import { createArchitectType, deleteArchitectType, editArchitectType, getArchitectType, settleBalanceType } from '@type/api/architect';
+import { createArchitectType, deleteArchitectType, editArchitectType, getArchitectOrdersType, getArchitectType, settleBalanceType } from '@type/api/architect';
 import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
 import { omit } from '../lib/utils';
@@ -247,7 +247,8 @@ const getArchitect = async (req: Request, res: Response) => {
           }
         },
         orders: {
-          orderBy: (order, { desc }) => [desc(order.created_at)],
+          orderBy: (order, { desc }) => [desc(order.id)],
+          limit: 10,
           columns: {
             id: true,
             architect_commision: true,
@@ -280,6 +281,57 @@ const getArchitect = async (req: Request, res: Response) => {
     return res.status(400).json({success: false, message: "Unable to get Architect", error: error.message ? error.message : error});
   }
 };
+
+const getArchitectOrders = async (req: Request, res: Response) => {
+  const getArchitectOrderTypeAnswer = getArchitectOrdersType.safeParse(req.query);
+
+  if (!getArchitectOrderTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getArchitectOrderTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const tArchitect = await db.query.architect.findFirst({
+      where: (architect, { eq }) => eq(architect.id, getArchitectOrderTypeAnswer.data.architect_id),
+      columns: {
+        id: true,
+      },
+      with: {
+        orders: {
+          where: (order, { lt }) => lt(order.id, getArchitectOrderTypeAnswer.data.cursor),
+          orderBy: (order, { desc }) => [desc(order.id)],
+          limit: 10,
+          columns: {
+            id: true,
+            architect_commision: true,
+            status: true,
+            created_at: true
+          },
+          with: {
+            delivery_address: {
+               columns: {
+                 house_number: true,
+                 address: true,
+               }
+            },
+            customer: {
+              columns: {
+                name: true
+              }
+            }
+          },
+        }
+      }
+    });
+
+    if(!tArchitect){
+      return res.status(400).json({ success: false, message: "Architect not found" });
+    }
+
+    return res.status(200).json({success: true, message: "More Architect Orders Fetched!", data: tArchitect.orders});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Error while fetching Architect Orders!!", error: error.message ? error.message : error});
+  }
+}
 
 const deleteArchitect = async (req: Request, res: Response) => {
   const deleteArchitectTypeAnswer = deleteArchitectType.safeParse(req.body);
@@ -362,6 +414,7 @@ export {
   editArchitect,
   settleBalance,
   getArchitect,
+  getArchitectOrders,
   deleteArchitect,
   getAllArchitects,
 };
