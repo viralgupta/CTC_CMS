@@ -148,7 +148,7 @@ const PaginationDataTable = ({
                         }, 0);
                       const cellSize = (cell.column.getSize() * 100) / totalRowSize;
                       return (
-                        <div
+                        <td
                           key={cell.id}
                           className="py-0 flex items-center justify-center"
                           style={{
@@ -160,7 +160,7 @@ const PaginationDataTable = ({
                             cell.column.columnDef.cell,
                             cell.getContext()
                           )}
-                        </div>
+                        </td>
                       );
                     })
                   ) : (

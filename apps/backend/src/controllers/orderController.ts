@@ -1151,7 +1151,7 @@ const editOrderItems = async (req: Request, res: Response) => {
 }
 
 const getAllOrders = async (req: Request, res: Response) => {
-  const getAllOrdersTypeAnswer = getAllOrdersType.safeParse(req.body);
+  const getAllOrdersTypeAnswer = getAllOrdersType.safeParse(req.query);
 
   if(!getAllOrdersTypeAnswer.success) {
     return res.status(400).json({success: false, message: "Input fields are not correct", error: getAllOrdersTypeAnswer.error.flatten()})

@@ -33,9 +33,9 @@ const useAllOrders = () => {
     if ((orderLoadingMap.get(filter) || orders[filter].length > 0) && !skipCheck) return;
     orderLoadingMap.set(filter, true);
     try {
-      const res = await request.post("/order/getAllOrders", {
-        filter,
-      });
+      const queryParams = new URLSearchParams();
+      queryParams.append("filter", filter);
+      const res = await request.get("/order/getAllOrders?" + queryParams.toString());
       if (res.status != 200) return;
       setOrders({
         ...(skipCheck ? defaultAllOrders : orders),
@@ -58,10 +58,10 @@ const useAllOrders = () => {
     if (orderLoadingMap.get(filter)) return;
     orderLoadingMap.set(filter, true);
     try {
-      const res = await request.post("/order/getAllOrders", {
-        filter,
-        cursor: orderCursorMap.get(filter),
-      });
+      const queryParams = new URLSearchParams();
+      queryParams.append("filter", filter);
+      queryParams.append("cursor", (orderCursorMap.get(filter) ?? 0).toString());
+      const res = await request.get("/order/getAllOrders?" + queryParams.toString());
       if (res.status != 200) return;
       if(!orders) {
         setOrders({

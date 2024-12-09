@@ -124,7 +124,7 @@ export const editOrderItemsType = z.object({
 
 
 export const getAllOrdersType = z.object({
-  cursor: z.number().optional(),
+  cursor: z.string().transform((val) => Number(val)).optional(),
   filter: z
     .enum([
       "Status-Pending",

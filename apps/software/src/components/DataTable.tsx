@@ -135,7 +135,7 @@ const DataTable = ({
                     const cellSize =
                       (cell.column.getSize() * 100) / totalRowSize;
                     return (
-                      <div
+                      <td
                         key={cell.id}
                         className={
                           ((cell.column.columnDef.meta as any)?.className ??
@@ -155,7 +155,7 @@ const DataTable = ({
                           cell.column.columnDef.cell,
                           cell.getContext()
                         )}
-                      </div>
+                      </td>
                     );
                   })}
                 </TableRow>
