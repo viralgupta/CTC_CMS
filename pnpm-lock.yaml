@@ -80,7 +80,7 @@ importers:
         version: 0.22.8
       sst:
         specifier: ^2.43.3
-        version: 2.43.7(@aws-sdk/client-sso-oidc@3.651.1)
+        version: 2.43.7(@aws-sdk/client-sso-oidc@3.675.0)
       tsx:
         specifier: ^4.19.1
         version: 4.19.1
@@ -103,6 +103,9 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)
       '@radix-ui/react-checkbox':
+        specifier: ^1.1.1
+        version: 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)
+      '@radix-ui/react-collapsible':
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)
       '@radix-ui/react-dialog':
@@ -331,7 +334,7 @@ importers:
         version: 3.4.11
       vite:
         specifier: ^5.2.0
-        version: 5.4.5(@types/node@22.5.5)
+        version: 5.4.5(@types/node@20.16.5)
 
   packages/functions:
     dependencies:
@@ -1712,31 +1715,6 @@ packages:
       '@smithy/property-provider': 3.1.8
       '@smithy/types': 3.6.0
       tslib: 2.8.0
-    dev: true
-
-  /@aws-sdk/credential-providers@3.651.1(@aws-sdk/client-sso-oidc@3.651.1):
-    resolution: {integrity: sha512-Jv9WikitkarMbW+SaQETJ4/cNapRrsmS2GzU+axc9szqnY+fO6TFcFRB24AvdqCP1uNNasYsbCl/tryZSN/pNg==}
-    engines: {node: '>=16.0.0'}
-    dependencies:
-      '@aws-sdk/client-cognito-identity': 3.651.1
-      '@aws-sdk/client-sso': 3.651.1
-      '@aws-sdk/client-sts': 3.651.1
-      '@aws-sdk/credential-provider-cognito-identity': 3.651.1
-      '@aws-sdk/credential-provider-env': 3.649.0
-      '@aws-sdk/credential-provider-http': 3.649.0
-      '@aws-sdk/credential-provider-ini': 3.651.1(@aws-sdk/client-sso-oidc@3.651.1)(@aws-sdk/client-sts@3.651.1)
-      '@aws-sdk/credential-provider-node': 3.651.1(@aws-sdk/client-sso-oidc@3.651.1)(@aws-sdk/client-sts@3.651.1)
-      '@aws-sdk/credential-provider-process': 3.649.0
-      '@aws-sdk/credential-provider-sso': 3.651.1(@aws-sdk/client-sso-oidc@3.651.1)
-      '@aws-sdk/credential-provider-web-identity': 3.649.0(@aws-sdk/client-sts@3.651.1)
-      '@aws-sdk/types': 3.649.0
-      '@smithy/credential-provider-imds': 3.2.3
-      '@smithy/property-provider': 3.1.6
-      '@smithy/types': 3.4.2
-      tslib: 2.7.0
-    transitivePeerDependencies:
-      - '@aws-sdk/client-sso-oidc'
-      - aws-crt
     dev: true
 
   /@aws-sdk/credential-providers@3.651.1(@aws-sdk/client-sso-oidc@3.675.0):
@@ -4690,6 +4668,33 @@ packages:
       react-dom: 18.3.1(react@18.3.1)
     dev: false
 
+  /@radix-ui/react-collapsible@1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-1///SnrfQHJEofLokyczERxQbWfCGQlQ2XsCZMucVs6it+lq9iw4vXy+uDn1edlb58cOZOWSldnfPAYcT4O/Yg==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+    dependencies:
+      '@radix-ui/primitive': 1.1.0
+      '@radix-ui/react-compose-refs': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@radix-ui/react-context': 1.1.1(@types/react@18.3.6)(react@18.3.1)
+      '@radix-ui/react-id': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@radix-ui/react-presence': 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)
+      '@radix-ui/react-primitive': 2.0.0(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1)
+      '@radix-ui/react-use-controllable-state': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@radix-ui/react-use-layout-effect': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@types/react': 18.3.6
+      '@types/react-dom': 18.3.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    dev: false
+
   /@radix-ui/react-collection@1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-GZsZslMJEyo1VKm5L1ZJY8tGDxZNPAoUeQUIbKeJfoi7Q4kmig5AsgLMYYuyYbfjd8fBmFORAIwYAkXMnXZgZw==}
     peerDependencies:
@@ -4728,6 +4733,19 @@ packages:
 
   /@radix-ui/react-context@1.1.0(@types/react@18.3.6)(react@18.3.1):
     resolution: {integrity: sha512-OKrckBy+sMEgYM/sMmqmErVn0kZqrHPJze+Ql3DzYsDDp0hl0L62nx/2122/Bvps1qz645jlcu2tD9lrRSdf8A==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+    dependencies:
+      '@types/react': 18.3.6
+      react: 18.3.1
+    dev: false
+
+  /@radix-ui/react-context@1.1.1(@types/react@18.3.6)(react@18.3.1):
+    resolution: {integrity: sha512-UASk9zi+crv9WteK/NU4PLvOoL3OuE6BWVKNF6hPRBtYBDXQ2u5iu3O59zUlJiTVvkyuycnqrztsHVJwcK9K+Q==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
@@ -5027,6 +5045,27 @@ packages:
 
   /@radix-ui/react-presence@1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-Gq6wuRN/asf9H/E/VzdKoUtT8GC9PQc9z40/vEr0VCJ4u5XvvhWIrSsCB6vD2/cH7ugTdSfYq9fLJCcM00acrQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+    dependencies:
+      '@radix-ui/react-compose-refs': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@radix-ui/react-use-layout-effect': 1.1.0(@types/react@18.3.6)(react@18.3.1)
+      '@types/react': 18.3.6
+      '@types/react-dom': 18.3.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    dev: false
+
+  /@radix-ui/react-presence@1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.6)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-IeFXVi4YS1K0wVZzXNrbaaUvIJ3qdY+/Ih4eHFhWA9SwGR9UDX7Ck8abvL57C4cv3wwMvUE0OG69Qc3NCcTe/A==}
     peerDependencies:
       '@types/react': '*'
       '@types/react-dom': '*'
@@ -12804,96 +12843,6 @@ packages:
       yaml: 1.10.2
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
-
-  /sst@2.43.7(@aws-sdk/client-sso-oidc@3.651.1):
-    resolution: {integrity: sha512-zst5/3KISVS0Tcx28vDNs270EJ7I1IPTXbtenMDf9BNKhcRwTYjBUAGlRrpDwDzTc4hbvqoyww6DCh5+tDX6RA==}
-    hasBin: true
-    peerDependencies:
-      '@sls-next/lambda-at-edge': ^3.7.0
-    peerDependenciesMeta:
-      '@sls-next/lambda-at-edge':
-        optional: true
-    dependencies:
-      '@aws-cdk/aws-lambda-python-alpha': 2.142.1-alpha.0(aws-cdk-lib@2.142.1)(constructs@10.3.0)
-      '@aws-cdk/cloud-assembly-schema': 2.142.1
-      '@aws-cdk/cloudformation-diff': 2.142.1
-      '@aws-cdk/cx-api': 2.142.1(@aws-cdk/cloud-assembly-schema@2.142.1)
-      '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/client-cloudformation': 3.651.1
-      '@aws-sdk/client-ecs': 3.651.1
-      '@aws-sdk/client-eventbridge': 3.651.1
-      '@aws-sdk/client-iam': 3.651.1
-      '@aws-sdk/client-iot': 3.651.1
-      '@aws-sdk/client-iot-data-plane': 3.651.1
-      '@aws-sdk/client-lambda': 3.651.1
-      '@aws-sdk/client-rds-data': 3.651.1
-      '@aws-sdk/client-s3': 3.651.1
-      '@aws-sdk/client-ssm': 3.651.1
-      '@aws-sdk/client-sts': 3.651.1
-      '@aws-sdk/config-resolver': 3.374.0
-      '@aws-sdk/credential-providers': 3.651.1(@aws-sdk/client-sso-oidc@3.651.1)
-      '@aws-sdk/middleware-retry': 3.374.0
-      '@aws-sdk/middleware-signing': 3.649.0
-      '@aws-sdk/signature-v4-crt': 3.651.1
-      '@aws-sdk/smithy-client': 3.374.0
-      '@babel/core': 7.25.2
-      '@babel/generator': 7.25.6
-      '@babel/plugin-syntax-typescript': 7.25.4(@babel/core@7.25.2)
-      '@smithy/signature-v4': 2.3.0
-      '@trpc/server': 9.16.0
-      adm-zip: 0.5.16
-      aws-cdk-lib: 2.142.1(constructs@10.3.0)
-      aws-iot-device-sdk: 2.2.15
-      aws-sdk: 2.1691.0
-      builtin-modules: 3.2.0
-      cdk-assets: 2.142.1
-      chalk: 5.3.0
-      chokidar: 3.6.0
-      ci-info: 3.9.0
-      colorette: 2.0.20
-      conf: 10.2.0
-      constructs: 10.3.0
-      cross-spawn: 7.0.3
-      dendriform-immer-patch-optimiser: 2.1.3(immer@9.0.21)
-      dotenv: 16.4.5
-      esbuild: 0.18.13
-      express: 4.21.0
-      fast-jwt: 3.3.3
-      get-port: 6.1.2
-      glob: 10.4.5
-      graphql: 16.9.0
-      graphql-yoga: 3.9.1(graphql@16.9.0)
-      immer: 9.0.21
-      ink: 4.4.1(react@18.3.1)
-      ink-spinner: 5.0.0(ink@4.4.1)(react@18.3.1)
-      kysely: 0.25.0
-      kysely-codegen: 0.10.1(kysely@0.25.0)
-      kysely-data-api: 0.2.1(@aws-sdk/client-rds-data@3.651.1)(kysely@0.25.0)
-      minimatch: 6.2.0
-      openid-client: 5.7.0
-      ora: 6.3.1
-      react: 18.3.1
-      remeda: 1.61.0
-      sst-aws-cdk: 2.142.1
-      tree-kill: 1.2.2
-      undici: 5.28.4
-      uuid: 9.0.1
-      ws: 8.18.0
-      yargs: 17.7.2
-      zod: 3.23.8
-    transitivePeerDependencies:
-      - '@aws-sdk/client-sso-oidc'
-      - '@types/react'
-      - aws-crt
-      - better-sqlite3
-      - bufferutil
-      - debug
-      - mysql2
-      - pg
-      - react-devtools-core
-      - supports-color
-      - utf-8-validate
     dev: true
 
   /sst@2.43.7(@aws-sdk/client-sso-oidc@3.675.0):

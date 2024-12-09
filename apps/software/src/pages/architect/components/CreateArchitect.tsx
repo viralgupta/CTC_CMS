@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/ui/Spinner";
 import { z } from "zod";
 import request from "@/lib/request";
+import SelectTier from "@/components/Inputs/SelectTier";
 
 const CreateArchitectForm = () => {
   const form = useForm<z.infer<typeof createArchitectType>>({
@@ -129,6 +130,19 @@ const CreateArchitectForm = () => {
                 <FormLabel>Architect Name</FormLabel>
                 <FormControl>
                   <Input type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="tier_id"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Tier</FormLabel>
+                <FormControl>
+                  <SelectTier defaultValue={field.value} onValueChange={field.onChange}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

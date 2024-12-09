@@ -19,11 +19,11 @@ const createCarpanter = async (req: Request, res: Response) => {
         name: createCarpanterTypeAnswer.data.name,
         profileUrl: createCarpanterTypeAnswer.data.profileUrl,
         area: createCarpanterTypeAnswer.data.area,
-        balance: createCarpanterTypeAnswer.data.balance
+        balance: createCarpanterTypeAnswer.data.balance,
+        tier_id: createCarpanterTypeAnswer.data.tier_id
       }).returning({id: carpanter.id});
       
       if(res.locals.session){
-
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
           carpanter_id: tCarpanter[0].id,
@@ -109,6 +109,7 @@ const editCarpanter = async (req: Request, res: Response) => {
         name: editCarpanterTypeAnswer.data.name,
         profileUrl: editCarpanterTypeAnswer.data.profileUrl,
         area: editCarpanterTypeAnswer.data.area,
+        tier_id: editCarpanterTypeAnswer.data.tier_id
       }).where(eq(carpanter.id, tCarpanter.id));
 
       if(res.locals.session){
@@ -261,6 +262,11 @@ const getCarpanter = async (req: Request, res: Response) => {
               }
             }
           },
+        },
+        tier: {
+          columns: {
+            name: true,
+          }
         }
       }
     });

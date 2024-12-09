@@ -26,6 +26,7 @@ import {
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewCarpenterAtom, viewCarpenterIdAtom } from "@/store/carpenter";
 import { editCarpanterType } from "@type/api/carpanter";
+import SelectTier from "@/components/Inputs/SelectTier";
 
 const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(false)
@@ -40,7 +41,8 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
         carpanter_id: viewCarpenter?.id,
         name: viewCarpenter?.name,
         profileUrl: viewCarpenter?.profileUrl ?? undefined,
-        area: viewCarpenter?.area ?? undefined
+        area: viewCarpenter?.area ?? undefined,
+        tier_id: viewCarpenter?.tier_id,
       },
     });
 
@@ -59,7 +61,7 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
               control={form.control}
               name="profileUrl"
               render={({ field }) => (
-                <FormItem className="flex flex-col items-center justify-center">
+                <FormItem className="flex flex-col items-center justify-center w-1/2">
                   <FormLabel>Profile Url</FormLabel>
                   <FormControl>
                     <ProfileUrlInput
@@ -77,10 +79,23 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="">
+                <FormItem className="w-full mr-2">
                   <FormLabel>Carpenter Name</FormLabel>
                   <FormControl>
                     <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tier_id"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Tier</FormLabel>
+                  <FormControl>
+                    <SelectTier defaultValue={field.value} onValueChange={field.onChange}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

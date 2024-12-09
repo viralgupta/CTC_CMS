@@ -27,6 +27,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -43,16 +48,20 @@ import {
   itemType,
   selectedItemRateAtom,
   selectedItemRateType,
+  selectedItemRateWithCommissionType,
 } from "@/store/Items";
 import request from "@/lib/request";
 import { useRecoilState } from "recoil";
 import DebitWarehouseQuantity from "@/pages/inventory/components/inputs/DebitWarehouseQuantity";
+import { showCommissionAtom } from "@/store/order";
 
 const AddNewItem = ({
   onSubmit: onAdd,
   value,
   children,
   delivered,
+  carpanter_id,
+  architect_id
 }: {
   onSubmit: (
     value: z.infer<typeof createOrderType>["order_items"][number]
@@ -60,9 +69,12 @@ const AddNewItem = ({
   value?: z.infer<typeof createOrderType>["order_items"][number];
   children?: React.ReactNode;
   delivered: boolean;
+  carpanter_id?: number;
+  architect_id?: number;
 }) => {
   const [selectedItemRates, setSelectedItemRates] =
     useRecoilState(selectedItemRateAtom);
+  const [showCommission, setShowCommission] = useRecoilState(showCommissionAtom);
   const [architectCommission, setArchitectCommission] = React.useState("0.00");
   const [carpanterCommision, setCarpenterCommission] = React.useState("0.00");
   const [foundItem, setFoundItem] = React.useState<itemType | null>(null);
@@ -122,33 +134,38 @@ const AddNewItem = ({
     form.reset();
   }
 
-  function calculateTotalCommission(
-    value: z.infer<
-      typeof createOrderType
-    >["order_items"][number]["architect_commision"],
-    type: z.infer<
-      typeof createOrderType
-    >["order_items"][number]["architect_commision_type"],
-    itemValue: string
-  ) {
-    if (!type) return "0.00";
-    if (type == "perPiece") {
-      return (parseFloat(value ?? "0.00") * form.getValues("quantity")).toFixed(
-        2
-      );
-    } else {
-      return (
-        (parseFloat(value ?? "0.00") / 100) *
-        parseFloat(itemValue)
-      ).toFixed(2);
-    }
-  }
-
   async function getItemRate(item_id: number) {
     setLoading(true);
     const res = await request(`/inventory/getItemRates?item_id=${item_id}`);
     if(res.status == 200){
       setSelectedItemRates(res.data.data as selectedItemRateType);
+      setLoading(false);
+    }
+  }
+
+  async function getItemRateWithCommission(item_id: number, carpenter_id?: number, architect_id?: number) {
+    setLoading(true);
+    const queryParams = new URLSearchParams();
+    queryParams.append("item_id", item_id.toString());
+    if(carpenter_id) queryParams.append("carpanter_id", carpenter_id.toString());
+    if(architect_id) queryParams.append("architect_id", architect_id.toString());
+    const res = await request.get(`/inventory/getItemRatesWithCommission?`+ queryParams.toString());
+    if(res.status == 200){
+      setSelectedItemRates(res.data.data as selectedItemRateWithCommissionType);
+      if(res.data.data.architect_rates){
+        form.setValue("architect_commision", res.data.data.architect_rates.commision);
+        form.setValue("architect_commision_type", res.data.data.architect_rates.commision_type);
+      } else {
+        form.setValue("architect_commision", "0.00");
+        form.setValue("architect_commision_type", undefined);
+      }
+      if(res.data.data.carpanter_rates){
+        form.setValue("carpanter_commision", res.data.data.carpanter_rates.commision);
+        form.setValue("carpanter_commision_type", res.data.data.carpanter_rates.commision_type);
+      } else {
+        form.setValue("carpanter_commision", "0.00");
+        form.setValue("carpanter_commision_type", undefined);
+      }
       setLoading(false);
     }
   }
@@ -218,7 +235,8 @@ const AddNewItem = ({
       calculateTotalCommission(
         architect_commision,
         architect_commision_type,
-        total_value
+        total_value,
+        quantity
       )
     );
   }, [total_value, architect_commision, architect_commision_type]);
@@ -228,7 +246,8 @@ const AddNewItem = ({
       calculateTotalCommission(
         carpanter_commision,
         carpanter_commision_type,
-        total_value
+        total_value,
+        quantity
       )
     );
   }, [carpanter_commision, carpanter_commision_type, total_value]);
@@ -242,7 +261,7 @@ const AddNewItem = ({
   React.useEffect(() => {
     if (!foundItem) return;
     form.setValue("rate", foundItem?.sale_rate ?? 0);
-    getItemRate(foundItem.id);
+    getItemRateWithCommission(foundItem.id, carpanter_id, architect_id);
   }, [foundItem]);
 
   React.useEffect(() => {
@@ -281,7 +300,7 @@ const AddNewItem = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-2 w-full h-full"
+            className="space-y-2 w-full h-full relative"
           >
             <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
               <FormField
@@ -399,136 +418,141 @@ const AddNewItem = ({
                 )}
               />
             </div>
-            <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end">
-              <FormField
-                control={form.control}
-                name="architect_commision"
-                render={({ field }) => (
+            <Collapsible onOpenChange={() => {setShowCommission(sc => !sc)}} open={showCommission}>
+              <CollapsibleContent>
+                <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end">
+                  <FormField
+                    control={form.control}
+                    name="architect_commision"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabelWithToolTip
+                          heading="Architect Commission"
+                          data={[
+                            `Last Order Arch. Commission: ₹${selectedItemRates?.order_items[0]?.architect_commision ?? " --"}`,
+                          ]}
+                        />
+                        <FormControl>
+                          <Input
+                            type="number"
+                            onChange={field.onChange}
+                            value={field.value ?? 0}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="architect_commision_type"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabelWithToolTip
+                          heading="Architect Commission Type"
+                          data={[
+                            `Last Order Arch. Commission Type: ₹${selectedItemRates?.order_items[0]?.architect_commision_type ?? " --"}`,
+                          ]}
+                        />
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">
+                                % Percentage
+                              </SelectItem>
+                              <SelectItem value="perPiece">Per Piece</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormItem className="w-full">
-                    <FormLabelWithToolTip
-                      heading="Architect Commission"
-                      data={[
-                        `Last Order Arch. Commission: ₹${selectedItemRates?.order_items[0]?.architect_commision ?? " --"}`,
-                      ]}
-                    />
+                    <FormLabel>Total Architect Commission</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        onChange={field.onChange}
-                        value={field.value ?? 0}
+                        className="w-full"
+                        disabled
+                        value={architectCommission}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="architect_commision_type"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabelWithToolTip
-                      heading="Architect Commission Type"
-                      data={[
-                        `Last Order Arch. Commission Type: ₹${selectedItemRates?.order_items[0]?.architect_commision_type ?? " --"}`,
-                      ]}
-                    />
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="percentage">
-                            % Percentage
-                          </SelectItem>
-                          <SelectItem value="perPiece">Per Piece</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormItem className="w-full">
-                <FormLabel>Total Architect Commission</FormLabel>
-                <FormControl>
-                  <Input
-                    className="w-full"
-                    disabled
-                    value={architectCommission}
+                </div>
+                <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end">
+                  <FormField
+                    control={form.control}
+                    name="carpanter_commision"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabelWithToolTip
+                          heading="Carpenter Commission"
+                          data={[
+                            `Last Order Carp. Commission: ₹${selectedItemRates?.order_items[0]?.carpanter_commision ?? " --"}`,
+                          ]}
+                        />
+                        <FormControl>
+                          <Input
+                            type="number"
+                            onChange={field.onChange}
+                            value={field.value ?? 0}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-              </FormItem>
-            </div>
-            <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end pb-2">
-              <FormField
-                control={form.control}
-                name="carpanter_commision"
-                render={({ field }) => (
+                  <FormField
+                    control={form.control}
+                    name="carpanter_commision_type"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabelWithToolTip
+                          heading="Carpenter Commission Type"
+                          data={[
+                            `Last Order Carp. Commission Type: ₹${selectedItemRates?.order_items[0]?.carpanter_commision_type ?? " --"}`,
+                          ]}
+                        />
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">
+                                % Percentage
+                              </SelectItem>
+                              <SelectItem value="perPiece">Per Piece</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormItem className="w-full">
-                    <FormLabelWithToolTip
-                      heading="Carpenter Commission"
-                      data={[
-                        `Last Order Carp. Commission: ₹${selectedItemRates?.order_items[0]?.carpanter_commision ?? " --"}`,
-                      ]}
-                    />
+                    <FormLabel>Total Carpenter Commission</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        onChange={field.onChange}
-                        value={field.value ?? 0}
+                        className="w-full"
+                        disabled
+                        value={carpanterCommision}
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="carpanter_commision_type"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabelWithToolTip
-                      heading="Carpenter Commission Type"
-                      data={[
-                        `Last Order Carp. Commission Type: ₹${selectedItemRates?.order_items[0]?.carpanter_commision_type ?? " --"}`,
-                      ]}
-                    />
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="percentage">
-                            % Percentage
-                          </SelectItem>
-                          <SelectItem value="perPiece">Per Piece</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormItem className="w-full">
-                <FormLabel>Total Carpenter Commission</FormLabel>
-                <FormControl>
-                  <Input
-                    className="w-full"
-                    disabled
-                    value={carpanterCommision}
-                  />
-                </FormControl>
-              </FormItem>
-            </div>
+                </div>
+              </CollapsibleContent>
+              <CollapsibleTrigger className="text-center text-xs pt-2 opacity-15 hover:opacity-50 cursor-pointer w-full">{showCommission ? "Show Less" : "Show More"}</CollapsibleTrigger>
+            </Collapsible>
             <Button
               disabled={form.formState.isSubmitting || loading}
               type="button"
@@ -583,3 +607,26 @@ export const FormLabelWithToolTip = ({
 };
 
 export default AddNewItem;
+
+export function calculateTotalCommission(
+  value: z.infer<
+    typeof createOrderType
+  >["order_items"][number]["architect_commision"],
+  type: z.infer<
+    typeof createOrderType
+  >["order_items"][number]["architect_commision_type"],
+  itemValue: string,
+  quantity: number
+) {
+  if (!type) return "0.00";
+  if (type == "perPiece") {
+    return (parseFloat(value ?? "0.00") * quantity).toFixed(
+      2
+    );
+  } else {
+    return (
+      (parseFloat(value ?? "0.00") / 100) *
+      parseFloat(itemValue)
+    ).toFixed(2);
+  }
+}

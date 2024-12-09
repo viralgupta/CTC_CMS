@@ -14,6 +14,8 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type FilterFn,
+  type OnChangeFn,
+  type RowSelectionState,
 } from "@tanstack/react-table";
 import { rankItem } from "@tanstack/match-sorter-utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -26,6 +28,9 @@ type DataTableProps = {
   columns: ColumnDef<any, any>[];
   columnFilters: ColumnFiltersState | false;
   defaultColumn?: Partial<ColumnDef<any, unknown>> | undefined;
+  thin?: boolean;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>
 };
 
 declare module "@tanstack/react-table" {
@@ -40,6 +45,9 @@ const DataTable = ({
   columns,
   columnFilters,
   defaultColumn,
+  thin,
+  rowSelection,
+  onRowSelectionChange
 }: DataTableProps) => {
   const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
     const itemRank = rankItem(row.getValue(columnId), value);
@@ -58,9 +66,11 @@ const DataTable = ({
     },
     state: {
       columnFilters: columnFilters ? columnFilters : undefined,
+      rowSelection: rowSelection ? rowSelection : undefined,
     },
     getFilteredRowModel: columnFilters ? getFilteredRowModel() : undefined,
     defaultColumn,
+    onRowSelectionChange: onRowSelectionChange ? onRowSelectionChange : undefined,
   });
 
   const parentRef = React.useRef<HTMLDivElement>(null);
@@ -70,7 +80,7 @@ const DataTable = ({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 60,
+    estimateSize: () => thin ? 40 : 60,
     overscan: 2,
   });
 

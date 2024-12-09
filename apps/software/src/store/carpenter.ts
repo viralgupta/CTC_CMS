@@ -12,6 +12,7 @@ export interface CarpenterType {
 
 export interface ViewCarpenterType extends CarpenterType {
   profileUrl: string | null;
+  tier_id: number;
   phone_numbers: {
     id: number;
     phone_number: string;
@@ -32,6 +33,9 @@ export interface ViewCarpenterType extends CarpenterType {
       address: string;
     } | null;
   }[];
+  tier: {
+    name: string;
+  };
 }
 
 export const allCarpenterAtom = atom<CarpenterType[]>({

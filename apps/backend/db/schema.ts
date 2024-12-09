@@ -94,11 +94,16 @@ export const architect = pgTable("architect", {
   area: varchar("ar_area", { length: 20 }).notNull(),
   balance: numeric("ar_balance", { precision: 10, scale: 2 })
     .default("0.00"),
+  tier_id: integer("ar_tier_id").references(() => tier.id).notNull(),
 });
 
-export const architect_relation = relations(architect, ({ many }) => ({
+export const architect_relation = relations(architect, ({ many, one }) => ({
   phone_numbers: many(phone_number),
   orders: many(order),
+  tier: one(tier, {
+    fields: [architect.tier_id],
+    references: [tier.id],
+  }),
 }));
 
 export const carpanter = pgTable("carpanter", {
@@ -108,11 +113,51 @@ export const carpanter = pgTable("carpanter", {
   area: varchar("ca_area", { length: 20 }).notNull(),
   balance: numeric("ca_balance", { precision: 10, scale: 2 })
     .default("0.00"),
+  tier_id: integer("ca_tier_id").references(() => tier.id).notNull(),
 });
 
-export const carpanter_relation = relations(carpanter, ({ many }) => ({
+export const carpanter_relation = relations(carpanter, ({ many, one }) => ({
   phone_numbers: many(phone_number),
   orders: many(order),
+  tier: one(tier, {
+    fields: [carpanter.tier_id],
+    references: [tier.id],
+  }),
+}));
+
+export const tier = pgTable("tier", {
+  id: serial("t_id").notNull().primaryKey(),
+  name: varchar("t_name", { length: 255 }).notNull(),
+});
+
+export const tier_relation = relations(tier, ({ many }) => ({
+  carpanters: many(carpanter),
+  architects: many(architect),
+  tier_items: many(tier_item),
+}));
+
+export const tier_item = pgTable("tier_item", {
+  id: serial("ti_id").notNull().primaryKey(),
+  tier_id: integer("ti_tier_id").references(() => tier.id, { onDelete: "cascade" }).notNull(),
+  item_id: integer("ti_item_id").references(() => item.id, { onDelete: "cascade" }).notNull(),
+  commision: numeric("t_carpanter_commision", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  commision_type: varchar("t_carpanter_commision_type", {
+    enum: ["percentage", "perPiece"],
+  }).notNull(),
+});
+
+export const tier_item_relation = relations(tier_item, ({ one }) => ({
+  tier: one(tier, {
+    fields: [tier_item.tier_id],
+    references: [tier.id],
+  }),
+  item: one(item, {
+    fields: [tier_item.item_id],
+    references: [item.id],
+  }),
 }));
 
 export const driver = pgTable("driver", {

@@ -12,7 +12,7 @@ type usePaginationType<T extends Record<string, any>> = {
 
 const usePagination = <T extends Record<string, any>>({initialData, uniqueKey, fetchNextPage, pageSize, key}: usePaginationType<T>) => {
   const [data, setData] = React.useState(initialData);
-  const [cursor, setCursor] = React.useState<number>(initialData[initialData.length - 1][uniqueKey] ?? 0);
+  const [cursor, setCursor] = React.useState<number>(initialData.length > 0 ? initialData[initialData.length - 1][uniqueKey] : 0);
   const [hasNextPage, setHasNextPage] = React.useState(pageSize > initialData.length ? false : true);
   loadingMap.set(key, false);
 

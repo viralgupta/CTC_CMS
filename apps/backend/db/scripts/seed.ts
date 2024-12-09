@@ -18,6 +18,8 @@ import {
   order_movement_item,
   order_movement_item_warehouse_quantity,
   estimate,
+  tier,
+  tier_item,
   // estimate_item,
   // resource,
   log
@@ -142,6 +144,18 @@ async function main() {
     id: address.id
   })
 
+  // insert tiers
+  const tierIds = await db.insert(tier).values([
+    {
+      name: "Gold",
+    },
+    {
+      name: "Silver",
+    }
+  ]).returning({
+    id: tier.id
+  })
+
 
   // insert architects
   const architectIds = await db.insert(architect).values([
@@ -149,11 +163,13 @@ async function main() {
       area: "Navug Market",
       name: "Architect 1",
       balance: "100.00",
+      tier_id: tierIds[0].id
     },
     {
       area: "Raj Nagar",
       name: "Architect 2",
       balance: "0.00",
+      tier_id: tierIds[1].id
     }
   ]).returning({
     id: architect.id
@@ -165,11 +181,13 @@ async function main() {
       area: "Navug Market",
       name: "Carpanter 1",
       balance: "100.00",
+      tier_id: tierIds[0].id
     },
     {
       area: "Raj Nagar",
       name: "Carpanter 2",
       balance: "100.00",
+      tier_id: tierIds[1].id
     }
   ]).returning({
     id: carpanter.id
@@ -303,6 +321,36 @@ async function main() {
     }
   ]).returning({
     id: item.id
+  });
+
+  // insert tier_items
+  const tierItemIds = await db.insert(tier_item).values([
+    {
+      tier_id: tierIds[0].id,
+      item_id: itemIds[0].id,
+      commision: "200.00",
+      commision_type: "perPiece",
+    },
+    {
+      tier_id: tierIds[0].id,
+      item_id: itemIds[2].id,
+      commision: "5.00",
+      commision_type: "percentage",
+    },
+    {
+      tier_id: tierIds[1].id,
+      item_id: itemIds[0].id,
+      commision: "100.00",
+      commision_type: "perPiece",
+    },
+    {
+      tier_id: tierIds[1].id,
+      item_id: itemIds[2].id,
+      commision: "2.50",
+      commision_type: "percentage",
+    },
+  ]).returning({
+    id: tier_item.id
   });
 
   // insert warehouse_quantities

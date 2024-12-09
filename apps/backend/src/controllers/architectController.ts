@@ -19,7 +19,8 @@ const createArchitect = async (req: Request, res: Response) => {
         name: createArchitectTypeAnswer.data.name,
         profileUrl: createArchitectTypeAnswer.data.profileUrl,
         area: createArchitectTypeAnswer.data.area,
-        balance: createArchitectTypeAnswer.data.balance
+        balance: createArchitectTypeAnswer.data.balance,
+        tier_id: createArchitectTypeAnswer.data.tier_id
       }).returning({ id: architect.id });
       
       if(res.locals.session){
@@ -112,6 +113,7 @@ const editArchitect = async (req: Request, res: Response) => {
           name: editArchitectTypeAnswer.data.name,
           profileUrl: editArchitectTypeAnswer.data.profileUrl,
           area: editArchitectTypeAnswer.data.area,
+          tier_id: editArchitectTypeAnswer.data.tier_id,
         })
         .where(eq(architect.id, tArchitect.id));
 
@@ -268,6 +270,11 @@ const getArchitect = async (req: Request, res: Response) => {
               }
             }
           },
+        },
+        tier: {
+          columns: {
+            name: true,
+          }
         }
       }
     });

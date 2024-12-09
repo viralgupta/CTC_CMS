@@ -57,6 +57,12 @@ export const getItemRatesType = getItemType.extend({
   customer_id: z.string().transform((val) => Number(val)).optional()
 });
 
+export const getItemRatesWithCommissionType = getItemType.extend({
+  customer_id: z.string().transform((val) => Number(val)).optional(),
+  architect_id: z.string().transform((val) => Number(val)).optional(),
+  carpanter_id: z.string().transform((val) => Number(val)).optional()
+});
+
 export const editItemType = createItemType
   .extend({
     item_id: z.number(),
@@ -136,4 +142,31 @@ export const deleteWarehouseType = getWarehouseType;
 
 export const getWarehouseItemQuantitiesType = z.object({
   item_id: z.string().transform((val) => Number(val)),
+});
+
+const tierItem = z.object({
+  item_id: z.number(),
+  commision:  z.string()
+  .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
+    message: "The number must be greater than or equal to 0.00",
+  })
+  .transform((val) => parseFloat(val).toFixed(2)),
+  commision_type: z.enum(["percentage", "perPiece"]),
+});
+
+export const createTierType = z.object({
+  name: z.string().max(255, "Tier name is too long"),
+  tier_items: z.array(tierItem).min(1),
+});
+
+export const editTierType = createTierType.extend({
+  tier_id: z.number(),
+});
+
+export const deleteTierType = z.object({
+  tier_id: z.number(),
+});
+
+export const getTierType = z.object({
+  tier_id: z.string().transform((val) => Number(val)),
 });

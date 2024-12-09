@@ -2,6 +2,7 @@ import CreateItem from './components/CreateItem'
 import SearchItem from './components/SearchItem'
 import AllItems from './components/AllItems'
 import Warehouse from './components/Warehouse/Warehouse'
+import Tier from './components/Tiers/Tier'
 
 const Inventory = () => {
   return (
@@ -14,7 +15,10 @@ const Inventory = () => {
         </CreateItem>
         <SearchItem/>
       </div>
-      <Warehouse/>
+      <div className='flex space-x-2 flex-none'>
+        <Warehouse/>
+        <Tier/>
+      </div>
       <AllItems/>
     </div>
   )

@@ -12,6 +12,7 @@ export interface ArchitectType {
 
 export interface ViewArchitectType extends ArchitectType {
   profileUrl: string | null;
+  tier_id: number;
   phone_numbers: {
     id: number;
     phone_number: string;
@@ -32,6 +33,9 @@ export interface ViewArchitectType extends ArchitectType {
       address: string;
     } | null;
   }[];
+  tier: {
+    name: string;
+  };
 }
 
 export const allArchitectAtom = atom<ArchitectType[]>({

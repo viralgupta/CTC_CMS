@@ -34,7 +34,7 @@ import { createOrderType } from "@type/api/order";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { SelectPriority, SelectStatus } from "./SelectFilter";
-import { allOrdersType } from "@/store/order";
+import { allOrdersType, showCommissionAtom } from "@/store/order";
 import { DatePicker } from "@/components/ui/date-picker";
 import SearchAddressInput from "./Input/SearchAddressInput";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,10 @@ import { useAllItems } from "@/hooks/items";
 import React from "react";
 import SearchArchitect from "@/pages/architect/components/SearchArchitect";
 import SearchCarpenter from "@/pages/carpenter/components/SearchCarpenter";
+import { ShowCommissionButton } from "./Input/SelectOrderItems/SelectedItemTable";
+import { useRecoilValue } from "recoil";
+import { selectedItemRateWithCommissionType } from "@/store/Items";
+import { calculateTotalCommission } from "./Input/SelectOrderItems/AddNewItem";
 
 const CreateOrder = () => {
   return (
@@ -69,7 +73,7 @@ const CreateOrderForm = () => {
   const [total_order_value, setTotal_order_value] = React.useState(0);
   const [final_amount, setFinal_amount] = React.useState(0);
   const [remaining_amount, setRemaining_amount] = React.useState(0);
-
+  const showCommission = useRecoilValue(showCommissionAtom);
   const { refetchOrders } = useAllOrders();
   const { items: allItems } = useAllItems();
 
@@ -83,7 +87,23 @@ const CreateOrderForm = () => {
     },
   });
 
-  const [order_items, discount, amount_paid, customer_id, status] = form.watch(["order_items", "discount", "amount_paid", "customer_id", "status"]);
+  const [
+    order_items,
+    discount,
+    amount_paid,
+    customer_id,
+    status,
+    carpenter_id,
+    architect_id,
+  ] = form.watch([
+    "order_items",
+    "discount",
+    "amount_paid",
+    "customer_id",
+    "status",
+    "carpanter_id",
+    "architect_id",
+  ]);
 
   async function onSubmit(values: z.infer<typeof createOrderType>) {
     order_items.forEach(oi => {
@@ -148,10 +168,89 @@ const CreateOrderForm = () => {
     }
   }, [status, order_items])
 
+  React.useEffect(() => {
+    if (carpenter_id) {
+      const newOrderItemsPromises = order_items.map(async (oi) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append("item_id", oi.item_id.toString());
+        queryParams.append("carpanter_id", carpenter_id.toString());
+        try {
+          const res = await request.get(
+            `/inventory/getItemRatesWithCommission?` + queryParams.toString()
+          );
+          if (res.status === 200) {
+            const response = res.data.data as selectedItemRateWithCommissionType;
+            if (response.carpanter_rates) {
+              return {
+                ...oi,
+                carpanter_commision: calculateTotalCommission(
+                  response.carpanter_rates.commision ?? undefined,
+                  response.carpanter_rates.commision_type ?? undefined,
+                  oi.total_value,
+                  oi.quantity
+                ),
+                carpanter_commision_type:
+                  response.carpanter_rates.commision_type ?? undefined,
+              };
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching item rates:", error);
+        }
+        return oi;
+      });
+      Promise.all(newOrderItemsPromises).then((newOrderItems) => {
+        form.setValue("order_items", newOrderItems);
+      });
+    }
+  }, [carpenter_id])
+
+  React.useEffect(() => {
+    if (architect_id) {
+      const newOrderItemsPromises = order_items.map(async (oi) => {
+        const queryParams = new URLSearchParams();
+        queryParams.append("item_id", oi.item_id.toString());
+        queryParams.append("architect_id", architect_id.toString());
+        try {
+          const res = await request.get(
+            `/inventory/getItemRatesWithCommission?` + queryParams.toString()
+          );
+          if (res.status === 200) {
+            const response = res.data.data as selectedItemRateWithCommissionType;
+            if (response.architect_rates) {
+              return {
+                ...oi,
+                architect_commision: calculateTotalCommission(
+                  response.architect_rates.commision ?? undefined,
+                  response.architect_rates.commision_type ?? undefined,
+                  oi.total_value,
+                  oi.quantity
+                ),
+                architect_commision_type:
+                  response.architect_rates.commision_type ?? undefined,
+              };
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching item rates:", error);
+        }
+        return oi;
+      });
+      Promise.all(newOrderItemsPromises).then((newOrderItems) => {
+        form.setValue("order_items", newOrderItems);
+      });
+    }
+  }, [architect_id])
+
   return (
     <div className="w-full h-full flex space-x-2">
       <Form {...form}>
         <form
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-2 w-1/2"
         >
@@ -302,8 +401,10 @@ const CreateOrderForm = () => {
                 <FormLabel>Order Items</FormLabel>
                 <FormControl>
                   <SelectOrderItems
+                    carpanter_id={form.getValues("carpanter_id")}
+                    architect_id={form.getValues("architect_id")}
                     delivered={status === "Delivered"}
-                    value={field.value}
+                    value={order_items}
                     onChange={field.onChange}
                   />
                 </FormControl>
@@ -384,7 +485,10 @@ const CreateOrderForm = () => {
         </form>
       </Form>
       <div className="w-1/2 h-full rounded-md border p-4">
-        <span className="text-2xl font-cubano">Order Summary</span>
+        <div className="text-2xl font-cubano flex items-center justify-between">
+          <span>Order Summary</span>
+          <ShowCommissionButton/>
+        </div>
         <div className="w-full h-4/6 mb-1 overflow-y-auto bg-gradient-to-t from-accent mt-2 rounded-sm hide-scroll">
           <Table>
             <TableHeader>
@@ -395,16 +499,16 @@ const CreateOrderForm = () => {
                 <TableHead className="text-center p-0 h-8">
                   Total Value
                 </TableHead>
-                <TableHead className="text-center p-0 h-8">
+                {showCommission && <TableHead className="text-center p-0 h-8">
                   Arch. C.
-                </TableHead>
-                <TableHead className="text-center p-0 h-8">
+                </TableHead>}
+                {showCommission && <TableHead className="text-center p-0 h-8">
                   Carp. C.
-                </TableHead>
+                </TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody className="h-1/2 overflow-scroll">
-              {form.getValues("order_items").map((item) => {
+              {order_items.map((item) => {
                 const foundItem = allItems.find((i) => i.id === item.item_id);
                 return (
                   <TableRow key={item.item_id} className="leading-3 p-0">
@@ -416,12 +520,12 @@ const CreateOrderForm = () => {
                     <TableCell className="text-center p-0 py-2">
                       {item.total_value}
                     </TableCell>
-                    <TableCell className="text-center p-0 py-2">
+                    {showCommission && <TableCell className="text-center p-0 py-2">
                       {item.architect_commision}
-                    </TableCell>
-                    <TableCell className="text-center p-0 py-2">
+                    </TableCell>}
+                    {showCommission && <TableCell className="text-center p-0 py-2">
                       {item.carpanter_commision}
-                    </TableCell>
+                    </TableCell>}
                   </TableRow>
                 );
               })}

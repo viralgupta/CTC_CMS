@@ -18,10 +18,14 @@ const SelectOrderItems = ({
   value,
   onChange,
   delivered,
+  carpanter_id,
+  architect_id
 }: {
   value: z.infer<typeof createOrderType>["order_items"];
   onChange: (values: z.infer<typeof createOrderType>["order_items"]) => void;
   delivered: boolean;
+  carpanter_id?: number;
+  architect_id?: number;
 }) => {
   const [orderItems, setOrderItems] = React.useState<
     z.infer<typeof createOrderType>["order_items"]
@@ -58,7 +62,11 @@ const SelectOrderItems = ({
   };
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(o) => {
+      if(o) {
+        setOrderItems(value ?? []);
+      }
+    }}>
       <DialogTrigger className="w-full">
         <Input
           className="w-full"
@@ -69,13 +77,15 @@ const SelectOrderItems = ({
           }
         />
       </DialogTrigger>
-      <DialogContent size={value.length > 0 ? "6xl" : "2xl"}>
+      <DialogContent size={value.length > 0 ? "6xl" : "3xl"}>
         <DialogHeader className="hidden">
           <DialogTitle></DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
         <AddNewItem
           delivered={delivered}
+          carpanter_id={carpanter_id}
+          architect_id={architect_id}
           onSubmit={(v) => {
             setOrderItems((oi) => {
               const sameItem = oi.filter(i => i.item_id === v.item_id);

@@ -1,8 +1,8 @@
 import db from '@db/db';
-import { item, item_order, item_order_warehouse_quantity, log, order, warehouse, warehouse_quantity } from '@db/schema';
-import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType, getMoreItemOrderItemsType, getMoreWarehouseQuantitiesType } from '@type/api/item';
+import { architect, carpanter, item, item_order, item_order_warehouse_quantity, log, order, tier, tier_item, warehouse, warehouse_quantity } from '@db/schema';
+import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType, getMoreItemOrderItemsType, getMoreWarehouseQuantitiesType, getItemRatesWithCommissionType, editTierType, deleteTierType, createTierType, getTierType } from '@type/api/item';
 import { Request, Response } from "express";
-import { eq, sql } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { omit } from '../lib/utils';
 
 const createItem = async (req: Request, res: Response) => {
@@ -200,6 +200,113 @@ const getMoreItemOrderItems = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log("error", error)
     return res.status(400).json({success: false, message: "Unable to fetch more order items!", error: error.message ? error.message : error});
+  }
+}
+
+const getItemRatesWithCommission = async (req: Request, res: Response) => {
+  const getItemRatesWithCommissionTypeAnswer = getItemRatesWithCommissionType.safeParse(req.query);
+
+  if (!getItemRatesWithCommissionTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getItemRatesWithCommissionTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const foundItem = await db.query.item.findFirst({
+      where: (item, { eq }) => eq(item.id, getItemRatesWithCommissionTypeAnswer.data.item_id),
+      columns: {
+        multiplier: true,
+        min_rate: true,
+        sale_rate: true
+      },
+      with: {
+        order_items: {
+          limit: 1,
+          orderBy: (item, { desc }) => [desc(item.updated_at)],
+          columns: {
+            rate: true,
+            architect_commision: true,
+            architect_commision_type: true,
+            carpanter_commision: true,
+            carpanter_commision_type: true
+          }
+        }
+      }
+    });
+
+    if(!foundItem){
+      return res.status(400).json({success: false, message: "Unable to find item!"})
+    }
+
+    let data: typeof foundItem & {
+      carpanter_rates?: {
+        commision: string | null,
+        commision_type: "percentage" | "perPiece" | null;
+      },
+      architect_rates?: {
+        commision: string | null,
+        commision_type: "percentage" | "perPiece" | null;
+      }
+    } = {
+      ...foundItem,
+    }
+
+    const carpanterId = getItemRatesWithCommissionTypeAnswer.data.carpanter_id;
+    if(carpanterId){ 
+      const carpenterTier = await db.query.carpanter.findFirst({
+        where: (carpanter, { eq }) => eq(carpanter.id, carpanterId),
+        columns: {
+          tier_id: true
+        }
+      });
+
+      if(!carpenterTier) throw new Error("Unable to find carpenter!");
+
+      const carpenterTierRates = await db.query.tier_item.findFirst({
+        where: (tier_item, { and, eq }) => and(
+          eq(tier_item.tier_id, carpenterTier.tier_id),
+          eq(tier_item.item_id, getItemRatesWithCommissionTypeAnswer.data.item_id)
+        ),
+        columns: {
+          commision: true,
+          commision_type: true
+        }
+      });
+      data = {
+        ...data,
+        carpanter_rates: carpenterTierRates
+      }
+    }
+
+    const architectId = getItemRatesWithCommissionTypeAnswer.data.architect_id;
+    if(architectId){ 
+      const architectTier = await db.query.architect.findFirst({
+        where: (architect, { eq }) => eq(architect.id, architectId),
+        columns: {
+          tier_id: true
+        }
+      });
+
+      if(!architectTier) throw new Error("Unable to find architect!");
+
+      const architectTierRates = await db.query.tier_item.findFirst({
+        where: (tier_item, { and, eq }) => and(
+          eq(tier_item.tier_id, architectTier.tier_id),
+          eq(tier_item.item_id, getItemRatesWithCommissionTypeAnswer.data.item_id)
+        ),
+        columns: {
+          commision: true,
+          commision_type: true
+        }
+      });
+      data = {
+        ...data,
+        architect_rates: architectTierRates
+      }
+    }
+
+    return res.status(200).json({success: true, message: "Item Rates Found!!!", data: data});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find Rates!", error: error.message ? error.message : error});
   }
 }
 
@@ -876,6 +983,236 @@ const deleteWarehouse = async (req: Request, res: Response) => {
   }
 }
 
+const createTier = async (req: Request, res: Response) => {
+  const createTierTypeAnswer = createTierType.safeParse(req.body);
+
+  if (!createTierTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: createTierTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      const createdTier = await tx.insert(tier).values({
+        name: createTierTypeAnswer.data.name,
+      }).returning({
+        id: tier.id,
+      });
+
+      const createTierItemsSet = new Set(createTierTypeAnswer.data.tier_items.map(ti => ti.item_id));
+      if(createTierItemsSet.size !== createTierTypeAnswer.data.tier_items.length){
+        throw new Error("Duplicate Items found in Tier Items");
+      }
+
+      let insertTierItems: {
+        tier_id: number,
+        item_id: number,
+        commision: string,
+        commision_type: "percentage" | "perPiece"
+      }[] = [];
+    
+      (createTierTypeAnswer.data.tier_items ?? []).forEach(async (tier_item) => {
+        insertTierItems = [
+          ...insertTierItems,
+          {
+            tier_id: createdTier[0].id,
+            item_id: tier_item.item_id,
+            commision: tier_item.commision,
+            commision_type: tier_item.commision_type
+          }
+        ]
+      });
+
+      await tx.insert(tier_item).values(insertTierItems);
+    });
+
+    return res.status(200).json({success: true, message: "Tier & Tier Items Created!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to create Tier and Tier Items", error: error.message ? error.message : error});
+  }
+}
+
+const editTier = async (req: Request, res: Response) => {
+  const editTierTypeAnswer = editTierType.safeParse(req.body);
+
+  if (!editTierTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editTierTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+
+      const foundTier = await db.query.tier.findFirst({
+        where: (tier, { eq }) => eq(tier.id, editTierTypeAnswer.data.tier_id),
+        with: {
+          tier_items: {
+            columns: {
+              id: true,
+              item_id: true,
+              commision: true,
+              commision_type: true,
+            }
+          }
+        }
+      });
+
+      if(!foundTier){
+        throw new Error("Unable to find tier!");
+      }
+
+      if(foundTier.name !== editTierTypeAnswer.data.name){
+        await tx.update(tier).set({
+          name: editTierTypeAnswer.data.name
+        }).where(eq(tier.id, editTierTypeAnswer.data.tier_id));
+      }
+
+      const newTierItemsSet = new Set(editTierTypeAnswer.data.tier_items.map(ti => ti.item_id));
+      if(newTierItemsSet.size !== editTierTypeAnswer.data.tier_items.length){
+        throw new Error("Duplicate Items found in Tier Items");
+      }
+
+      const sameTierItems = editTierTypeAnswer.data.tier_items.filter((ti) => foundTier.tier_items.find((fti) => fti.item_id === ti.item_id));
+      const newTierItems = editTierTypeAnswer.data.tier_items.filter((ti) => !foundTier.tier_items.find((fti) => fti.item_id === ti.item_id));
+      const deletedTierItems = foundTier.tier_items.filter((fti) => !editTierTypeAnswer.data.tier_items.find((ti) => ti.item_id === fti.item_id));
+
+      sameTierItems.forEach(async (sti) => {
+        const foundSameTierItem = foundTier.tier_items.find((fti) => fti.item_id === sti.item_id);
+
+        if(!foundSameTierItem) throw new Error("Unable to find tier item!, this should not happen, please contact developer!");
+
+        if(foundSameTierItem.commision === sti.commision && foundSameTierItem.commision_type === sti.commision_type) return;
+
+        await tx.update(tier_item).set({
+          commision: sti.commision,
+          commision_type: sti.commision_type
+        }).where(eq(tier_item.id, foundSameTierItem.id));
+      });
+
+      newTierItems.forEach(async (nti) => {
+        await tx.insert(tier_item).values({
+          tier_id: editTierTypeAnswer.data.tier_id,
+          item_id: nti.item_id,
+          commision: nti.commision,
+          commision_type: nti.commision_type
+        });
+      });
+
+      deletedTierItems.forEach(async (dti) => {
+        await tx.delete(tier_item).where(eq(tier_item.id, dti.id));
+      })
+    })
+
+    return res.status(200).json({success: true, message: "Tier and Tier Items Updated!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to update Tier & Tier Items", error: error.message ? error.message : error});
+  }
+}
+
+const deleteTier = async (req: Request, res: Response) => {
+  const deleteTierTypeAnswer = deleteTierType.safeParse(req.body);
+
+  if (!deleteTierTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: deleteTierTypeAnswer.error.flatten()})
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+
+      const foundTier = await tx.query.tier.findFirst({
+        where: (tier, { eq }) => eq(tier.id, deleteTierTypeAnswer.data.tier_id),
+        with: {
+          architects: {
+            limit: 1,
+            columns: {
+              id: true
+            }
+          },
+          carpanters: {
+            limit: 1,
+            columns: {
+              id: true
+            }
+          },
+        },
+      });
+
+      if(!foundTier){
+        throw new Error("Unable to find tier");
+      }
+
+      if(foundTier.architects.length > 0 || foundTier.carpanters.length > 0){
+        throw new Error("Tier is being used in architect or carpenter, cannot delete!");
+      }
+
+      await tx.delete(tier).where(eq(tier.id, deleteTierTypeAnswer.data.tier_id));
+    })
+
+    return res.status(200).json({success: true, message: "Tier Deleted!"});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to delete tier!", error: error.message ? error.message : error});
+  }
+}
+
+const getTier = async (req: Request, res: Response) => {
+  const getTierTypeAnswer = getTierType.safeParse(req.query);
+
+  if (!getTierTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: getTierTypeAnswer.error.flatten()})
+  }
+
+  try {
+    const foundTiers = await db.query.tier.findFirst({
+      where: (tier, { eq }) => eq(tier.id, getTierTypeAnswer.data.tier_id),
+      columns: {
+        id: true,
+        name: true,
+      },
+      with: {
+        tier_items: {
+          columns: {
+            id: true,
+            item_id: true,
+            commision: true,
+            commision_type: true
+          },
+          with: {
+            item: {
+              columns: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const carpanterCount = await db.select({ count: count() }).from(carpanter).where(eq(carpanter.tier_id, getTierTypeAnswer.data.tier_id));
+    const architectCount = await db.select({ count: count() }).from(architect).where(eq(architect.tier_id, getTierTypeAnswer.data.tier_id));
+
+    const newFoundTier = {
+      ...foundTiers,
+      tier_items: foundTiers?.tier_items.map((ti) => ({
+        ...ti,
+        commision: parseFloat(ti.commision).toFixed(2),
+      })),
+      carpanterCount: carpanterCount[0].count,
+      architectCount: architectCount[0].count
+    }
+
+    return res.status(200).json({success: true, message: "Tier Found!", data: newFoundTier});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find Tier!", error: error.message ? error.message : error});
+  }
+}
+
+const getAllTiers = async (req: Request, res: Response) => {
+  try {
+    const foundTiers = await db.query.tier.findMany();
+    return res.status(200).json({success: true, message: "Tiers Found!", data: foundTiers});
+  } catch (error: any) {
+    return res.status(400).json({success: false, message: "Unable to find Tiers!", error: error.message ? error.message : error});
+  }
+}
+
 const getWarehouseItemQuantities = async (req: Request, res: Response) => {
   const getWarehouseItemQuantitiesTypeAnswer = getWarehouseItemQuantitiesType.safeParse(req.query);
 
@@ -911,6 +1248,7 @@ export {
   getItem,
   getMoreItemOrderItems,
   getItemRates,
+  getItemRatesWithCommission,
   editItem,
   createItemOrder,
   editItemOrder,
@@ -923,5 +1261,10 @@ export {
   getAllWarehouse,
   editWarehouse,
   deleteWarehouse,
-  getWarehouseItemQuantities
+  getWarehouseItemQuantities,
+  createTier,
+  editTier,
+  deleteTier,
+  getTier,
+  getAllTiers,
 }

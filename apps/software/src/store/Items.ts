@@ -58,6 +58,17 @@ export interface selectedItemRateType {
   }[];
 }
 
+export interface selectedItemRateWithCommissionType extends selectedItemRateType {
+  architect_rates?: {
+    commision: string | null;
+    commision_type: "percentage" | "perPiece" | null;
+  } | undefined
+  carpanter_rates?: {
+    commision: string | null,
+    commision_type: "percentage" | "perPiece" | null;
+  },
+}
+
 export const allItemsAtom = atom<itemType[]>({
   key: "allItemsAtom",
   default: []

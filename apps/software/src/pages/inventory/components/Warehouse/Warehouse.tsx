@@ -17,7 +17,7 @@ const Warehouse = () => {
       <DialogTrigger asChild>
         <Button
           variant={"outline"}
-          className="border border-border rounded-md flex items-center justify-center text-2xl font-sofiapro cursor-pointer hover:border-accent-foreground duration-200 w-full mt-4 gap-2 flex-none"
+          className="border border-border rounded-md flex items-center justify-center text-2xl font-sofiapro cursor-pointer hover:border-accent-foreground duration-200 w-full mt-4 gap-2"
         >
           View All Warehouse <WarehouseIcon/>
         </Button>

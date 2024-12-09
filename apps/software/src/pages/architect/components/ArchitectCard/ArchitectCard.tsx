@@ -93,7 +93,15 @@ export default function ArchitectCard({
               </SettleBalance>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">
+                Tier
+              </span>
+              <p className="text-md">
+                {architect.tier.name}
+              </p>
+            </div>
             <div>
               <span className="text-sm font-medium text-muted-foreground">
                 Balance
@@ -112,7 +120,7 @@ export default function ArchitectCard({
                   : "N/A"}
               </p>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-3 mt-2">
               <ViewAllPhoneNumbers
                 type="architect"
                 values={architect.phone_numbers.map((pn) => {

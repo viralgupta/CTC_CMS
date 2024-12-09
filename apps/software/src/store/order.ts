@@ -173,3 +173,22 @@ export const viewOrderMovementIdAtom = atom<number | null>({
   key: "viewOrderMovementIdAtom",
   default: null,
 });
+
+export const showCommissionAtom = atom<boolean>({
+  key: "showCommissionAtom",
+  default: false,
+  effects: [({setSelf, onSet}) => {
+    let setFalseTimeout: NodeJS.Timeout | null = null;
+    onSet((val) => {
+      if (val) {
+        setFalseTimeout = setTimeout(() => {
+          setSelf(false);
+        }, 20000);
+      } else {
+        if (setFalseTimeout) {
+          clearTimeout(setFalseTimeout);
+        }
+      }
+    })
+  }]
+})

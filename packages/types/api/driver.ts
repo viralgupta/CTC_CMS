@@ -35,4 +35,6 @@ export const getDriverOrderMovementsType = z.object({
   cursor: z.string().transform((val) => Number(val)),
 }).strict("Too many fields in request params");
 
-export const deleteDriverType = getDriverType;
+export const deleteDriverType = z.object({
+  driver_id: z.number()
+}).strict("Too many fields in request params");
