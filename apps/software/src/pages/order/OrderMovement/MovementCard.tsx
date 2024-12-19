@@ -140,9 +140,9 @@ const MovementCard = ({ movement }: { movement: viewMovementType | null }) => {
                       STATUS:
                     </div>
                     <div
-                      className={`text-lg font-semibold mt-2 ${movement.status == "Pending" ? "text-red-500" : "text-green-500"}`}
+                      className={`text-lg font-semibold mt-2 ${!movement.delivered ? "text-red-500" : "text-green-500"}`}
                     >
-                      {movement.status.toUpperCase()}
+                      {movement.delivered ? "Delivered" : "Pending"}
                     </div>
                   </div>
                   <div className="p-1">

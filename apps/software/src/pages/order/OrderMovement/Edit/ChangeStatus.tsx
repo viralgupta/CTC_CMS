@@ -39,7 +39,7 @@ const ChangeStatus = ({
 
   return (
     <Button disabled={loading || orderMovement.type == "RETURN"} className="w-full" variant={"outline"} onClick={onSubmit}>
-      {!loading && `Mark As ${orderMovement.status == "Pending" ? "Completed" : "Pending"}`}
+      {!loading && `Mark As ${!orderMovement.delivered ? "Completed" : "Pending"}`}
       {loading && <Spinner/>}
     </Button>
   );

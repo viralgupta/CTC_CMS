@@ -454,11 +454,7 @@ export const order_movement = pgTable("order_movement", {
   type: varchar("om_type", {
     enum: ["DELIVERY", "RETURN"],
   }).notNull(),
-  status: varchar("om_status", {
-    enum: ["Pending", "Completed"],
-  })
-    .notNull()
-    .default("Pending"),
+  delivered: boolean("om_delivered").default(false).notNull(),
   labour_frate_cost: real("om_labour_frate_cost").notNull(),
   recipt_key: text("om_recipt_key"),
   created_at: timestamp("om_created_at", { mode: "date" }).defaultNow().notNull(),

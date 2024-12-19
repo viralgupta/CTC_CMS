@@ -39,7 +39,7 @@ export const createOrderType = z.object({
   priority: z.enum(["High", "Medium", "Low"]),
   
   delivery_date: z.string()
-    .transform((dateString) => new Date(dateString)) // Transform string to Date
+    .transform((dateString) => new Date(dateString))
     .refine((date) => !isNaN(date.getTime()), { message: "Invalid date format" }).optional(),
   delivery_address_id: z.number().optional(),
 
@@ -151,7 +151,7 @@ export const createOrderMovementType = z.object({
   order_id: z.number(),
   driver_id: z.number().optional(),
   type: z.enum(["DELIVERY", "RETURN"]),
-  status: z.enum(["Pending", "Completed"]),
+  delivered: z.boolean().default(false),
   labour_frate_cost: z.number().default(0).optional(),
   created_at: z
     .string()

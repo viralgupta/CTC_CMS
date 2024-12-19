@@ -16,7 +16,7 @@ import OrderMovementItemTable from "./OrderMovementItemTable";
 export interface viewMovementType {
   id: number;
   type: "DELIVERY" | "RETURN";
-  status: "Pending" | "Completed";
+  delivered: boolean;
   driver_id: number | null;
   order_id: number;
   recipt_key: string | null;

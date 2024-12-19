@@ -1,7 +1,6 @@
 
 # TODO
 
-- Remove Carpenter And Architect Commision Logic From Order
 - Create Customer/Architet/Carpenter/Driver from Order Itself
 - Redesign ViewOrder
 - Automatic Order Status Detection (Pending / Delivered)
