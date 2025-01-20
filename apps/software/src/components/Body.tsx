@@ -8,7 +8,7 @@ import { WindowHeightAtom } from "@/store/size";
 
 const Body = ({ children }: { children: React.ReactNode }) => {
   const availableTabs = [
-    "Home",
+    // "Home",
     "Order",
     "Customer",
     "Address",
@@ -34,7 +34,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
                 onClick={(_) =>
                   setTabs(
                     value.toLowerCase() as
-                      | "home"
+                      // | "home"
                       | "order"
                       | "customer"
                       | "address"
