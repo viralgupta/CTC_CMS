@@ -101,7 +101,7 @@ const CreateOrderForm = () => {
     "amount_paid",
     "customer_id",
     "status",
-    "carpanter_id",
+    "carpenter_id",
     "architect_id",
   ]);
 
@@ -173,24 +173,24 @@ const CreateOrderForm = () => {
       const newOrderItemsPromises = order_items.map(async (oi) => {
         const queryParams = new URLSearchParams();
         queryParams.append("item_id", oi.item_id.toString());
-        queryParams.append("carpanter_id", carpenter_id.toString());
+        queryParams.append("carpenter_id", carpenter_id.toString());
         try {
           const res = await request.get(
             `/inventory/getItemRatesWithCommission?` + queryParams.toString()
           );
           if (res.status === 200) {
             const response = res.data.data as selectedItemRateWithCommissionType;
-            if (response.carpanter_rates) {
+            if (response.carpenter_rates) {
               return {
                 ...oi,
-                carpanter_commision: calculateTotalCommission(
-                  response.carpanter_rates.commision ?? undefined,
-                  response.carpanter_rates.commision_type ?? undefined,
+                carpenter_commision: calculateTotalCommission(
+                  response.carpenter_rates.commision ?? undefined,
+                  response.carpenter_rates.commision_type ?? undefined,
                   oi.total_value,
                   oi.quantity
                 ),
-                carpanter_commision_type:
-                  response.carpanter_rates.commision_type ?? undefined,
+                carpenter_commision_type:
+                  response.carpenter_rates.commision_type ?? undefined,
               };
             }
           }
@@ -276,7 +276,7 @@ const CreateOrderForm = () => {
           <div className="flex w-full flex-col justify-between gap-2 md:flex-row">
             <FormField
               control={form.control}
-              name="carpanter_id"
+              name="carpenter_id"
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Carpenter</FormLabel>
@@ -401,7 +401,7 @@ const CreateOrderForm = () => {
                 <FormLabel>Order Items</FormLabel>
                 <FormControl>
                   <SelectOrderItems
-                    carpanter_id={form.getValues("carpanter_id")}
+                    carpenter_id={form.getValues("carpenter_id")}
                     architect_id={form.getValues("architect_id")}
                     delivered={status === "Delivered"}
                     value={order_items}
@@ -524,7 +524,7 @@ const CreateOrderForm = () => {
                       {item.architect_commision}
                     </TableCell>}
                     {showCommission && <TableCell className="text-center p-0 py-2">
-                      {item.carpanter_commision}
+                      {item.carpenter_commision}
                     </TableCell>}
                   </TableRow>
                 );

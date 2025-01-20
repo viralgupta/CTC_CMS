@@ -50,10 +50,10 @@ export interface selectedItemRateType {
   min_rate: number | null;
   sale_rate: number;
   order_items: {
-      carpanter_commision: string | null;
+      carpenter_commision: string | null;
       architect_commision: string | null;
       rate: number;
-      carpanter_commision_type: "percentage" | "perPiece" | null;
+      carpenter_commision_type: "percentage" | "perPiece" | null;
       architect_commision_type: "percentage" | "perPiece" | null;
   }[];
 }
@@ -63,7 +63,7 @@ export interface selectedItemRateWithCommissionType extends selectedItemRateType
     commision: string | null;
     commision_type: "percentage" | "perPiece" | null;
   } | undefined
-  carpanter_rates?: {
+  carpenter_rates?: {
     commision: string | null,
     commision_type: "percentage" | "perPiece" | null;
   },

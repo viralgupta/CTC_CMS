@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
-import { createCarpanterType } from "@type/api/carpanter";
+import { createCarpenterType } from "@type/api/carpenter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
@@ -29,8 +29,8 @@ import SelectTier from "@/components/Inputs/SelectTier";
 
 const CreateCarpenterForm = () => {
 
-  const form = useForm<z.infer<typeof createCarpanterType>>({
-    resolver: zodResolver(createCarpanterType),
+  const form = useForm<z.infer<typeof createCarpenterType>>({
+    resolver: zodResolver(createCarpenterType),
     reValidateMode: "onChange",
     defaultValues: {
       name: "",
@@ -48,7 +48,7 @@ const CreateCarpenterForm = () => {
   };
 
   const AddPhoneNumber = (
-    data: z.infer<typeof createCarpanterType>["phone_numbers"][number]
+    data: z.infer<typeof createCarpenterType>["phone_numbers"][number]
   ) => {
     let oldPhoneNumberArray = form.getValues("phone_numbers") ?? [];
 
@@ -90,9 +90,9 @@ const CreateCarpenterForm = () => {
     form.trigger("phone_numbers");
   };
 
-  async function onSubmit(values: z.infer<typeof createCarpanterType>) {
+  async function onSubmit(values: z.infer<typeof createCarpenterType>) {
     try {
-      const res = await request.post("/carpenter/createCarpanter", values);
+      const res = await request.post("/carpenter/createCarpenter", values);
       if (res.status == 200) {
         form.reset();
       }

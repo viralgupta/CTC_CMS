@@ -106,7 +106,7 @@ export const architect_relation = relations(architect, ({ many, one }) => ({
   }),
 }));
 
-export const carpanter = pgTable("carpanter", {
+export const carpenter = pgTable("carpenter", {
   id: serial("ca_id").notNull().primaryKey(),
   name: varchar("ca_name", { length: 30 }).notNull(),
   profileUrl: text("ca_profileUrl"),
@@ -116,11 +116,11 @@ export const carpanter = pgTable("carpanter", {
   tier_id: integer("ca_tier_id").references(() => tier.id).notNull(),
 });
 
-export const carpanter_relation = relations(carpanter, ({ many, one }) => ({
+export const carpenter_relation = relations(carpenter, ({ many, one }) => ({
   phone_numbers: many(phone_number),
   orders: many(order),
   tier: one(tier, {
-    fields: [carpanter.tier_id],
+    fields: [carpenter.tier_id],
     references: [tier.id],
   }),
 }));
@@ -131,7 +131,7 @@ export const tier = pgTable("tier", {
 });
 
 export const tier_relation = relations(tier, ({ many }) => ({
-  carpanters: many(carpanter),
+  carpenters: many(carpenter),
   architects: many(architect),
   tier_items: many(tier_item),
 }));
@@ -140,11 +140,11 @@ export const tier_item = pgTable("tier_item", {
   id: serial("ti_id").notNull().primaryKey(),
   tier_id: integer("ti_tier_id").references(() => tier.id, { onDelete: "cascade" }).notNull(),
   item_id: integer("ti_item_id").references(() => item.id, { onDelete: "cascade" }).notNull(),
-  commision: numeric("t_carpanter_commision", {
+  commision: numeric("t_carpenter_commision", {
     precision: 10,
     scale: 2,
   }).notNull(),
-  commision_type: varchar("t_carpanter_commision_type", {
+  commision_type: varchar("t_carpenter_commision_type", {
     enum: ["percentage", "perPiece"],
   }).notNull(),
 });
@@ -180,7 +180,7 @@ export const phone_number = pgTable("phone_number", {
   id: serial("pn_id").notNull().primaryKey(),
   customer_id: integer("pn_customer_id").references(() => customer.id, { onDelete: "cascade" }),
   architect_id: integer("pn_architect_id").references(() => architect.id, { onDelete: "cascade" }),
-  carpanter_id: integer("pn_carpanter_id").references(() => carpanter.id, { onDelete: "cascade" }),
+  carpenter_id: integer("pn_carpenter_id").references(() => carpenter.id, { onDelete: "cascade" }),
   driver_id: integer("pn_driver_id").references(() => driver.id, { onDelete: "cascade" }),
   country_code: varchar("pn_country_code", { length: 5 }),
   phone_number: varchar("pn_phone_number", { length: 10 }).notNull().unique(),
@@ -197,9 +197,9 @@ export const phone_number_relation = relations(phone_number, ({ one }) => ({
     fields: [phone_number.architect_id],
     references: [architect.id],
   }),
-  carpanter: one(carpanter, {
-    fields: [phone_number.carpanter_id],
-    references: [carpanter.id],
+  carpenter: one(carpenter, {
+    fields: [phone_number.carpenter_id],
+    references: [carpenter.id],
   }),
   driver: one(driver, {
     fields: [phone_number.driver_id],
@@ -324,7 +324,7 @@ export const order = pgTable("order", {
   note: text("o_note"),
 
   customer_id: integer("o_customer_id").references(() => customer.id),
-  carpanter_id: integer("o_carpanter_id").references(() => carpanter.id),
+  carpenter_id: integer("o_carpenter_id").references(() => carpenter.id),
   architect_id: integer("o_architect_id").references(() => architect.id),
 
   status: varchar("o_status", {
@@ -355,7 +355,7 @@ export const order = pgTable("order", {
   discount: numeric("o_discount", { precision: 10, scale: 2 }).default("0.00"),
   amount_paid: numeric("amount_paid", { precision: 10, scale: 2 }).default("0.00"),
 
-  carpanter_commision: numeric("o_carpanter_commision", {
+  carpenter_commision: numeric("o_carpenter_commision", {
     precision: 10,
     scale: 2,
   }),
@@ -380,9 +380,9 @@ export const order_relation = relations(order, ({ one, many }) => ({
     fields: [order.customer_id],
     references: [customer.id],
   }),
-  carpanter: one(carpanter, {
-    fields: [order.carpanter_id],
-    references: [carpanter.id],
+  carpenter: one(carpenter, {
+    fields: [order.carpenter_id],
+    references: [carpenter.id],
   }),
   architect: one(architect, {
     fields: [order.architect_id],
@@ -414,11 +414,11 @@ export const order_item = pgTable("order_item", {
     scale: 2,
   }).notNull(),
 
-  carpanter_commision: numeric("oi_carpanter_commision", {
+  carpenter_commision: numeric("oi_carpenter_commision", {
     precision: 10,
     scale: 2,
   }),
-  carpanter_commision_type: varchar("oi_carpanter_commision_type", {
+  carpenter_commision_type: varchar("oi_carpenter_commision_type", {
     enum: ["percentage", "perPiece"],
   }),
   architect_commision: numeric("oi_architect_commision", {
@@ -596,7 +596,7 @@ export const log = pgTable("log", {
   }).notNull(),
   customer_id: integer("l_customer_id"),
   architect_id: integer("l_architect_id"),
-  carpanter_id: integer("l_carpanter_id"),
+  carpenter_id: integer("l_carpenter_id"),
   driver_id: integer("l_driver_id"),
   item_id: integer("l_item_id"),
   order_id: integer("l_order_id"),
@@ -622,9 +622,9 @@ export const log_relation = relations(log, ({ one }) => ({
     fields: [log.architect_id],
     references: [architect.id],
   }),
-  carpanter: one(carpanter, {
-    fields: [log.carpanter_id],
-    references: [carpanter.id],
+  carpenter: one(carpenter, {
+    fields: [log.carpenter_id],
+    references: [carpenter.id],
   }),
   driver: one(driver, {
     fields: [log.driver_id],

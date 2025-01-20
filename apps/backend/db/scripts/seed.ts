@@ -4,7 +4,7 @@ import {
   address_area,
   address,
   architect,
-  carpanter,
+  carpenter,
   driver,
   phone_number,
   item,
@@ -176,21 +176,21 @@ async function main() {
   })
 
   // insert carpenters
-  const carpanterIds = await db.insert(carpanter).values([
+  const carpenterIds = await db.insert(carpenter).values([
     {
       area: "Navug Market",
-      name: "Carpanter 1",
+      name: "Carpenter 1",
       balance: "100.00",
       tier_id: tierIds[0].id
     },
     {
       area: "Raj Nagar",
-      name: "Carpanter 2",
+      name: "Carpenter 2",
       balance: "100.00",
       tier_id: tierIds[1].id
     }
   ]).returning({
-    id: carpanter.id
+    id: carpenter.id
   })
 
   // insert drivers
@@ -250,13 +250,13 @@ async function main() {
       phone_number: "8888888881"
     },
     {
-      carpanter_id: carpanterIds[0].id,
+      carpenter_id: carpenterIds[0].id,
       isPrimary: true,
       country_code: "91",
       phone_number: "7777777770"
     },
     {
-      carpanter_id: carpanterIds[1].id,
+      carpenter_id: carpenterIds[1].id,
       isPrimary: true,
       country_code: "91",
       phone_number: "7777777771"
@@ -458,7 +458,7 @@ async function main() {
       note: "This is a test note",
       customer_id: customerIds[0].id,
       architect_id: architectIds[0].id,
-      carpanter_id: carpanterIds[0].id,
+      carpenter_id: carpenterIds[0].id,
       status: "Pending",
       priority: "Low",
       payment_status: "Partial",
@@ -467,12 +467,12 @@ async function main() {
       discount: "100.00",
       amount_paid: "500.00",
       architect_commision: "100.00",
-      carpanter_commision: "100.00",
+      carpenter_commision: "100.00",
     },
     {
       note: "This is a test note 2",
       customer_id: customerIds[0].id,
-      carpanter_id: carpanterIds[1].id,
+      carpenter_id: carpenterIds[1].id,
       status: "Delivered",
       priority: "Low",
       payment_status: "Paid",
@@ -480,7 +480,7 @@ async function main() {
       total_order_amount: "5000.00",
       discount: "0.00",
       amount_paid: "5000.00",
-      carpanter_commision: "100.00",
+      carpenter_commision: "100.00",
     },
     ...Array.from({ length: 100 }).map(() => ({
       status: getRandomValue(statuses),
@@ -504,9 +504,9 @@ async function main() {
       delivered_quantity: 0,
       rate: 5000.00,
       total_value: "5000.00",
-      carpanter_commision: "100.00",
+      carpenter_commision: "100.00",
       architect_commision: "100.00",
-      carpanter_commision_type: "perPiece",
+      carpenter_commision_type: "perPiece",
       architect_commision_type: "perPiece",
     },
     {
@@ -524,8 +524,8 @@ async function main() {
       delivered_quantity: 1,
       rate: 5000.00,
       total_value: "5000.00",
-      carpanter_commision: "100.00",
-      carpanter_commision_type: "perPiece",
+      carpenter_commision: "100.00",
+      carpenter_commision_type: "perPiece",
     }
   ]).returning({
     id: order_item.id

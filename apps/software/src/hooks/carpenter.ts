@@ -11,7 +11,7 @@ const useAllCarpenter = () => {
   const fetchAllCarpenters = async () => {
     loading = true;
     try {
-      const res = await request("/carpenter/getAllCarpanters");
+      const res = await request("/carpenter/getAllCarpenters");
       if (res.status != 200) return;
       setCarpenters(res.data.data as CarpenterType[]);
     } catch (error) {

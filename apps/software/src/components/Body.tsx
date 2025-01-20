@@ -13,7 +13,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
     "Customer",
     "Address",
     "Inventory",
-    "Carpanter",
+    "Carpenter",
     "Architect",
     "Driver",
     "Estimate",
@@ -39,7 +39,7 @@ const Body = ({ children }: { children: React.ReactNode }) => {
                       | "customer"
                       | "address"
                       | "inventory"
-                      | "carpanter"
+                      | "carpenter"
                       | "architect"
                       | "driver"
                       | "resources"

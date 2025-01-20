@@ -271,24 +271,24 @@ const OrderCard = ({ order }: { order: ViewOrderType | null }) => {
               </DivButton>
               <DivButton
                 onClick={() => {
-                  setViewCarpenterID(order.carpanter_id);
+                  setViewCarpenterID(order.carpenter_id);
                 }}
                 className="flex items-center space-x-4 w-1/2 h-full"
               >
                 <Avatar>
-                  <AvatarImage src={order.carpanter?.profileUrl ?? undefined} />
+                  <AvatarImage src={order.carpenter?.profileUrl ?? undefined} />
                   <AvatarFallback>
                     <CircleUserRound className="w-10 h-10 stroke-muted-foreground" />
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-semibold">
-                    {order.carpanter?.name ?? "No Carpenter Assigned"}
+                    {order.carpenter?.name ?? "No Carpenter Assigned"}
                   </p>
-                  {order.carpanter && (
+                  {order.carpenter && (
                     <p className="text-sm">
                       Commission: ₹
-                      {parseBalanceToFloat(order.carpanter_commision)}
+                      {parseBalanceToFloat(order.carpenter_commision)}
                     </p>
                   )}
                 </div>

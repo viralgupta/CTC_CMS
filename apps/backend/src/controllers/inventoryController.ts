@@ -1,5 +1,5 @@
 import db from '@db/db';
-import { architect, carpanter, item, item_order, item_order_warehouse_quantity, log, order, tier, tier_item, warehouse, warehouse_quantity } from '@db/schema';
+import { architect, carpenter, item, item_order, item_order_warehouse_quantity, log, order, tier, tier_item, warehouse, warehouse_quantity } from '@db/schema';
 import { createItemType, deleteItemType, editItemType, getItemType, getItemRatesType, createItemOrderType, editItemOrderType, receiveItemOrderType, deleteItemOrderType, getWarehouseType, deleteWarehouseType, createWarehouseType, getWarehouseItemQuantitiesType, editWarehouseType, getMoreItemOrderItemsType, getMoreWarehouseQuantitiesType, getItemRatesWithCommissionType, editTierType, deleteTierType, createTierType, getTierType } from '@type/api/item';
 import { Request, Response } from "express";
 import { count, eq, sql } from "drizzle-orm";
@@ -226,8 +226,8 @@ const getItemRatesWithCommission = async (req: Request, res: Response) => {
             rate: true,
             architect_commision: true,
             architect_commision_type: true,
-            carpanter_commision: true,
-            carpanter_commision_type: true
+            carpenter_commision: true,
+            carpenter_commision_type: true
           }
         }
       }
@@ -238,7 +238,7 @@ const getItemRatesWithCommission = async (req: Request, res: Response) => {
     }
 
     let data: typeof foundItem & {
-      carpanter_rates?: {
+      carpenter_rates?: {
         commision: string | null,
         commision_type: "percentage" | "perPiece" | null;
       },
@@ -250,10 +250,10 @@ const getItemRatesWithCommission = async (req: Request, res: Response) => {
       ...foundItem,
     }
 
-    const carpanterId = getItemRatesWithCommissionTypeAnswer.data.carpanter_id;
-    if(carpanterId){ 
-      const carpenterTier = await db.query.carpanter.findFirst({
-        where: (carpanter, { eq }) => eq(carpanter.id, carpanterId),
+    const carpenterId = getItemRatesWithCommissionTypeAnswer.data.carpenter_id;
+    if(carpenterId){ 
+      const carpenterTier = await db.query.carpenter.findFirst({
+        where: (carpenter, { eq }) => eq(carpenter.id, carpenterId),
         columns: {
           tier_id: true
         }
@@ -273,7 +273,7 @@ const getItemRatesWithCommission = async (req: Request, res: Response) => {
       });
       data = {
         ...data,
-        carpanter_rates: carpenterTierRates
+        carpenter_rates: carpenterTierRates
       }
     }
 
@@ -333,8 +333,8 @@ const getItemRates = async (req: Request, res: Response) => {
             rate: true,
             architect_commision: true,
             architect_commision_type: true,
-            carpanter_commision: true,
-            carpanter_commision_type: true
+            carpenter_commision: true,
+            carpenter_commision_type: true
           }
         }
       }
@@ -1126,7 +1126,7 @@ const deleteTier = async (req: Request, res: Response) => {
               id: true
             }
           },
-          carpanters: {
+          carpenters: {
             limit: 1,
             columns: {
               id: true
@@ -1139,7 +1139,7 @@ const deleteTier = async (req: Request, res: Response) => {
         throw new Error("Unable to find tier");
       }
 
-      if(foundTier.architects.length > 0 || foundTier.carpanters.length > 0){
+      if(foundTier.architects.length > 0 || foundTier.carpenters.length > 0){
         throw new Error("Tier is being used in architect or carpenter, cannot delete!");
       }
 
@@ -1185,7 +1185,7 @@ const getTier = async (req: Request, res: Response) => {
       }
     });
 
-    const carpanterCount = await db.select({ count: count() }).from(carpanter).where(eq(carpanter.tier_id, getTierTypeAnswer.data.tier_id));
+    const carpenterCount = await db.select({ count: count() }).from(carpenter).where(eq(carpenter.tier_id, getTierTypeAnswer.data.tier_id));
     const architectCount = await db.select({ count: count() }).from(architect).where(eq(architect.tier_id, getTierTypeAnswer.data.tier_id));
 
     const newFoundTier = {
@@ -1194,7 +1194,7 @@ const getTier = async (req: Request, res: Response) => {
         ...ti,
         commision: parseFloat(ti.commision).toFixed(2),
       })),
-      carpanterCount: carpanterCount[0].count,
+      carpenterCount: carpenterCount[0].count,
       architectCount: architectCount[0].count
     }
 

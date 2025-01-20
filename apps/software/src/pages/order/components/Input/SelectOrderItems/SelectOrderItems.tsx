@@ -18,13 +18,13 @@ const SelectOrderItems = ({
   value,
   onChange,
   delivered,
-  carpanter_id,
+  carpenter_id,
   architect_id
 }: {
   value: z.infer<typeof createOrderType>["order_items"];
   onChange: (values: z.infer<typeof createOrderType>["order_items"]) => void;
   delivered: boolean;
-  carpanter_id?: number;
+  carpenter_id?: number;
   architect_id?: number;
 }) => {
   const [orderItems, setOrderItems] = React.useState<
@@ -39,8 +39,8 @@ const SelectOrderItems = ({
           architect_commision: oi.architect_commision
             ? oi.architect_commision.toString()
             : "0.00",
-          carpanter_commision: oi.carpanter_commision
-            ? oi.carpanter_commision.toString()
+          carpenter_commision: oi.carpenter_commision
+            ? oi.carpenter_commision.toString()
             : "0.00",
           total_value: oi.total_value ? oi.total_value.toString() : "0.00",
         };
@@ -84,7 +84,7 @@ const SelectOrderItems = ({
         </DialogHeader>
         <AddNewItem
           delivered={delivered}
-          carpanter_id={carpanter_id}
+          carpenter_id={carpenter_id}
           architect_id={architect_id}
           onSubmit={(v) => {
             setOrderItems((oi) => {

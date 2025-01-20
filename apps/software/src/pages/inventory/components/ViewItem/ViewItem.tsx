@@ -129,9 +129,9 @@ const OrderItemsTable = ({ viewItem }: { viewItem: viewItemType }) => {
       accessorKey: "carpenter_commission",
       header: "Carpenter Commission",
       cell: ({ row }) => {
-        const commission = row.original.carpanter_commision;
+        const commission = row.original.carpenter_commision;
         return commission
-          ? `₹${commission} ${calculateCommissionFromTotalCommission(commission, row.original.carpanter_commision_type, row.original.total_value, row.original.quantity).bracket}`
+          ? `₹${commission} ${calculateCommissionFromTotalCommission(commission, row.original.carpenter_commision_type, row.original.total_value, row.original.quantity).bracket}`
           : "--";
       },
     },

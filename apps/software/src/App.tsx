@@ -7,7 +7,7 @@ import Home from "./pages/home/page"
 import Customer from "./pages/customer/page"
 import Order from "./pages/order/page"
 import Architect from "./pages/architect/page"
-import Carpanter from "./pages/carpenter/page"
+import Carpenter from "./pages/carpenter/page"
 import Driver from "./pages/driver/page"
 import Resources from "./pages/resources/page"
 import Address from "./pages/address/page"
@@ -46,8 +46,8 @@ function App() {
         return <Inventory/>;
       case "architect":
         return <Architect/>;
-      case "carpanter":
-        return <Carpanter/>;
+      case "carpenter":
+        return <Carpenter/>;
       case "driver":
         return <Driver/>;
       case "resources":

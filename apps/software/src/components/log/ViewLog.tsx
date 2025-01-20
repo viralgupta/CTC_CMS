@@ -81,7 +81,7 @@ const ViewLog = ({
             <div className="text-xl font-cubano">Links</div>
             <div className="w-full p-2 border rounded-md space-x-2">
               {(Object.keys(viewLog) as Array<keyof viewLogType>).map((key) => {
-                if((key == "user_id" || key == "customer_id" || key == "architect_id" || key == "carpanter_id" || key == "driver_id" || key == "item_id" || key == "order_id") && typeof(viewLog[key]) == "string" && !!viewLog[key]){
+                if((key == "user_id" || key == "customer_id" || key == "architect_id" || key == "carpenter_id" || key == "driver_id" || key == "item_id" || key == "order_id") && typeof(viewLog[key]) == "string" && !!viewLog[key]){
                   return <Button onClick={() => {setViewLogButton({type: {[key]: viewLog[key] ?? ""}}); setOpen(false);}} key={key} variant={"outline"}>View {key[0].toUpperCase() + key.slice(1, -3)} Logs</Button>
                 }
               })}

@@ -32,9 +32,9 @@ const createPhone = async (req: Request, res: Response) => {
               eq(phone_number.architect_id, createPhoneTypeAnswer.data.architect_id),
               eq(phone_number.isPrimary, true)
             )
-          : createPhoneTypeAnswer.data.carpanter_id
+          : createPhoneTypeAnswer.data.carpenter_id
           ? and(
-              eq(phone_number.carpanter_id, createPhoneTypeAnswer.data.carpanter_id),
+              eq(phone_number.carpenter_id, createPhoneTypeAnswer.data.carpenter_id),
               eq(phone_number.isPrimary, true)
             )
           : createPhoneTypeAnswer.data.driver_id
@@ -59,9 +59,9 @@ const createPhone = async (req: Request, res: Response) => {
                 eq(phone_number.architect_id, createPhoneTypeAnswer.data.architect_id),
                 eq(phone_number.isPrimary, true)
               )
-            } else if(createPhoneTypeAnswer.data.carpanter_id){
+            } else if(createPhoneTypeAnswer.data.carpenter_id){
               return and(
-                eq(phone_number.carpanter_id, createPhoneTypeAnswer.data.carpanter_id),
+                eq(phone_number.carpenter_id, createPhoneTypeAnswer.data.carpenter_id),
                 eq(phone_number.isPrimary, true)
               )
             } else if(createPhoneTypeAnswer.data.driver_id){
@@ -107,7 +107,7 @@ const deletePhone = async (req: Request, res: Response) => {
         columns: {
           customer_id: true,
           architect_id: true,
-          carpanter_id: true,
+          carpenter_id: true,
           driver_id: true,
           country_code: true,
           phone_number: true,
@@ -133,9 +133,9 @@ const deletePhone = async (req: Request, res: Response) => {
               eq(phone_number.architect_id, foundPhone.architect_id),
               eq(phone_number.isPrimary, false)
             )
-          : foundPhone.carpanter_id
+          : foundPhone.carpenter_id
           ? and(
-              eq(phone_number.carpanter_id, foundPhone.carpanter_id),
+              eq(phone_number.carpenter_id, foundPhone.carpenter_id),
               eq(phone_number.isPrimary, false)
             )
           : foundPhone.driver_id
@@ -376,7 +376,7 @@ const getAllLogs = async (req: Request, res: Response) => {
   }
 
   try {
-    const key = Object.keys(getAllLogTypeAnswer.data).length > 0 ? Object.keys(getAllLogTypeAnswer.data)[0] as "user_id" | "customer_id" | "architect_id" | "carpanter_id" | "driver_id" | "item_id" | "order_id" : undefined;
+    const key = Object.keys(getAllLogTypeAnswer.data).length > 0 ? Object.keys(getAllLogTypeAnswer.data)[0] as "user_id" | "customer_id" | "architect_id" | "carpenter_id" | "driver_id" | "item_id" | "order_id" : undefined;
     const value = key ? getAllLogTypeAnswer.data[key] : undefined;
     const foundLog = await db.query.log.findMany({
       where: (log, { eq, and, lt }) => {

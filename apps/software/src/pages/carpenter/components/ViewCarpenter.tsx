@@ -19,7 +19,7 @@ const ViewCarpenter = () => {
 
   React.useEffect(() => {
     if (viewCarpenterId) {
-    request(`/carpenter/getCarpanter?carpanter_id=${viewCarpenterId}`).then((res) => {
+    request(`/carpenter/getCarpenter?carpenter_id=${viewCarpenterId}`).then((res) => {
         if(res.status != 200) return;
         setViewCarpenter(res.data.data as ViewCarpenterType);
       })

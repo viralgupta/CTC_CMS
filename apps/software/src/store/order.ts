@@ -14,8 +14,8 @@ export interface OrderItem {
   rate: number;
   total_value: string;
 
-  carpanter_commision?: string | null;
-  carpanter_commision_type?: CommissionType | null;
+  carpenter_commision?: string | null;
+  carpenter_commision_type?: CommissionType | null;
 
   architect_commision?: string | null;
   architect_commision_type?: CommissionType | null;
@@ -79,7 +79,7 @@ export type ViewOrderType = {
   customer_id: number | null;
   priority: "Low" | "High" | "Medium";
   architect_id: number | null;
-  carpanter_id: number | null;
+  carpenter_id: number | null;
   note: string | null;
   payment_status: "UnPaid" | "Partial" | "Paid";
   delivery_date: Date | null;
@@ -87,7 +87,7 @@ export type ViewOrderType = {
   total_order_amount: string;
   discount: string | null;
   amount_paid: string | null;
-  carpanter_commision: string | null;
+  carpenter_commision: string | null;
   architect_commision: string | null;
   created_at: Date;
   updated_at: Date;
@@ -108,7 +108,7 @@ export type ViewOrderType = {
       }
     | null
     | undefined;
-  carpanter:
+  carpenter:
     | {
         name: string;
         profileUrl: string | null;
@@ -128,13 +128,13 @@ export type ViewOrderType = {
   order_items:
     | {
         id: number;
-        carpanter_commision: string | null;
+        carpenter_commision: string | null;
         architect_commision: string | null;
         quantity: number;
         delivered_quantity: number;
         rate: number;
         total_value: string;
-        carpanter_commision_type: "percentage" | "perPiece" | null;
+        carpenter_commision_type: "percentage" | "perPiece" | null;
         architect_commision_type: "percentage" | "perPiece" | null;
         item_id: number;
         item:

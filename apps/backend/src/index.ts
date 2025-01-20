@@ -4,7 +4,7 @@ import { authenticatedUser } from "./middlewear/authenticateUser";
 import { allowedToken } from "./middlewear/allowedToken";
 import inventoryRouter from "./routes/inventoryRoutes";
 import architectRouter from "./routes/architectRoutes";
-import carpanterRouter from "./routes/carpanterRoutes";
+import carpenterRouter from "./routes/carpenterRoutes";
 import customerRouter from "./routes/customerRoutes";
 import driverRouter from "./routes/driverRoutes";
 import estimateRouter from "./routes/estimateRoutes";
@@ -34,7 +34,7 @@ app.use("/api/*", authenticatedUser);
 app.use("/api/*", allowedToken);
 
 app.use("/api/architect", architectRouter);
-app.use("/api/carpenter", carpanterRouter);
+app.use("/api/carpenter", carpenterRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/driver", driverRouter);
 app.use("/api/estimate", estimateRouter);

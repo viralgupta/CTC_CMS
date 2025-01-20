@@ -60,7 +60,7 @@ const AddNewItem = ({
   value,
   children,
   delivered,
-  carpanter_id,
+  carpenter_id,
   architect_id
 }: {
   onSubmit: (
@@ -69,14 +69,14 @@ const AddNewItem = ({
   value?: z.infer<typeof createOrderType>["order_items"][number];
   children?: React.ReactNode;
   delivered: boolean;
-  carpanter_id?: number;
+  carpenter_id?: number;
   architect_id?: number;
 }) => {
   const [selectedItemRates, setSelectedItemRates] =
     useRecoilState(selectedItemRateAtom);
   const [showCommission, setShowCommission] = useRecoilState(showCommissionAtom);
   const [architectCommission, setArchitectCommission] = React.useState("0.00");
-  const [carpanterCommision, setCarpenterCommission] = React.useState("0.00");
+  const [carpenterCommision, setCarpenterCommission] = React.useState("0.00");
   const [foundItem, setFoundItem] = React.useState<itemType | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -100,15 +100,15 @@ const AddNewItem = ({
           ).value.toString()
         : "0.00",
       architect_commision_type: value?.architect_commision_type ?? undefined,
-      carpanter_commision: value
+      carpenter_commision: value
         ? calculateCommissionFromTotalCommission(
-            value?.carpanter_commision ?? "0.00",
-            value?.carpanter_commision_type,
+            value?.carpenter_commision ?? "0.00",
+            value?.carpenter_commision_type,
             value?.total_value ?? "0.00",
             value?.quantity ?? 0
           ).value.toString()
         : "0.00",
-      carpanter_commision_type: value?.carpanter_commision_type ?? undefined,
+      carpenter_commision_type: value?.carpenter_commision_type ?? undefined,
     },
   });
 
@@ -125,7 +125,7 @@ const AddNewItem = ({
     const finalValue = {
       ...value,
       architect_commision: parseFloat(architectCommission).toFixed(2),
-      carpanter_commision: parseFloat(carpanterCommision).toFixed(2),
+      carpenter_commision: parseFloat(carpenterCommision).toFixed(2),
     };
     onAdd(finalValue);
     setSelectedItemRates(null);
@@ -147,7 +147,7 @@ const AddNewItem = ({
     setLoading(true);
     const queryParams = new URLSearchParams();
     queryParams.append("item_id", item_id.toString());
-    if(carpenter_id) queryParams.append("carpanter_id", carpenter_id.toString());
+    if(carpenter_id) queryParams.append("carpenter_id", carpenter_id.toString());
     if(architect_id) queryParams.append("architect_id", architect_id.toString());
     const res = await request.get(`/inventory/getItemRatesWithCommission?`+ queryParams.toString());
     if(res.status == 200){
@@ -159,12 +159,12 @@ const AddNewItem = ({
         form.setValue("architect_commision", "0.00");
         form.setValue("architect_commision_type", undefined);
       }
-      if(res.data.data.carpanter_rates){
-        form.setValue("carpanter_commision", res.data.data.carpanter_rates.commision);
-        form.setValue("carpanter_commision_type", res.data.data.carpanter_rates.commision_type);
+      if(res.data.data.carpenter_rates){
+        form.setValue("carpenter_commision", res.data.data.carpenter_rates.commision);
+        form.setValue("carpenter_commision_type", res.data.data.carpenter_rates.commision_type);
       } else {
-        form.setValue("carpanter_commision", "0.00");
-        form.setValue("carpanter_commision_type", undefined);
+        form.setValue("carpenter_commision", "0.00");
+        form.setValue("carpenter_commision_type", undefined);
       }
       setLoading(false);
     }
@@ -185,13 +185,13 @@ const AddNewItem = ({
           value.quantity ?? 0
         ).value.toString(),
         architect_commision_type: value.architect_commision_type ?? undefined,
-        carpanter_commision: calculateCommissionFromTotalCommission(
-          value.carpanter_commision ?? "0.00",
-          value.carpanter_commision_type,
+        carpenter_commision: calculateCommissionFromTotalCommission(
+          value.carpenter_commision ?? "0.00",
+          value.carpenter_commision_type,
           value.total_value ?? "0.00",
           value.quantity ?? 0
         ).value.toString(),
-        carpanter_commision_type: value.carpanter_commision_type ?? undefined,
+        carpenter_commision_type: value.carpenter_commision_type ?? undefined,
       });
     }
   }, [value]);
@@ -204,8 +204,8 @@ const AddNewItem = ({
     rate,
     architect_commision,
     architect_commision_type,
-    carpanter_commision,
-    carpanter_commision_type,
+    carpenter_commision,
+    carpenter_commision_type,
     total_value,
   ] = form.watch([
     "item_id",
@@ -214,8 +214,8 @@ const AddNewItem = ({
     "rate",
     "architect_commision",
     "architect_commision_type",
-    "carpanter_commision",
-    "carpanter_commision_type",
+    "carpenter_commision",
+    "carpenter_commision_type",
     "total_value",
   ]);
 
@@ -244,13 +244,13 @@ const AddNewItem = ({
   React.useEffect(() => {
     setCarpenterCommission(
       calculateTotalCommission(
-        carpanter_commision,
-        carpanter_commision_type,
+        carpenter_commision,
+        carpenter_commision_type,
         total_value,
         quantity
       )
     );
-  }, [carpanter_commision, carpanter_commision_type, total_value]);
+  }, [carpenter_commision, carpenter_commision_type, total_value]);
 
   React.useEffect(() => {
     setFoundItem(null);
@@ -261,7 +261,7 @@ const AddNewItem = ({
   React.useEffect(() => {
     if (!foundItem) return;
     form.setValue("rate", foundItem?.sale_rate ?? 0);
-    getItemRateWithCommission(foundItem.id, carpanter_id, architect_id);
+    getItemRateWithCommission(foundItem.id, carpenter_id, architect_id);
   }, [foundItem]);
 
   React.useEffect(() => {
@@ -488,13 +488,13 @@ const AddNewItem = ({
                 <div className="flex w-full flex-col justify-between gap-2 md:flex-row items-end">
                   <FormField
                     control={form.control}
-                    name="carpanter_commision"
+                    name="carpenter_commision"
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabelWithToolTip
                           heading="Carpenter Commission"
                           data={[
-                            `Last Order Carp. Commission: ₹${selectedItemRates?.order_items[0]?.carpanter_commision ?? " --"}`,
+                            `Last Order Carp. Commission: ₹${selectedItemRates?.order_items[0]?.carpenter_commision ?? " --"}`,
                           ]}
                         />
                         <FormControl>
@@ -510,13 +510,13 @@ const AddNewItem = ({
                   />
                   <FormField
                     control={form.control}
-                    name="carpanter_commision_type"
+                    name="carpenter_commision_type"
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabelWithToolTip
                           heading="Carpenter Commission Type"
                           data={[
-                            `Last Order Carp. Commission Type: ₹${selectedItemRates?.order_items[0]?.carpanter_commision_type ?? " --"}`,
+                            `Last Order Carp. Commission Type: ₹${selectedItemRates?.order_items[0]?.carpenter_commision_type ?? " --"}`,
                           ]}
                         />
                         <FormControl>
@@ -545,7 +545,7 @@ const AddNewItem = ({
                       <Input
                         className="w-full"
                         disabled
-                        value={carpanterCommision}
+                        value={carpenterCommision}
                       />
                     </FormControl>
                   </FormItem>

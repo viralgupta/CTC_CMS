@@ -1,7 +1,7 @@
 import db from '@db/db';
 import {
   architect,
-  carpanter,
+  carpenter,
   customer,
   driver,
   item,
@@ -17,7 +17,7 @@ import {
   createOrderType,
   editOrderNoteType,
   addOrderCustomerIdType,
-  editOrderCarpanterIdType,
+  editOrderCarpenterIdType,
   editOrderArchitectIdType,
   editOrderPriorityType,
   editOrderDeliveryDateType,
@@ -53,7 +53,7 @@ const createOrder = async (req: Request, res: Response) => {
   }
 
   try {
-    const calculateCarpanterCommision = createOrderTypeAnswer.data.carpanter_id ? true : false;
+    const calculateCarpenterCommision = createOrderTypeAnswer.data.carpenter_id ? true : false;
     const calculateArchitectCommision = createOrderTypeAnswer.data.architect_id ? true : false;
 
     await db.transaction(async (tx) => {
@@ -102,9 +102,9 @@ const createOrder = async (req: Request, res: Response) => {
         throw new Error("Order with due payment cannot be created without Customer Details!!!");
       }
       
-      // calculate the commision of the carpanter
-      const carpanterCommision = createOrderTypeAnswer.data.order_items.reduce((acc, orderitem, _index) => {
-        return acc + parseFloat(orderitem.carpanter_commision ?? "0.00");
+      // calculate the commision of the carpenter
+      const carpenterCommision = createOrderTypeAnswer.data.order_items.reduce((acc, orderitem, _index) => {
+        return acc + parseFloat(orderitem.carpenter_commision ?? "0.00");
       }, 0).toFixed(2);
 
       // calculate the commision of the architect
@@ -148,7 +148,7 @@ const createOrder = async (req: Request, res: Response) => {
       const tOrder = await tx.insert(order).values({
         note: createOrderTypeAnswer.data.note ?? "",
         customer_id: createOrderTypeAnswer.data.customer_id,
-        carpanter_id: createOrderTypeAnswer.data.carpanter_id,
+        carpenter_id: createOrderTypeAnswer.data.carpenter_id,
         architect_id: createOrderTypeAnswer.data.architect_id,
         status: canDeliver ? "Delivered" : "Pending",
         priority: createOrderTypeAnswer.data.priority,
@@ -158,7 +158,7 @@ const createOrder = async (req: Request, res: Response) => {
         discount: createOrderTypeAnswer.data.discount,
         amount_paid: createOrderTypeAnswer.data.amount_paid,
         total_order_amount: totalValue.toFixed(2),
-        carpanter_commision: calculateCarpanterCommision ? carpanterCommision : null,
+        carpenter_commision: calculateCarpenterCommision ? carpenterCommision : null,
         architect_commision: calculateArchitectCommision ? architectCommision : null,
       }).returning({id: order.id});
       
@@ -168,10 +168,10 @@ const createOrder = async (req: Request, res: Response) => {
           order_id: tOrder[0].id,
           customer_id: createOrderTypeAnswer.data.customer_id,
           architect_id: createOrderTypeAnswer.data.architect_id,
-          carpanter_id: createOrderTypeAnswer.data.carpanter_id,
+          carpenter_id: createOrderTypeAnswer.data.carpenter_id,
           linked_to: "ORDER",
           type: "CREATE",
-          message: JSON.stringify(omit(createOrderTypeAnswer.data, ["architect_id", "carpanter_id", "customer_id"]), null, 2)
+          message: JSON.stringify(omit(createOrderTypeAnswer.data, ["architect_id", "carpenter_id", "customer_id"]), null, 2)
         });
       }
 
@@ -185,8 +185,8 @@ const createOrder = async (req: Request, res: Response) => {
             delivered_quantity: (createOrderTypeAnswer.data.status == "Delivered" && canDeliver) ? order_item.quantity : 0,
             rate: order_item.rate,
             total_value: order_item.total_value,
-            carpanter_commision: calculateCarpanterCommision ? order_item.carpanter_commision : null,
-            carpanter_commision_type: calculateCarpanterCommision ? order_item.carpanter_commision_type : null,
+            carpenter_commision: calculateCarpenterCommision ? order_item.carpenter_commision : null,
+            carpenter_commision_type: calculateCarpenterCommision ? order_item.carpenter_commision_type : null,
             architect_commision: calculateArchitectCommision ? order_item.architect_commision : null,
             architect_commision_type: calculateArchitectCommision ? order_item.architect_commision_type : null,
           }
@@ -209,12 +209,12 @@ const createOrder = async (req: Request, res: Response) => {
           .execute({ customerBalance: customerBalance.toFixed(2), totalOrderValue: actualtotalValue.toFixed(2) });
       }
 
-      // update balance for carpanter
-      if(createOrderTypeAnswer.data.carpanter_id){
-        await tx.update(carpanter).set({
-          balance: sql`${carpanter.balance} + ${sql.placeholder("CarpanterCommision")}`
-        }).where(eq(carpanter.id, createOrderTypeAnswer.data.carpanter_id)).execute({
-          CarpanterCommision: carpanterCommision
+      // update balance for carpenter
+      if(createOrderTypeAnswer.data.carpenter_id){
+        await tx.update(carpenter).set({
+          balance: sql`${carpenter.balance} + ${sql.placeholder("CarpenterCommision")}`
+        }).where(eq(carpenter.id, createOrderTypeAnswer.data.carpenter_id)).execute({
+          CarpenterCommision: carpenterCommision
         })
       }
 
@@ -429,23 +429,23 @@ const addOrderCustomerId = async (req: Request, res: Response) => {
   }
 }
 
-const editOrderCarpanterId = async (req: Request, res: Response) => {
-  const editOrderCarpanterIdTypeAnswer = editOrderCarpanterIdType.safeParse(req.body);
+const editOrderCarpenterId = async (req: Request, res: Response) => {
+  const editOrderCarpenterIdTypeAnswer = editOrderCarpenterIdType.safeParse(req.body);
 
-  if(!editOrderCarpanterIdTypeAnswer.success){
-    return res.status(400).json({success: false, message: "Input fields are not correct", error: editOrderCarpanterIdTypeAnswer.error.flatten()})
+  if(!editOrderCarpenterIdTypeAnswer.success){
+    return res.status(400).json({success: false, message: "Input fields are not correct", error: editOrderCarpenterIdTypeAnswer.error.flatten()})
   }
 
   try {
     await db.transaction(async (tx) => {
       const oldOrder = await tx.query.order.findFirst({
-        where: (order, { eq }) => eq(order.id, editOrderCarpanterIdTypeAnswer.data.order_id),
+        where: (order, { eq }) => eq(order.id, editOrderCarpenterIdTypeAnswer.data.order_id),
         columns: {
-          carpanter_id: true,
-          carpanter_commision: true
+          carpenter_id: true,
+          carpenter_commision: true
         },
         with: {
-          carpanter: {
+          carpenter: {
             columns: {
               name: true
             }
@@ -457,36 +457,36 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
         throw new Error("Order Does not Exists!!!");
       }
       
-      if(oldOrder.carpanter_id === editOrderCarpanterIdTypeAnswer.data.carpanter_id){
-        throw new Error("Old and new Carpanter Id cannot be same")!!!
+      if(oldOrder.carpenter_id === editOrderCarpenterIdTypeAnswer.data.carpenter_id){
+        throw new Error("Old and new Carpenter Id cannot be same")!!!
       }
 
-      // update / reduce commision from old carpanter
-      if(oldOrder.carpanter_id){
-        await tx.update(carpanter).set({
-          balance: sql`${carpanter.balance} - ${sql.placeholder("OldCarpanterCommision")}`
-        }).where(eq(carpanter.id, oldOrder.carpanter_id)).execute({
-          OldCarpanterCommision: oldOrder.carpanter_commision
+      // update / reduce commision from old carpenter
+      if(oldOrder.carpenter_id){
+        await tx.update(carpenter).set({
+          balance: sql`${carpenter.balance} - ${sql.placeholder("OldCarpenterCommision")}`
+        }).where(eq(carpenter.id, oldOrder.carpenter_id)).execute({
+          OldCarpenterCommision: oldOrder.carpenter_commision
         })
       }
 
-      // update / add commision to new carpanter
-      await tx.update(carpanter).set({
-        balance: sql`${carpanter.balance} + ${sql.placeholder("NewCarpanterCommision")}`
-      }).where(eq(carpanter.id, editOrderCarpanterIdTypeAnswer.data.carpanter_id))
+      // update / add commision to new carpenter
+      await tx.update(carpenter).set({
+        balance: sql`${carpenter.balance} + ${sql.placeholder("NewCarpenterCommision")}`
+      }).where(eq(carpenter.id, editOrderCarpenterIdTypeAnswer.data.carpenter_id))
       .execute({
-        NewCarpanterCommision: oldOrder.carpanter_commision
+        NewCarpenterCommision: oldOrder.carpenter_commision
       })
 
-      // update carpanter in order
+      // update carpenter in order
       await tx.update(order).set({
-        carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id
-      }).where(eq(order.id, editOrderCarpanterIdTypeAnswer.data.order_id)).returning({
-        carpanter_id: order.carpanter_id
+        carpenter_id: editOrderCarpenterIdTypeAnswer.data.carpenter_id
+      }).where(eq(order.id, editOrderCarpenterIdTypeAnswer.data.order_id)).returning({
+        carpenter_id: order.carpenter_id
       })
 
-      const newCarpanter = await tx.query.carpanter.findFirst({
-        where: (carpanter, { eq }) => eq(carpanter.id, editOrderCarpanterIdTypeAnswer.data.carpanter_id),
+      const newCarpenter = await tx.query.carpenter.findFirst({
+        where: (carpenter, { eq }) => eq(carpenter.id, editOrderCarpenterIdTypeAnswer.data.carpenter_id),
         columns: {
           name: true
         }
@@ -495,22 +495,22 @@ const editOrderCarpanterId = async (req: Request, res: Response) => {
       if(res.locals.session){
         await tx.insert(log).values({
           user_id: res.locals.session.user.id,
-          order_id: editOrderCarpanterIdTypeAnswer.data.order_id,
-          carpanter_id: editOrderCarpanterIdTypeAnswer.data.carpanter_id,
+          order_id: editOrderCarpenterIdTypeAnswer.data.order_id,
+          carpenter_id: editOrderCarpenterIdTypeAnswer.data.carpenter_id,
           linked_to: "ORDER",
           type: "UPDATE",
-          heading: "Carpanter Updated for Order",
+          heading: "Carpenter Updated for Order",
           message: `
-            Old Carpanter: ${oldOrder.carpanter?.name ?? ""}
-            New Carpanter: ${newCarpanter?.name ?? ""}
+            Old Carpenter: ${oldOrder.carpenter?.name ?? ""}
+            New Carpenter: ${newCarpenter?.name ?? ""}
           `
         });
       }
     })
 
-    return res.status(200).json({success: true, message: "Updated Carpanter in Order"})    
+    return res.status(200).json({success: true, message: "Updated Carpenter in Order"})    
   } catch (error: any) {
-    return res.status(400).json({success: false, message: "Unable to Updated Carpanter in Order", error: error.message ? error.message : error});  
+    return res.status(400).json({success: false, message: "Unable to Updated Carpenter in Order", error: error.message ? error.message : error});  
   }
 }
 
@@ -954,12 +954,12 @@ const editOrderItems = async (req: Request, res: Response) => {
         columns: {
           amount_paid: true,
           architect_commision: true,
-          carpanter_commision: true,
+          carpenter_commision: true,
           discount: true,
           status: true,
           total_order_amount: true,
           architect_id: true,
-          carpanter_id: true,
+          carpenter_id: true,
           customer_id: true
         },
         with: {
@@ -967,7 +967,7 @@ const editOrderItems = async (req: Request, res: Response) => {
             columns: {
               id: true,
               item_id: true,
-              carpanter_commision: true,
+              carpenter_commision: true,
               architect_commision: true,
               total_value: true,
               quantity: true,
@@ -989,7 +989,7 @@ const editOrderItems = async (req: Request, res: Response) => {
       const removedItems = oldOrder.order_items.filter((oldItem) => !new_order_item_ids.includes(oldItem.item_id));
       const addedItems = editOrderItemsTypeAnswer.data.order_items.filter((newItem) => !old_order_item_ids.includes(newItem.item_id));
       
-      let newCarpanterCommision = 0;
+      let newCarpenterCommision = 0;
       let newArchitectCommision = 0;
       let new_total_order_amount = 0;
 
@@ -1000,7 +1000,7 @@ const editOrderItems = async (req: Request, res: Response) => {
 
         if(!sameNewItem) throw new Error("Unable to find the new items, this should not happen!!!, Contact Developer!!!");
 
-        newCarpanterCommision += parseFloat(sameNewItem.carpanter_commision ?? "0.00");
+        newCarpenterCommision += parseFloat(sameNewItem.carpenter_commision ?? "0.00");
         newArchitectCommision += parseFloat(sameNewItem.architect_commision ?? "0.00");
         new_total_order_amount += parseFloat(sameNewItem.total_value ?? "0.00");
 
@@ -1009,15 +1009,15 @@ const editOrderItems = async (req: Request, res: Response) => {
           quantity: sameNewItem.quantity,
           rate: sameNewItem.rate,
           total_value: sameNewItem.total_value,
-          carpanter_commision: oldOrder.carpanter_id ? sameNewItem.carpanter_commision : null,
-          carpanter_commision_type: oldOrder.carpanter_id ? sameNewItem.carpanter_commision_type : null,
+          carpenter_commision: oldOrder.carpenter_id ? sameNewItem.carpenter_commision : null,
+          carpenter_commision_type: oldOrder.carpenter_id ? sameNewItem.carpenter_commision_type : null,
           architect_commision: oldOrder.architect_id ? sameNewItem.architect_commision : null,
           architect_commision_type: oldOrder.architect_id ? sameNewItem.architect_commision_type: null
         }).where(eq(order_item.id, sameOldItem.id));
       })
       
       addedItems.forEach(async (addedItem) => {
-        newCarpanterCommision += parseFloat(addedItem.carpanter_commision ?? "0.00");
+        newCarpenterCommision += parseFloat(addedItem.carpenter_commision ?? "0.00");
         newArchitectCommision += parseFloat(addedItem.architect_commision ?? "0.00");
         new_total_order_amount += parseFloat(addedItem.total_value ?? "0.00");
 
@@ -1029,8 +1029,8 @@ const editOrderItems = async (req: Request, res: Response) => {
           delivered_quantity: 0,
           rate: addedItem.rate,
           total_value: addedItem.total_value,
-          carpanter_commision: oldOrder.carpanter_id ? addedItem.carpanter_commision : null,
-          carpanter_commision_type: oldOrder.carpanter_id ? addedItem.carpanter_commision_type : null,
+          carpenter_commision: oldOrder.carpenter_id ? addedItem.carpenter_commision : null,
+          carpenter_commision_type: oldOrder.carpenter_id ? addedItem.carpenter_commision_type : null,
           architect_commision: oldOrder.architect_id ? addedItem.architect_commision : null,
           architect_commision_type: oldOrder.architect_id ? addedItem.architect_commision_type : null
         });
@@ -1042,8 +1042,8 @@ const editOrderItems = async (req: Request, res: Response) => {
           quantity: 0,
           rate: removedOrderItem.rate,
           total_value: "0.00",
-          carpanter_commision: null,
-          carpanter_commision_type: null,
+          carpenter_commision: null,
+          carpenter_commision_type: null,
           architect_commision: null,
           architect_commision_type: null
         }).where(eq(order_item.id, removedOrderItem.id));
@@ -1060,25 +1060,25 @@ const editOrderItems = async (req: Request, res: Response) => {
         });
       }
 
-      // update carpanter commission
-      const oldCarpanterCommision = parseFloat(oldOrder.carpanter_commision ?? "0.00");
-      if(oldOrder.carpanter_id){
+      // update carpenter commission
+      const oldCarpenterCommision = parseFloat(oldOrder.carpenter_commision ?? "0.00");
+      if(oldOrder.carpenter_id){
 
-        if(newCarpanterCommision == oldCarpanterCommision) {
+        if(newCarpenterCommision == oldCarpenterCommision) {
           // do nothing
-        } else if (newCarpanterCommision > oldCarpanterCommision) {
-          const carpanterCommisionDiff = newCarpanterCommision - oldCarpanterCommision;
-          await tx.update(carpanter).set({
-            balance: sql`${carpanter.balance} + ${sql.placeholder("carpanterCommisionDiff")}`,
-          }).where(eq(carpanter.id, oldOrder.carpanter_id)).execute({
-            carpanterCommisionDiff: carpanterCommisionDiff.toFixed(2)
+        } else if (newCarpenterCommision > oldCarpenterCommision) {
+          const carpenterCommisionDiff = newCarpenterCommision - oldCarpenterCommision;
+          await tx.update(carpenter).set({
+            balance: sql`${carpenter.balance} + ${sql.placeholder("carpenterCommisionDiff")}`,
+          }).where(eq(carpenter.id, oldOrder.carpenter_id)).execute({
+            carpenterCommisionDiff: carpenterCommisionDiff.toFixed(2)
           });
         } else {
-          const carpanterCommisionDiff = oldCarpanterCommision - newCarpanterCommision;
-          await tx.update(carpanter).set({
-            balance: sql`${carpanter.balance} - ${sql.placeholder("carpanterCommisionDiff")}`,
-          }).where(eq(carpanter.id, oldOrder.carpanter_id)).execute({
-            carpanterCommisionDiff: carpanterCommisionDiff.toFixed(2)
+          const carpenterCommisionDiff = oldCarpenterCommision - newCarpenterCommision;
+          await tx.update(carpenter).set({
+            balance: sql`${carpenter.balance} - ${sql.placeholder("carpenterCommisionDiff")}`,
+          }).where(eq(carpenter.id, oldOrder.carpenter_id)).execute({
+            carpenterCommisionDiff: carpenterCommisionDiff.toFixed(2)
           });
         }
       }
@@ -1106,12 +1106,12 @@ const editOrderItems = async (req: Request, res: Response) => {
         }
       }
       
-      // update total order value, carpanter commision, architect commision, payment status, status for order
+      // update total order value, carpenter commision, architect commision, payment status, status for order
       const newPaymentStatus = calculatePaymentStatus((new_total_order_amount - parseFloat(oldOrder.discount ?? "0.00")), parseFloat(oldOrder.amount_paid ?? "0.00"));
       const orderStatus = quantities.some(quantity => quantity.quantity < 0) ? "Pending" : oldOrder.status;
       await tx.update(order).set({
         total_order_amount: new_total_order_amount.toFixed(2),
-        carpanter_commision: oldOrder.carpanter_id ? newCarpanterCommision.toFixed(2) : null,
+        carpenter_commision: oldOrder.carpenter_id ? newCarpenterCommision.toFixed(2) : null,
         architect_commision: oldOrder.architect_id ? newArchitectCommision.toFixed(2) : null,
         payment_status: newPaymentStatus,
         status: orderStatus,
@@ -1313,7 +1313,7 @@ const getOrder = async (req: Request, res: Response) => {
               profileUrl: true
             }
           },
-          carpanter: {
+          carpenter: {
             columns: {
               name: true,
               profileUrl: true
@@ -1357,8 +1357,8 @@ const getOrder = async (req: Request, res: Response) => {
               total_value: true,
               architect_commision: true,
               architect_commision_type: true,
-              carpanter_commision: true,
-              carpanter_commision_type: true,
+              carpenter_commision: true,
+              carpenter_commision_type: true,
               item_id: true
             },
             with: {
@@ -2278,7 +2278,7 @@ export {
   createOrder,
   editOrderNote,
   addOrderCustomerId,
-  editOrderCarpanterId,
+  editOrderCarpenterId,
   editOrderArchitectId,
   editOrderPriority,
   editOrderDeliveryDate,

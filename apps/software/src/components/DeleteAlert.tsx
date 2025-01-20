@@ -20,14 +20,14 @@ const DeleteAlert = ({
   viewObjectIdAtom
 }: {
   children: React.ReactNode;
-  type: "customer" | "architect" | "carpanter" | "driver" | "resource" | "estimate"
+  type: "customer" | "architect" | "carpenter" | "driver" | "resource" | "estimate"
   viewObjectAtom: RecoilState<any | null>
   viewObjectIdAtom: RecoilState<any | null>
 }) => {
   const setViewX = useSetRecoilState(viewObjectAtom);
   const [XId, setViewXId] = useRecoilState(viewObjectIdAtom);
 
-  const deleteUrl = `/${type !== "carpanter" ? type !== "resource" ? type : "miscellaneous" : "carpenter"}/delete${(type.charAt(0).toUpperCase() + type.slice(1))}`
+  const deleteUrl = `/${type !== "carpenter" ? type !== "resource" ? type : "miscellaneous" : "carpenter"}/delete${(type.charAt(0).toUpperCase() + type.slice(1))}`
   const handleDelete = async () => {
   const res = await request.delete(deleteUrl, {
       data: {

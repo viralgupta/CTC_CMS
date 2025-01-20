@@ -1,12 +1,12 @@
 import express from "express"
-import { createOrder, editOrderNote, addOrderCustomerId, editOrderCarpanterId, editOrderArchitectId, editOrderPriority, editOrderDeliveryDate, editOrderDeliveryAddressId, editOrderDiscount, settleBalance, editOrderItems, getAllOrders, getOrder, getMovement, createMovement, editMovement, deleteMovement, editMovementStatus, createPutSignedURLOrderMovementRecipt, deleteOrderMovementRecipt, createGetSignedURLOrderMovementRecipt } from "../controllers/orderController"
+import { createOrder, editOrderNote, addOrderCustomerId, editOrderCarpenterId, editOrderArchitectId, editOrderPriority, editOrderDeliveryDate, editOrderDeliveryAddressId, editOrderDiscount, settleBalance, editOrderItems, getAllOrders, getOrder, getMovement, createMovement, editMovement, deleteMovement, editMovementStatus, createPutSignedURLOrderMovementRecipt, deleteOrderMovementRecipt, createGetSignedURLOrderMovementRecipt } from "../controllers/orderController"
 
 const orderRouter = express.Router()
 
 orderRouter.route('/createOrder').post(createOrder)
 orderRouter.route('/editOrderNote').put(editOrderNote)
 orderRouter.route('/addOrderCustomerId').put(addOrderCustomerId)
-orderRouter.route('/editOrderCarpanterId').put(editOrderCarpanterId)
+orderRouter.route('/editOrderCarpenterId').put(editOrderCarpenterId)
 orderRouter.route('/editOrderArchitectId').put(editOrderArchitectId)
 orderRouter.route('/editOrderPriority').put(editOrderPriority)
 orderRouter.route('/editOrderDeliveryDate').put(editOrderDeliveryDate)

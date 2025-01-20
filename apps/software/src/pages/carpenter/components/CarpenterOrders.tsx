@@ -16,12 +16,12 @@ const CarpenterOrders = ({ viewCarpenter }: { viewCarpenter: ViewCarpenterType }
   const fetchMoreOrders = async (cursor: number) => {
     try {
       const queryParams = new URLSearchParams();
-      queryParams.append("carpanter_id", viewCarpenter.id.toString());
+      queryParams.append("carpenter_id", viewCarpenter.id.toString());
       queryParams.append("cursor", cursor.toString());
-      const res = await request.get('/carpanter/getCarpanterOrders?' + queryParams.toString());
+      const res = await request.get('/carpenter/getCarpenterOrders?' + queryParams.toString());
       return (res.data.data ?? []) as ViewCarpenterType["orders"];
     } catch (error) {
-      console.error("Error while fetching more carpanter orders", error);
+      console.error("Error while fetching more carpenter orders", error);
       return [];
     }
   };
@@ -68,9 +68,9 @@ const CarpenterOrders = ({ viewCarpenter }: { viewCarpenter: ViewCarpenterType }
       header: "Status",
     },
     {
-      id: "carpanter_commision",
+      id: "carpenter_commision",
       accessorFn: (row) => {
-        return `₹${row.carpanter_commision ?? "0.00"}`;
+        return `₹${row.carpenter_commision ?? "0.00"}`;
       },
       header: "Carpenter Comm.",
     },
@@ -105,7 +105,7 @@ const CarpenterOrders = ({ viewCarpenter }: { viewCarpenter: ViewCarpenterType }
       <span className="font-sofiapro font-bold text-xl pb-4">Carpenter Orders</span>
       <PaginationDataTable
         data={data ?? []}
-        key={"carpanter-orders"}
+        key={"carpenter-orders"}
         columns={columns}
         columnFilters={false}
         defaultColumn={{

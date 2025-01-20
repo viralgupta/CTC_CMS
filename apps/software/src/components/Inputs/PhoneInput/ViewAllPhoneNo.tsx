@@ -24,7 +24,7 @@ const ViewAllPhoneNumbers = ({
 }: {
   children: React.ReactNode;
   values: viewCustomerType["phone_numbers"];
-  type: "customer" | "architect" | "carpanter" | "driver"
+  type: "customer" | "architect" | "carpenter" | "driver"
   viewObjectAtom: RecoilState<any | null>
   viewObjectIdAtom: RecoilState<number | null>
 }) => {

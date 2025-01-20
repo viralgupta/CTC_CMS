@@ -23,7 +23,7 @@ export interface ViewCarpenterType extends CarpenterType {
   orders: {
     id: number;
     status: "Pending" | "Delivered";
-    carpanter_commision: string | null;
+    carpenter_commision: string | null;
     created_at: Date;
     customer: {
       name: string;

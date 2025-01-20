@@ -56,8 +56,8 @@ const OrderItemsTable = ({
                   : "--"}
               </TableCell>
               <TableCell className="text-center">
-                {oi.carpanter_commision
-                  ? `₹${oi.carpanter_commision} ${calculateCommissionFromTotalCommission(oi.carpanter_commision, oi.carpanter_commision_type, oi.total_value, oi.quantity).bracket}`
+                {oi.carpenter_commision
+                  ? `₹${oi.carpenter_commision} ${calculateCommissionFromTotalCommission(oi.carpenter_commision, oi.carpenter_commision_type, oi.total_value, oi.quantity).bracket}`
                   : "--"}
               </TableCell>
               <TableCell className="text-center">

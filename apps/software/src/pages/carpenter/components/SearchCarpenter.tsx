@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RefetchButton from "@/components/RefetchButton";
 import { cn, setDebouncedValue } from "@/lib/utils";
 import { useAllCarpenter } from "@/hooks/carpenter";
-import CarpenterTable from "./CarpanterTable";
+import CarpenterTable from "./CarpenterTable";
 
 const SearchCarpenter = ({
   onChange,

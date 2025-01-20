@@ -60,7 +60,7 @@ export const getItemRatesType = getItemType.extend({
 export const getItemRatesWithCommissionType = getItemType.extend({
   customer_id: z.string().transform((val) => Number(val)).optional(),
   architect_id: z.string().transform((val) => Number(val)).optional(),
-  carpanter_id: z.string().transform((val) => Number(val)).optional()
+  carpenter_id: z.string().transform((val) => Number(val)).optional()
 });
 
 export const editItemType = createItemType

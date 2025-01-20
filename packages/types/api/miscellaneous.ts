@@ -4,7 +4,7 @@ const base_phone_numberType = z
   .object({
     customer_id: z.number().optional(),
     architect_id: z.number().optional(),
-    carpanter_id: z.number().optional(),
+    carpenter_id: z.number().optional(),
     driver_id: z.number().optional(),
     country_code: z
       .string()
@@ -21,7 +21,7 @@ export const phone_numberType = base_phone_numberType
   }).omit({
     customer_id: true,
     architect_id: true,
-    carpanter_id: true,
+    carpenter_id: true,
     driver_id: true,
   });
 
@@ -52,7 +52,7 @@ export const createPhoneType = base_phone_numberType
   const ids = [
     vals.customer_id,
     vals.architect_id,
-    vals.carpanter_id,
+    vals.carpenter_id,
     vals.driver_id,
   ].filter(Boolean);
 
@@ -63,7 +63,7 @@ export const createPhoneType = base_phone_numberType
   } else {
     return true;
   }
-}, "Exactly one entity (customer_id, architect_id, carpanter_id, driver_id) should be specified to create a number");
+}, "Exactly one entity (customer_id, architect_id, carpenter_id, driver_id) should be specified to create a number");
 
 export const deletePhoneType = z
   .object({
@@ -99,7 +99,7 @@ export const getAllLogsType = z.object({
   user_id: z.string().transform((val) => Number(val)).optional(),
   customer_id: z.string().transform((val) => Number(val)).optional(),
   architect_id: z.string().transform((val) => Number(val)).optional(),
-  carpanter_id: z.string().transform((val) => Number(val)).optional(),
+  carpenter_id: z.string().transform((val) => Number(val)).optional(),
   driver_id: z.string().transform((val) => Number(val)).optional(),
   item_id: z.string().transform((val) => Number(val)).optional(),
   order_id: z.string().transform((val) => Number(val)).optional(),

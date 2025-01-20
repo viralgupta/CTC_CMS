@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import ProfileUrlInput from "@/components/Inputs/PhoneInput/ProfileUrlInput";
 import { viewCarpenterAtom, viewCarpenterIdAtom } from "@/store/carpenter";
-import { editCarpanterType } from "@type/api/carpanter";
+import { editCarpenterType } from "@type/api/carpenter";
 import SelectTier from "@/components/Inputs/SelectTier";
 
 const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
@@ -34,11 +34,11 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
   const setViewCarpenterID = useSetRecoilState(viewCarpenterIdAtom);
 
   const EditCarpenterForm = () => {
-    const form = useForm<z.infer<typeof editCarpanterType>>({
-      resolver: zodResolver(editCarpanterType),
+    const form = useForm<z.infer<typeof editCarpenterType>>({
+      resolver: zodResolver(editCarpenterType),
       reValidateMode: "onChange",
       defaultValues: {
-        carpanter_id: viewCarpenter?.id,
+        carpenter_id: viewCarpenter?.id,
         name: viewCarpenter?.name,
         profileUrl: viewCarpenter?.profileUrl ?? undefined,
         area: viewCarpenter?.area ?? undefined,
@@ -46,8 +46,8 @@ const EditCarpenter = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
-    async function onSubmit(values: z.infer<typeof editCarpanterType>) {
-      const res = await request.put("/carpenter/editCarpanter", values);
+    async function onSubmit(values: z.infer<typeof editCarpenterType>) {
+      const res = await request.put("/carpenter/editCarpenter", values);
       if (res.status == 200) setOpen(false);
       setViewCarpenterID(null);
       setViewCarpenter(null);

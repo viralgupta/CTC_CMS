@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import CarpenterTable from "./CarpanterTable";
+import CarpenterTable from "./CarpenterTable";
 import RefetchButton from "@/components/RefetchButton";
 import { useAllCarpenter } from "@/hooks/carpenter";
 import LogButton from "@/components/log/LogButton";

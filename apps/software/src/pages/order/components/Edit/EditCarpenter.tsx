@@ -8,12 +8,12 @@ import Spinner from "@/components/ui/Spinner";
 
 const EditCarpenter = ({ closeDialog }: { closeDialog?: () => void }) => {
   const viewOrder = useRecoilValue(viewOrderAtom);
-  const [carpenter_id, setCarpenter_id] = React.useState(viewOrder?.carpanter_id);
+  const [carpenter_id, setCarpenter_id] = React.useState(viewOrder?.carpenter_id);
   const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async () => {
     setLoading(true);
-    await request.put("/order/editOrderCarpanterId", {
+    await request.put("/order/editOrderCarpenterId", {
       order_id: viewOrder?.id,
       carpenter_id
     });

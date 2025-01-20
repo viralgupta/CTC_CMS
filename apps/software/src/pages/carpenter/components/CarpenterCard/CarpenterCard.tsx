@@ -64,7 +64,7 @@ export default function CarpenterCard({
               </Avatar>
               <span>{carpenter.name}</span>
               <span className="absolute right-0">
-                <LogButton value={{type: {"carpanter_id": carpenter.id}}}/>
+                <LogButton value={{type: {"carpenter_id": carpenter.id}}}/>
               </span>
             </h2>
             <div className="flex items-center space-x-2">
@@ -79,7 +79,7 @@ export default function CarpenterCard({
                   Edit Carpenter
                 </Button>
               </EditCarpenter>
-              <DeleteAlert type="carpanter" viewObjectAtom={viewCarpenterAtom} viewObjectIdAtom={viewCarpenterIdAtom}>
+              <DeleteAlert type="carpenter" viewObjectAtom={viewCarpenterAtom} viewObjectIdAtom={viewCarpenterIdAtom}>
                 <Button size="sm" variant="outline">
                   <Trash2Icon className="h-4 w-4 mr-2" />
                   Delete Carpenter
@@ -122,7 +122,7 @@ export default function CarpenterCard({
             </div>
             <div className="col-span-3 mt-2">
               <ViewAllPhoneNumbers
-                type="carpanter"
+                type="carpenter"
                 values={carpenter.phone_numbers.map((pn) => {
                   return {
                     id: pn.id,
@@ -161,7 +161,7 @@ const SettleBalance = ({ children }: { children: React.ReactNode }) => {
   ) => {
     const res = await request.put("/carpenter/settleBalance", {
       ...values,
-      carpanter_id: viewCarpenter!.id ?? undefined,
+      carpenter_id: viewCarpenter!.id ?? undefined,
     });
     if (res.status == 200) {
       setOpen(false);

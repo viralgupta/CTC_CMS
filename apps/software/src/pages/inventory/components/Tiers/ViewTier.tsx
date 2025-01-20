@@ -30,7 +30,7 @@ type TierItemsType = {
 export type ViewTierType = {
   id: number;
   name: string;
-  carpanterCount: number;
+  carpenterCount: number;
   architectCount: number;
   tier_items: TierItemsType[];
 }
@@ -90,7 +90,7 @@ const ViewTier = ({
             <DialogDescription className="hidden"></DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2 rounded-md border py-2">
-            <div className="w-full text-center">Carpenter's Linked: {tier.carpanterCount ?? 0}</div>
+            <div className="w-full text-center">Carpenter's Linked: {tier.carpenterCount ?? 0}</div>
             <div className="w-full text-center">Architect's Linked: {tier.architectCount ?? 0}</div>
           </div>
           <div className="flex gap-2">

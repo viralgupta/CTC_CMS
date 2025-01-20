@@ -17,8 +17,8 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
         quantity: oi.quantity,
         rate: oi.rate,
         total_value: (oi.total_value).toString() ?? "0",
-        carpanter_commision: oi.carpanter_commision ?? "0.00",
-        carpanter_commision_type: oi.carpanter_commision_type ?? undefined,
+        carpenter_commision: oi.carpenter_commision ?? "0.00",
+        carpenter_commision_type: oi.carpenter_commision_type ?? undefined,
         architect_commision: oi.architect_commision ?? "0.00",
         architect_commision_type: oi.architect_commision_type ?? undefined,
       };
@@ -50,9 +50,9 @@ const EditOrderItems = ({ closeDialog }: { closeDialog?: () => void }) => {
                 quantity: oi.quantity,
                 rate: oi.rate,
                 total_value: oi.total_value,
-                carpanter_commision: oi.carpanter_commision ?? "0.00",
-                carpanter_commision_type:
-                  oi.carpanter_commision_type ?? undefined,
+                carpenter_commision: oi.carpenter_commision ?? "0.00",
+                carpenter_commision_type:
+                  oi.carpenter_commision_type ?? undefined,
                 architect_commision: oi.architect_commision ?? "0.00",
                 architect_commision_type:
                   oi.architect_commision_type ?? undefined,

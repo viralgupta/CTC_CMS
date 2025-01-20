@@ -11,13 +11,13 @@ export const orderItem = z.object({
     message: "The number must be greater than or equal to 0.00",
   })
   .transform((val) => parseFloat(val).toFixed(2)),
-  carpanter_commision:  z.string()
+  carpenter_commision:  z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
     message: "The number must be greater than or equal to 0.00",
   })
   .transform((val) => parseFloat(val).toFixed(2))
   .optional(),
-  carpanter_commision_type: z.enum(["percentage", "perPiece"]).optional(),
+  carpenter_commision_type: z.enum(["percentage", "perPiece"]).optional(),
   architect_commision:  z.string()
   .refine((val) => !isNaN(parseFloat(val)) && parseFloat(parseFloat(val).toFixed(2)) >= 0.00, {
     message: "The number must be greater than or equal to 0.00",
@@ -32,7 +32,7 @@ export const createOrderType = z.object({
   note: z.string().optional(),
 
   customer_id: z.number().optional(),
-  carpanter_id: z.number().optional(),
+  carpenter_id: z.number().optional(),
   architect_id: z.number().optional(),
   
   status: z.enum(["Pending", "Delivered"]),
@@ -71,9 +71,9 @@ export const addOrderCustomerIdType = z.object({
   customer_id: z.number()
 })
 
-export const editOrderCarpanterIdType = z.object({
+export const editOrderCarpenterIdType = z.object({
   order_id: z.number(),
-  carpanter_id: z.number()
+  carpenter_id: z.number()
 })
 
 export const editOrderArchitectIdType = z.object({

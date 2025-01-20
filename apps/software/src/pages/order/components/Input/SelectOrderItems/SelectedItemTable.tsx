@@ -47,7 +47,7 @@ const SelectedItemTable = ({
             <TableHead className="text-center">Rate</TableHead>
             <TableHead className="text-center">Total Value</TableHead>
             {showCommission && <TableHead className="text-center">Architect Commission</TableHead>}
-            {showCommission && <TableHead className="text-center">Carpanter Commission</TableHead>}
+            {showCommission && <TableHead className="text-center">Carpenter Commission</TableHead>}
             <TableHead className="text-center">Edit Item</TableHead>
             <TableHead className="text-center">Remove Item</TableHead>
           </TableRow>
@@ -70,7 +70,7 @@ const SelectedItemTable = ({
                   {`₹${item.architect_commision} ${calculateCommissionFromTotalCommission(item.architect_commision, item.architect_commision_type, item.total_value, item.quantity).bracket}`}
                 </TableCell>}
                 {showCommission && <TableCell className="text-center">
-                  {`₹${item.carpanter_commision} ${calculateCommissionFromTotalCommission(item.carpanter_commision, item.carpanter_commision_type, item.total_value, item.quantity).bracket}`}
+                  {`₹${item.carpenter_commision} ${calculateCommissionFromTotalCommission(item.carpenter_commision, item.carpenter_commision_type, item.total_value, item.quantity).bracket}`}
                 </TableCell>}
                 <TableCell className="text-center">
                   <AddNewItem delivered={delivered} onSubmit={editItem} value={item}>

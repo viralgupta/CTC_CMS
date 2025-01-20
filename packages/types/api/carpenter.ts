@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { phone_numberType } from "./miscellaneous";
 
-export const createCarpanterType = z
+export const createCarpenterType = z
   .object({
     name: z.string(),
     profileUrl: z.string().optional(),
@@ -12,8 +12,8 @@ export const createCarpanterType = z
   })
   .strict("Too many fields in request body");
 
-export const editCarpanterType = z.object({
-    carpanter_id: z.number(),
+export const editCarpenterType = z.object({
+    carpenter_id: z.number(),
     name: z.string().optional(),
     profileUrl: z.string().optional(),
     area: z.string().optional(),
@@ -23,7 +23,7 @@ export const editCarpanterType = z.object({
 
 export const settleBalanceType = z
   .object({
-    carpanter_id: z.number(),
+    carpenter_id: z.number(),
     amount: z
       .string()
       .refine(
@@ -39,15 +39,15 @@ export const settleBalanceType = z
   })
   .strict("Too many fields in request body");
 
-export const getCarpanterType = z.object({
-  carpanter_id: z.string().transform((val) => Number(val))
+export const getCarpenterType = z.object({
+  carpenter_id: z.string().transform((val) => Number(val))
 }).strict("Too many fields in request params");
 
-export const getCarpanterOrderType = z.object({
-  carpanter_id: z.string().transform((val) => Number(val)),
+export const getCarpenterOrderType = z.object({
+  carpenter_id: z.string().transform((val) => Number(val)),
   cursor: z.string().transform((val) => Number(val)),
 }).strict("Too many fields in request params");
 
-export const deleteCarpanterType = z.object({
-  carpanter_id: z.number(),
+export const deleteCarpenterType = z.object({
+  carpenter_id: z.number(),
 }).strict("Too many fields in request body");
