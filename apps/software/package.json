@@ -1,8 +1,8 @@
 {
-  "name": "chintpurni-plywood-cms",
+  "name": "@ctc-ims/software",
   "version": "2.2.0",
   "main": "dist-electron/main/index.js",
-  "description": "Chintpurni Plywood CMS",
+  "description": "Chintpurni Plywood IMS",
   "author": "Viral Gupta",
   "license": "MIT",
   "private": true,
@@ -63,6 +63,7 @@
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "whatsapp-web.js": "^1.26.0",
+    "whatsapp-web-electron.js": "1.23.0-1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

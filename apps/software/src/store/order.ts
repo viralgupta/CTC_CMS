@@ -149,7 +149,7 @@ export type ViewOrderType = {
     | {
         id: number;
         driver_id: number | null;
-        status: "Pending" | "Completed";
+        delivered: boolean;
         created_at: Date;
         type: "DELIVERY" | "RETURN";
         driver: {

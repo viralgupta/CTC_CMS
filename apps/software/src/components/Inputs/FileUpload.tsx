@@ -24,7 +24,8 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       const fileName = uploadfile.name.slice(
         0,
         uploadfile.name.lastIndexOf(".")
-      );
+      ).replaceAll(" ", "-");
+      
       onChange(fileName, extension);
     };
 

@@ -1,5 +1,5 @@
 {
-  "name": "@ctc-cms/backend",
+  "name": "@ctc-ims/backend",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

@@ -13,12 +13,12 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: "chintpurni_plywood_cms",
-        title: "Chintpurni Plywood CMS",
+        name: "chintpurni_plywood_ims",
+        title: "Chintpurni Plywood IMS",
         authors: "Viral Gupta",
-        description: "Chintpurni Plywood CMS",
+        description: "Chintpurni Plywood IMS",
         iconUrl: "public/favicon.ico",
-        setupExe: "CTC-CMS.exe",
+        setupExe: "CTC-IMS.exe",
         setupIcon: "public/favicon.ico",
       },
     }

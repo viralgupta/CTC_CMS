@@ -4,7 +4,7 @@ import { BackendStack } from "./stacks/Backend";
 export default {
   config(_input) {
     return {
-      name: "ctc-cms",
+      name: "ctc-ims",
       region: "ap-south-1",
     };
   },

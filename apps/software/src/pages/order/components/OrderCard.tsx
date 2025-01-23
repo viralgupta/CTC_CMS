@@ -331,9 +331,9 @@ const OrderMovementTable = ({
               <TableRow key={order_movement.id}>
                 <TableCell className={`text-center`}>{order_movement.type}</TableCell>
                 <TableCell
-                  className={`text-center ${order_movement.status == "Completed" ? "text-green-500" : "text-red-500"}`}
+                  className={`text-center ${order_movement.delivered ? "text-green-500" : "text-red-500"}`}
                 >
-                  {order_movement.status.toUpperCase()}
+                  {order_movement.delivered ? "Delivered" : "Pending"}
                 </TableCell>
                 <TableCell className={`text-center`}>
                   {order_movement.driver?.name ?? "--"}

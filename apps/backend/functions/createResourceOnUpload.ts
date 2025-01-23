@@ -53,6 +53,7 @@ const createResourceOnUploadHandler = async (evt: any) => {
     }
 
   } catch (error) {
+    console.error("error", error)
     deleteObject(objectKey, bucketName, client);
   }
   return;
