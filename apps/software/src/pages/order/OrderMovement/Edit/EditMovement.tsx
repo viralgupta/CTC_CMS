@@ -139,7 +139,7 @@ const EditMovement = ({
                     <FormControl>
                       <DatePicker
                         className="w-full"
-                        disabled={orderMovement.status == "Pending"}
+                        disabled={!orderMovement.delivered}
                         value={field.value}
                         onChange={field.onChange}
                       />

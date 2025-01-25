@@ -32,8 +32,8 @@ function App() {
 
   const renderTabContent = () => {
     switch (tab) {
-      case "home":
-        return <Home/>;
+      // case "home":
+      //   return <Home/>;
       case "customer":
         return <Customer/>;
       case "order":

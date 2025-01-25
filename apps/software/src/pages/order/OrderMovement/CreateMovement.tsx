@@ -40,6 +40,7 @@ import SearchDriver from "@/pages/driver/components/SearchDriver";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import SelectOrderItems from "./Input/SelectOrderItems";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const CreateOrderMovement = () => {
   return (
@@ -105,11 +106,11 @@ const CreateOrderMovementForm = () => {
     }
   }
 
-  const [type, status, delivery_at, order_movement_items] = form.watch(["type", "status", "delivery_at", "order_movement_items"]);
+  const [type, delivered, delivery_at, order_movement_items] = form.watch(["type", "delivered", "delivery_at", "order_movement_items"]);
 
   React.useEffect(() => {
     if (type == "RETURN") {
-      form.setValue("status", "Completed");
+      form.setValue("delivered", true);
     } else {
       form.resetField("delivery_at");
     }
@@ -134,11 +135,11 @@ const CreateOrderMovementForm = () => {
   }, [order_movement_items]);
 
   React.useEffect(() => {
-    if (status == "Completed" && !delivery_at) {
+    if (delivered && !delivery_at) {
       // @ts-expect-error
       form.setValue("delivery_at", new Date().toISOString());
     }
-  }, [status]);
+  }, [delivered]);
 
   return (
     <div className="w-full h-full">
@@ -173,30 +174,15 @@ const CreateOrderMovementForm = () => {
             />
             <FormField
               control={form.control}
-              name="status"
+              name="delivered"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Order Movement Status</FormLabel>
+                  <FormLabel>Order Movement Delivered</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={form.getValues("type") == "RETURN"}
-                    >
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            (form.getValues("type") ?? "DELIVERY") == "DELIVERY"
-                              ? "Delivery Status"
-                              : "Return Status"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="Pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,7 +250,7 @@ const CreateOrderMovementForm = () => {
                 <FormItem className="w-full">
                   <FormLabel>{form.getValues("type") == "DELIVERY" ? "Delivered At" : "Returned At"}</FormLabel>
                   <FormControl>
-                    <DatePicker disabled={form.getValues("status") == "Pending"} onChange={field.onChange} value={field.value}/>
+                    <DatePicker disabled={form.getValues("delivered") == false} onChange={field.onChange} value={field.value}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
