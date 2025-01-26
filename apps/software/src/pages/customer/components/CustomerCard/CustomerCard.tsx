@@ -17,7 +17,7 @@ import {
   viewCustomerAtom,
   viewCustomerIDAtom,
   viewCustomerType,
-} from "@/store/customer";
+} from "@/store/Customer";
 import React from "react";
 import { z } from "zod";
 import { settleBalanceType } from "@type/api/architect";

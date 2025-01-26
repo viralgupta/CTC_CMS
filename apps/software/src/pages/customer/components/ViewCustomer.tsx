@@ -1,4 +1,4 @@
-import { viewCustomerAtom, viewCustomerIDAtom, viewCustomerType } from "@/store/customer";
+import { viewCustomerAtom, viewCustomerIDAtom, viewCustomerType } from "@/store/Customer";
 import {
   Dialog,
   DialogContent,

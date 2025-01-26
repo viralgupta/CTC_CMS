@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import DivButton from "@/components/ui/div-button";
 import { useSetRecoilState } from "recoil";
-import { viewCustomerIDAtom } from "@/store/customer";
+import { viewCustomerIDAtom } from "@/store/Customer";
 import { viewArchitectIdAtom } from "@/store/architect";
 import { viewCarpenterIdAtom } from "@/store/carpenter";
 import { viewAddressIdAtom } from "@/store/address";

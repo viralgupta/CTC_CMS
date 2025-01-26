@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import PhoneNumberInput from "@/components/Inputs/PhoneInput/PhoneNumberInput";
 import { type RecoilState, useSetRecoilState, useRecoilState } from "recoil";
-import { viewCustomerType } from "@/store/customer";
+import { viewCustomerType } from "@/store/Customer";
 import request from "@/lib/request";
 import React from "react";
 

@@ -4,7 +4,7 @@ import {
   viewCustomerAtom,
   viewCustomerIDAtom,
   viewCustomerType,
-} from "@/store/customer";
+} from "@/store/Customer";
 import React from "react";
 import AddressInput from "@/components/Inputs/AddressInput/AddressInput";
 import { addressType } from "@type/api/miscellaneous";

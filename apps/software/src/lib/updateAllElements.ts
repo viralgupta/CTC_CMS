@@ -1,7 +1,7 @@
 import { allAddressAtom, AddressType } from "@/store/address";
 import { allArchitectAtom, ArchitectType } from "@/store/architect";
 import { allCarpenterAtom, CarpenterType } from "@/store/carpenter";
-import { allCustomerAtom, CustomerType } from "@/store/customer";
+import { allCustomerAtom, CustomerType } from "@/store/Customer";
 import { allDriverAtom, DriverType } from "@/store/driver";
 import { allEstimateAtom, EstimateType } from "@/store/estimates";
 import { allItemsAtom, itemType } from "@/store/Items";

@@ -13,7 +13,7 @@ import DivButton from "@/components/ui/div-button";
 import { Separator } from "@/components/ui/separator";
 import { useSetRecoilState } from "recoil";
 import { viewAddressIdAtom } from "@/store/address";
-import { viewCustomerIDAtom } from "@/store/customer";
+import { viewCustomerIDAtom } from "@/store/Customer";
 import { viewDriverIdAtom } from "@/store/driver";
 import { Button } from "@/components/ui/button";
 import EditMovement from "./Edit/EditMovement";
