@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, session, ipcMain, net } from "electron";
+import { app, BrowserWindow, shell, ipcMain, net } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -9,15 +9,14 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import Handlebars from "handlebars";
 import * as shutdown from "electron-shutdown-command";
-// import { Client } from "whatsapp-web.js"
 
 dotenv.config();
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const { Client, LocalAuth } = require("whatsapp-web.js");
 if (require("electron-squirrel-startup")) app.quit();
+const { Client, LocalAuth } = require("whatsapp-web.js");
 
 process.env.APP_ROOT = path.join(__dirname, "../..");
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
@@ -95,7 +94,7 @@ async function createWindow() {
 app.whenReady().then(() => {
   const allFilter = { urls: [`${process.env.VITE_API_BASE_URL}/*`] };
 
-  session.defaultSession.cookies.on(
+  mainWin?.webContents.session.cookies.on(
     "changed",
     (_event, cookie, cause, removed) => {
       if (cookie.name == "__Secure-authjs.session-token") {
@@ -107,11 +106,11 @@ app.whenReady().then(() => {
   );
 
   // set headers in request using electron class before sending
-  session.defaultSession.webRequest.onBeforeSendHeaders(
+  mainWin?.webContents.session.webRequest.onBeforeSendHeaders(
     allFilter,
     async (details, callback) => {
       // set cookies
-      const cookies = await session.defaultSession.cookies
+      const cookies = await mainWin?.webContents.session.cookies
         .get({ domain: new URL(details.url).hostname })
         .then((cookies) => {
           return cookies
@@ -119,7 +118,7 @@ app.whenReady().then(() => {
             .join("; ");
         });
 
-      if (cookies.length > 0) details.requestHeaders.cookie = cookies;
+      if (cookies && cookies.length > 0) details.requestHeaders.cookie = cookies;
 
       // set timestamp & signature
       if (details.url.includes("/api/")) {
@@ -143,7 +142,7 @@ app.whenReady().then(() => {
   );
 
   // set cookies using electron class when receiving response
-  session.defaultSession.webRequest.onHeadersReceived(
+  mainWin?.webContents.session.webRequest.onHeadersReceived(
     allFilter,
     (details, callback) => {
       // cancel redirect
@@ -174,7 +173,7 @@ app.whenReady().then(() => {
           const parsedCookie = cookieParser.parse(cookie);
           if (parsedCookie) {
             const firstKey = Object.keys(parsedCookie)[0];
-            session.defaultSession.cookies.set({
+            mainWin?.webContents.session.cookies.set({
               url: details.url,
               name: firstKey,
               value: parsedCookie[firstKey],
@@ -366,18 +365,18 @@ function cancelPrint() {
 
 async function clearAppData(deep = false, lockdb = false) {
   const promises = [];
-  const clearStoragePromise = session.defaultSession.clearStorageData();
+  const clearStoragePromise = mainWin?.webContents.session.clearStorageData();
   promises.push(clearStoragePromise);
-  const clearCache = session.defaultSession.clearCache();
+  const clearCache = mainWin?.webContents.session.clearCache();
   promises.push(clearCache);
-  const authCachePromise = session.defaultSession.clearAuthCache();
+  const authCachePromise = mainWin?.webContents.session.clearAuthCache();
   promises.push(authCachePromise);
-  const clearCodeCachesPromise = session.defaultSession.clearCodeCaches({});
+  const clearCodeCachesPromise = mainWin?.webContents.session.clearCodeCaches({});
   promises.push(clearCodeCachesPromise);
   const clearHostResolverCachePromise =
-    session.defaultSession.clearHostResolverCache();
+    mainWin?.webContents.session.clearHostResolverCache();
   promises.push(clearHostResolverCachePromise);
-  const clearDataPromise = session.defaultSession.clearData();
+  const clearDataPromise = mainWin?.webContents.session.clearData();
   promises.push(clearDataPromise);
   if (deep) {
     const rmDirPromise = new Promise((res) => {
