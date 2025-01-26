@@ -8,6 +8,20 @@ on:
   workflow_dispatch:
 
 jobs:
+  version_check:
+    runs-on: ubuntu-latest
+    outputs:
+      current_version: ${{ steps.package-version.outputs.current-version }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Get Software Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        with:
+          path: apps/software
+
   release:
     runs-on: windows-latest
 
@@ -50,7 +64,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.package-version.outputs.current-version }}
+          tag_name: v${{ needs.version_check.outputs.current_version }}
           release_name: ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false
