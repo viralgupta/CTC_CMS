@@ -22,7 +22,10 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install dependencies
+      - name: Install Workspace's dependencies
+        run: pnpm install
+        
+      - name: Install Software dependencies
         run: pnpm install --ignore-workspace
         working-directory: apps/software
 
