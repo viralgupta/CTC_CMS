@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "sst dev",
-    "install": "pnpm install && cd apps/software && pnpm install --ignore-workspace",
     "dev:software": "cd apps/software && npm run dev",
     "db:studio": "cd apps/backend && npm run db:studio",
     "build": "sst build",
