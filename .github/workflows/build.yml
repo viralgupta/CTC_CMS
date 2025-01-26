@@ -37,7 +37,7 @@ jobs:
       - name: Create Release Binaries
         run: npm run make
         working-directory: apps/software
-        
+
       - name: Create Release
         uses: actions/create-release@v1
         env:
@@ -53,6 +53,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./apps/software/out/make/squirrel.windows/x64/CTC-IMS.exe
           asset_name: CTC-IMS.exe
-          asset_content_type: application/exe
