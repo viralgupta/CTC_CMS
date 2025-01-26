@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'apps/software/**'
+      - '.github/workflows/**'
 
 jobs:
   release:
