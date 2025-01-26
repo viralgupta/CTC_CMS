@@ -24,7 +24,7 @@ jobs:
 
   release:
     runs-on: windows-latest
-
+    needs: version_check
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
@@ -51,12 +51,6 @@ jobs:
       - name: Create Release Binaries
         run: npm run make
         working-directory: apps/software
-
-      - name: Get Software Version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-        with:
-          path: apps/software
 
       - name: Create Release
         id: create_release
