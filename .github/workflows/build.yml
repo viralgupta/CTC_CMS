@@ -5,6 +5,7 @@ on:
     paths:
       - 'apps/software/**'
       - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
   release:
@@ -17,7 +18,7 @@ jobs:
       - name: Install Node.js and pnpm
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 21
       
       - name: Install pnpm
         run: npm install -g pnpm
