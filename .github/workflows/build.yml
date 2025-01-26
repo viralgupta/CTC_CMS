@@ -22,11 +22,9 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Change Directory
-        run: cd apps/software
-
       - name: Install dependencies
         run: pnpm install --ignore-workspace
+        working-directory: apps/software
 
       - name: Build/release Electron app
         uses: wenwuwu/action-electron-forge@v1.4.0
