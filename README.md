@@ -45,6 +45,7 @@ CTC IMS is an open sourced zero trust(*almost) inventory manangement system tail
 | Backend on Lambda Functions | *No Graphics Available* |
 | Cross Platform (Windows/Mac/Linux) | *No Graphics Available* |
 | Deployed using IaC (SST) | *No Graphics Available* |
+| Automated Build Release on Github using Workflow | *No Graphics Available* |
 
 ---
 

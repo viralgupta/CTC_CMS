@@ -38,13 +38,19 @@ jobs:
         run: npm run make
         working-directory: apps/software
 
+      - name: Get Software Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        with:
+          path: apps/software
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{github.event.inputs.version}}
+          tag_name: v${{ steps.package-version.outputs.current-version }}
           release_name: ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false
