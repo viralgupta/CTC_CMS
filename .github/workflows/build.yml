@@ -57,3 +57,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./apps/software/out/make/squirrel.windows/x64/CTC-IMS.exe
           asset_name: CTC-IMS.exe
+          asset_content_type: application/x-msdownload          
