@@ -1,7 +1,7 @@
 [<img src="/apps//software/public/ctc.svg" align="right" width="150" height="150" style={{}}>](https://github.com/user-attachments/assets/379553c3-bf97-43c9-8a7f-b338e0cdd9cf)
 # CTC IMS
 
-CTC IMS is an open sourced zero trust(*almost) inventory manangement system tailored for Indian businesses needs.
+CTC IMS is an open sourced zero trust(*almost) inventory manangement system tailored for Indian business needs.
 
 ---
 
