@@ -9,6 +9,7 @@ on:
 
 jobs:
   version_check:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[RELEASE]') }}
     runs-on: ubuntu-latest
     outputs:
       current_version: ${{ steps.package-version.outputs.current-version }}
