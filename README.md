@@ -16,8 +16,8 @@ CTC IMS is an open sourced zero trust(*almost) inventory manangement system tail
 | Search Customer  |  <video src="https://github.com/user-attachments/assets/e1fa4a41-284a-4032-85be-6622ff748c28">  |
 | Search Address by Name/Area  |  <video src="https://github.com/user-attachments/assets/98cf0be4-8b70-4fee-aa40-8c36173ba5cd">  |
 | Low Stock Inventory Notification  |  <video src="https://github.com/user-attachments/assets/682ddc77-b183-43a3-94fb-a9dba4dbc536">  |
-| Filter / Search Inventory  |  <video src="https://github.com/user-attachments/assets/fd621859-5f1e-4917-a23c-5e68e4992950">  |
-| Multi Warehouse Inventory  |  <video src="https://github.com/user-attachments/assets/36790028-71fb-4cd6-8191-58e0fc10d3a7">  |
+| Multi Warehouse Inventory  |  <video src="https://github.com/user-attachments/assets/fd621859-5f1e-4917-a23c-5e68e4992950">  |
+| Filter / Search Inventory  |  <video src="https://github.com/user-attachments/assets/36790028-71fb-4cd6-8191-58e0fc10d3a7">  |
 | Carpenter/Architect Commission  |  <video src="https://github.com/user-attachments/assets/ccc8a254-9785-4bfb-8817-3404f246ba53">  |
 | Estimate Creation  |  <video src="https://github.com/user-attachments/assets/b9ff2065-19e9-4e74-b840-c4cb178441bc">  |
 | Documents Saving  |  <video src="https://github.com/user-attachments/assets/3396c764-1728-4809-aaed-e6d139c8cbae">  |
